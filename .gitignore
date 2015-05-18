@@ -19,7 +19,6 @@
 *.swp
 *.pyc
 *.png
-*.ipynb
 /lib/*
 *.root
 *.png

@@ -10,7 +10,6 @@ namespace larlite {
 		      short slot,
 		      short femch)
   {
-    std::cout << "hello" << std::endl;
     if(_ch_to_crate.size() <= lar_ch) {
       _ch_to_crate.resize(lar_ch+1,-1);
       _ch_to_slot.resize(lar_ch+1,-1);
