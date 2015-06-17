@@ -27,8 +27,6 @@ namespace larlite {
 
     _evtN = 0;
 
-    int counter_tree = 0;
-
     _t_ch = new TTree("ch_tree","");
     _t_ch->Branch("larch",&_larch,"larch/i");
     _t_ch->Branch("crate",&_crate,"crate/i");
