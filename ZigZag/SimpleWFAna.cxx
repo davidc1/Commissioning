@@ -22,6 +22,12 @@ namespace larlite {
   bool SimpleWFAna::analyze(storage_manager* storage) {
 
     auto wfs = storage->get_data<event_rawdigit>("daq");
+    
+    if ( (!wfs) || (!wfs->size())){
+      print (msg::kERROR,__FUNCTION__,"RawDigit data product not found!");
+      return false;
+    }
+      
 
     // Make a map from channel index to channel number
     for (size_t i=0; i < wfs->size(); i++){
