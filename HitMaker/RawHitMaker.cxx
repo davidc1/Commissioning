@@ -28,6 +28,11 @@ namespace larlite {
     // create Hits
     auto const ev_hits = storage->get_data<event_hit>("rawhit");
 
+    // set event ID through storage manager
+    storage->set_id(storage->get_data<event_rawdigit>(_producer)->run(),
+		    storage->get_data<event_rawdigit>(_producer)->subrun(),
+		    storage->get_data<event_rawdigit>(_producer)->event_id());
+
     // loop over waveforms
     for (size_t i=0; i < ev_wf->size(); i++){
       
@@ -150,6 +155,8 @@ namespace larlite {
 	if (active){
 	  end = i;
 	  // now make hit
+	  // if one 1-tick wide -> ignore
+	  if ( (end-start) <= 2) continue;
 	  double hiterr = (end-start)/2.;
 	  larlite::hit hit;
 	  hit.set_time_peak(peak,hiterr);
@@ -159,6 +166,11 @@ namespace larlite {
 	  hit.set_integral(area,0.);
 	  hits.push_back(hit);
 	  active = false;
+	  // clear hit attributes
+	  peak = 0;
+	  area = 0;
+	  end = 0;
+	  start = 0;
 	}
       }// if not in an active region
     }// looping over waveform
