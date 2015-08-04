@@ -56,6 +56,8 @@ namespace larlite {
     void setRawDigitProducer(std::string s) { _producer = s; }
     // set cut on signal amplitude to have a hit (in sigmas based on rms)
     void setSigmaCut(double s) { _sigmacut = s; }
+    // set minimum width for a hit (in ticks)
+    void setMinHitWidth(int t) { _minwidth = t; }
 
     /// function to calculate baseline
     double getBaseline(const std::vector<short> &wf);
@@ -76,6 +78,8 @@ namespace larlite {
     size_t _nticks;
     // sigma cut on the noise -> once waveform goes above/below this threshold defines the start/end of a hit
     double _sigmacut;
+    // minimum width (in ticks) for a hit
+    int _minwidth;
     
   };
 }

@@ -29,10 +29,18 @@ my_proc.set_ana_output_file("");
 my_proc.set_output_file("rawdigit_hits.root")
 
 hitmaker = fmwk.RawHitMaker()
+# set the number of ticks to use to measure baseline/rms
 hitmaker.setNTicks(100)
+# set the maximum RMS allowed for a channel to be 'good'
+# if 'bad' hits will not be searched for on this channel
 hitmaker.setRMSMax(10.0)
+# set producer name for hits
 hitmaker.setRawDigitProducer('daq')
+# set threshold for a hit. hit window opened/closed when
+# the baseline-subtracted ADCs are > than RMS * sigma cut
 hitmaker.setSigmaCut(4.0)
+# set minimum hit width
+hitmaker.setMinHitWidth(2)
 
 my_proc.set_data_to_write(fmwk.data.kHit,'rawhit')
 my_proc.add_process(hitmaker)
@@ -42,7 +50,7 @@ print  "Finished configuring ana_processor. Start event loop!"
 print
 
 #my_proc.run(0,5)
-my_proc.run(0,5)
+my_proc.run()
 
 sys.exit()
 

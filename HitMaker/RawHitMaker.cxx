@@ -17,6 +17,8 @@ namespace larlite {
     _nticks = 100;
     // sigma cut on the noise -> once waveform goes above/below this threshold defines the start/end of a hit
     _sigmacut = 4.0;
+    // minimum width for a hit (in ticks)
+    _minwidth = 4;
 
     return true;
   }
@@ -155,16 +157,17 @@ namespace larlite {
 	if (active){
 	  end = i;
 	  // now make hit
-	  // if one 1-tick wide -> ignore
-	  if ( (end-start) <= 2) continue;
-	  double hiterr = (end-start)/2.;
-	  larlite::hit hit;
-	  hit.set_time_peak(peak,hiterr);
-	  hit.set_time_rms(hiterr);
-	  hit.set_amplitude(peak,0.);
-	  hit.set_sumq(area);
-	  hit.set_integral(area,0.);
-	  hits.push_back(hit);
+	  // if passes minimum hit width condition
+	  if ( (end-start) > _minwidth){
+	    double hiterr = (end-start)/2.;
+	    larlite::hit hit;
+	    hit.set_time_peak(peak,hiterr);
+	    hit.set_time_rms(hiterr);
+	    hit.set_amplitude(peak,0.);
+	    hit.set_sumq(area);
+	    hit.set_integral(area,0.);
+	    hits.push_back(hit);
+	  }
 	  active = false;
 	  // clear hit attributes
 	  peak = 0;
