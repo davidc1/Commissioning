@@ -25,6 +25,8 @@ namespace larlite {
   
   bool RawHitMaker::analyze(storage_manager* storage) {
 
+    std::cout << "hi" << std::endl;
+
     // read in RawDigits
     auto const ev_wf   = storage->get_data<event_rawdigit>(_producer);
     // create Hits
@@ -54,10 +56,21 @@ namespace larlite {
 
       // loop over hits and assign the channel information
       for (auto & h : hits){
-	auto const ch   = wf.Channel();
+	auto ch         = wf.Channel();
 	auto const view = larutil::Geometry::GetME()->View(ch);
+	auto const pl   = larutil::Geometry::GetME()->ChannelToPlane(ch);
 	auto const sigt = larutil::Geometry::GetME()->SignalType(ch);
-	auto const wire = larutil::Geometry::GetME()->ChannelToWireID(ch);
+	auto wire       = larutil::Geometry::GetME()->ChannelToWireID(ch);
+	if (pl == 2){
+	  int wireAnchor = wire.Wire - (wire.Wire % 32);
+	  auto wnum = wireAnchor + 32 - (wire.Wire % 32) - 1;
+	  // re-create wire object
+	  larlite::geo::WireID wire2(0,0,2,wnum);
+	  wire = wire2;
+	  ch = larutil::Geometry::GetME()->PlaneWireToChannel(2,wire.Wire);
+	}
+
+
 	h.set_channel(ch);
 	h.set_view(view);
 	h.set_signal_type(sigt);
@@ -163,7 +176,7 @@ namespace larlite {
 	    larlite::hit hit;
 	    hit.set_time_peak(peak,hiterr);
 	    hit.set_time_rms(hiterr);
-	    hit.set_amplitude(peak,0.);
+	    hit.set_amplitude(amp,0.);
 	    hit.set_sumq(area);
 	    hit.set_integral(area,0.);
 	    hits.push_back(hit);
@@ -174,6 +187,7 @@ namespace larlite {
 	  area = 0;
 	  end = 0;
 	  start = 0;
+	  amp = 0;
 	}
       }// if not in an active region
     }// looping over waveform

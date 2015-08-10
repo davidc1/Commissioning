@@ -9,8 +9,8 @@ if len(sys.argv) < 2:
 
 
 from ROOT import gSystem,TMath
-from larlite import larlite as fmwk
-from larlite import larutil
+from ROOT import larlite as fmwk
+from ROOT import larutil
 
 # Create ana_processor instance
 my_proc = fmwk.ana_processor()
@@ -41,16 +41,19 @@ hitmaker.setRawDigitProducer('daq')
 hitmaker.setSigmaCut(4.0)
 # set minimum hit width
 hitmaker.setMinHitWidth(2)
+my_proc.add_process(hitmaker)
 
 my_proc.set_data_to_write(fmwk.data.kHit,'rawhit')
-my_proc.add_process(hitmaker)
+#my_proc.set_data_to_write(fmwk.data.kRawDigit,'daq')
+
+
 
 print
 print  "Finished configuring ana_processor. Start event loop!"
 print
 
-#my_proc.run(0,5)
 my_proc.run()
+#my_proc.run()
 
 sys.exit()
 
