@@ -1,12 +1,12 @@
-#ifndef LARLITE_LASERFINDER_CXX
-#define LARLITE_LASERFINDER_CXX
+#ifndef LARLITE_OVERLAPEVENTS_CXX
+#define LARLITE_OVERLAPEVENTS_CXX
 
-#include "LaserFinder.h"
+#include "OverlapEvents.h"
 #include "LArUtil/Geometry.h"
 
 namespace larlite {
 
-  bool LaserFinder::initialize() {
+  bool OverlapEvents::initialize() {
 
     std::cout << "aaa" << std::endl;
 
@@ -18,7 +18,7 @@ namespace larlite {
     return true;
   }
   
-  bool LaserFinder::analyze(storage_manager* storage) {
+  bool OverlapEvents::analyze(storage_manager* storage) {
 
     // read in RawDigits
     auto const ev_wf     = storage->get_data<event_rawdigit>("daq");
@@ -66,7 +66,7 @@ namespace larlite {
     return true;
   }
 
-  bool LaserFinder::finalize() {
+  bool OverlapEvents::finalize() {
 
     return true;
   }

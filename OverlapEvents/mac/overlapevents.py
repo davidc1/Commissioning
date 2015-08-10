@@ -31,7 +31,7 @@ my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
 # Specify data output root file name
 my_proc.set_output_file('rawdigits_laser.root')
     
-hitmaker = fmwk.LaserFinder()
+hitmaker = fmwk.OverlapEvents()
 
 my_proc.set_data_to_write(fmwk.data.kRawDigit,'laser')
 my_proc.add_process(hitmaker)

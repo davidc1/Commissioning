@@ -1,49 +1,49 @@
 /**
- * \file LaserFinder.h
+ * \file Overlapevents.h
  *
- * \ingroup LaserFinder
+ * \ingroup OverlapEvents
  * 
- * \brief Class def header for a class LaserFinder
+ * \brief Class def header for a class OverlapEvents
  *
  * @author davidc1
  */
 
-/** \addtogroup LaserFinder
+/** \addtogroup OverlapEvents
 
     @{*/
 
-#ifndef LARLITE_LASERFINDER_H
-#define LARLITE_LASERFINDER_H
+#ifndef LARLITE_OVERLAPEVENTS_H
+#define LARLITE_OVERLAPEVENTS_H
 
 #include "Analysis/ana_base.h"
 #include "DataFormat/rawdigit.h"
 
 namespace larlite {
   /**
-     \class LaserFinder
+     \class OverlapEvents
      User custom analysis class made by SHELL_USER_NAME
    */
-  class LaserFinder : public ana_base{
+  class OverlapEvents : public ana_base{
   
   public:
 
     /// Default constructor
-    LaserFinder(){ _name="LaserFinder"; _fout=0;}
+    OverlapEvents(){ _name="OverlapEvents"; _fout=0;}
 
     /// Default destructor
-    virtual ~LaserFinder(){}
+    virtual ~OverlapEvents(){}
 
-    /** IMPLEMENT in LaserFinder.cc!
+    /** IMPLEMENT in OverlapEvents.cc!
         Initialization method to be called before the analysis event loop.
     */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in LaserFinder.cc! 
+    /** IMPLEMENT in OverlapEvents.cc! 
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in LaserFinder.cc! 
+    /** IMPLEMENT in OverlapEvents.cc! 
         Finalize method to be called after all events processed.
     */
     virtual bool finalize();
