@@ -25,8 +25,6 @@ namespace larlite {
   
   bool RawHitMaker::analyze(storage_manager* storage) {
 
-    std::cout << "hi" << std::endl;
-
     // read in RawDigits
     auto const ev_wf   = storage->get_data<event_rawdigit>(_producer);
     // create Hits
