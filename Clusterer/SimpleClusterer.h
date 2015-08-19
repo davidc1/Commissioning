@@ -85,12 +85,18 @@ namespace larlite {
     /// Map making function
     void MakeHitMap(const event_hit* hitlist, int plane);
 
+    /// Functions to decide if two hits should belong to the same cluster or not
+    bool HitsCompatible(const hit& h1, const hit& h2);
+
     /// Function to get neighboring hits (from self + neighoring cells)
-    std::vector<size_t> getNeighboringHits(const std::pair<int,int> pair);
+    void getNeighboringHits(const std::pair<int,int>& pair, std::vector<size_t>& hitIndices);
 
     /// map connecting coordinate index (i,j) to [h1,h2,h3] (hit index list)
     std::map<std::pair<int,int>, std::vector<size_t> > _hitMap;
 
+    /// maximum i'th and j'th
+    int _maxI;
+    int _maxJ;
 
     
   };
