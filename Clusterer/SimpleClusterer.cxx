@@ -14,7 +14,7 @@ namespace larlite {
     _fout        = 0;
     _verbose     = false;
     _hitProducer = "gaushit";
-    _radius      = 3.0;
+    _radius      = 2.0;
     _cellSize    = 5;
 
   }
@@ -54,14 +54,16 @@ namespace larlite {
       
       MakeHitMap(evt_hits,pl);
       
-      // keep track of compatible hits
-      int numCompat = 0;
+
       
       // iterator for hit cell map
       std::map<std::pair<int,int>, std::vector<size_t> >::iterator it;
       
       // loop through hits in each cell to find matches
       for (it = _hitMap.begin(); it != _hitMap.end(); it++){
+
+	// keep track of compatible hits
+	int numCompat = 0;
 	
 	auto const& pair = it->first;
 	
@@ -73,7 +75,7 @@ namespace larlite {
 	// |__|__|__|
 	std::vector<size_t> neighborhits;
 	getNeighboringHits(pair,neighborhits);
-	
+	std::cout << "number of neighboring hits: " << neighborhits.size() << std::endl;
 	for (size_t h1=0; h1 < neighborhits.size(); h1++){
 	  // has this hit been added to a cluster?
 	  // if so not necessary to look at
@@ -112,8 +114,9 @@ namespace larlite {
 	    }
 	  */
 	}// 1st loop through hits in the cell
+	std::cout << "number of compatibilities: " << numCompat << std::endl;
       }// loop through all cells
-      
+
     }
 
     //std::cout << "number of compatibilities found: " << numCompat << std::endl;
@@ -131,15 +134,12 @@ namespace larlite {
     std::vector<std::vector<unsigned int> > _cluster_hit_ass;
     // for each cluster create a larlite::cluster
     for (size_t i=0; i < _clusters.size(); i++){
-      if (_clusters[i].size() > 10){
-	for (auto const& hi : _clusters[i]){
-	  auto hh = evt_hits->at(hi);
-	  std::cout << "adding hit " << hi << " to cluster. Hit has: " << hh.WireID().Wire << " wire" << std::endl;
-	}
+      if (_clusters[i].size() > 50){
 	larlite::cluster clus;
 	// vector for associations
 	ev_clusters->push_back(clus);
 	_cluster_hit_ass.push_back(_clusters[i]);
+	std::cout << "clus size: " << _clusters[i].size() << std::endl;
       }
     }
     
