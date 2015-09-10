@@ -6,13 +6,41 @@
 #include "DataFormat/fifo.h"
 #include "DataFormat/trigger.h"
 
+#include <climits>
+#include <limits>
+#include <cmath>
+
 namespace larlite {
+
+  CosmicDiscrimFIFO::CosmicDiscrimFIFO()
+    : _trig_tree(nullptr)
+    , _tree(nullptr)
+    , _rate_tree(nullptr)
+  {
+    _name="CosmicDiscrimFIFO";
+    _fout=0;
+    _use_trig=false;
+    _save_wf=false;
+    _verbose=false;
+    _trig_producer = "";
+    _fifo_producer = "";
+    _adc_thresh = 0;
+  }
 
   bool CosmicDiscrimFIFO::initialize() {
 
     if (_tree) delete _tree;
-    
+    if (_rate_tree) delete _rate_tree;
+    if (_trig_tree) delete _trig_tree;
+
     _ev = 0;
+
+    _baselines.clear();
+    _rms.clear();
+    for (int i=0; i < 32; i++){
+      _baselines.push_back(kMAX_DOUBLE);
+      _rms.push_back(kMAX_DOUBLE);
+    }
 
     _last_trig_time = 0;
     _last_frame_num = 0;
@@ -25,6 +53,10 @@ namespace larlite {
     _tree->Branch("_disc",&_disc,"disc/I");
     _tree->Branch("_adc_v","std::vector<unsigned short>",&_adc_v);
     _tree->Branch("_adcs",&_adcs,"adcs/I");
+    _tree->Branch("_amp",&_amp,"amp/I");
+    _tree->Branch("_rms_ch",&_rms_ch,"rms_ch/D");
+    _tree->Branch("_avg_ch",&_avg_ch,"avg_ch/D");
+    _tree->Branch("_first",&_first,"first/I");
     _tree->Branch("_ev_frame",&_ev_frame,"ev_frame/I");
     _tree->Branch("_frame_diff",&_frame_diff,"frame_diff/I");
 
@@ -34,16 +66,24 @@ namespace larlite {
     _trig_tree->Branch("_delta_t",&_delta_t,"delta_t/D");
     _trig_tree->Branch("_frame_diff",&_frame_diff,"frame_diff/I");
 
+    _rate_tree = new TTree("_rate_tree","Rateger Tree");
+    _rate_tree->Branch("_n20_windows_h","std::vector<unsigned short>",&_n20_windows_h);
+    _rate_tree->Branch("_n20_windows_l","std::vector<unsigned short>",&_n20_windows_l);
+    _rate_tree->Branch("_n1k_windows","std::vector<unsigned short>",&_n1k_windows);
+    _rate_tree->Branch("_rms_v","std::vector<double>",&_rms_v);
+    _rate_tree->Branch("_baseline_v","std::vector<double>",&_baseline_v);
+    _rate_tree->Branch("_ev",&_ev,"ev/I");
+
     return true;
   }
   
   bool CosmicDiscrimFIFO::analyze(storage_manager* storage) {
 
 
-    auto const trig    = storage->get_data<trigger>("daq");
-    auto const ev_fifo = storage->get_data<event_fifo>("pmtreadout");
 
-    if (!ev_fifo or !trig){
+    auto const ev_fifo = storage->get_data<event_fifo>(_fifo_producer);
+
+    if (!ev_fifo){
       std::cout << "nothing here..." << std::endl;
       return true;
     }
@@ -53,49 +93,155 @@ namespace larlite {
       return true;
     }
 
+    // resize windows for the number of PMTs we want
+    _n20_windows_h.clear();
+    _n20_windows_h.resize(32);
+    _n20_windows_l.clear();
+    _n20_windows_l.resize(32);
+    _n1k_windows.clear();
+    _n1k_windows.resize(32);
+    _rms_v.clear();
+    _rms_v.resize(32);
+    _baseline_v.clear();
+    _baseline_v.resize(32);
+
+    // if we want to use trigger
+    if (_use_trig){
+      auto const trig    = storage->get_data<trigger>(_trig_producer);
+      if (!trig){
+	std::cout << "nothing here..." << std::endl;
+	return true;
+      }
+      _trig_num = trig->TriggerNumber();
+      _trig_time = trig->TriggerTime();
+      _delta_t   = _trig_time-_last_trig_time;
+      _last_trig_time = _trig_time;
+      _trig_tree->Fill();
+    }// if we should use the trigger
+
+    // get event information
     _ev_frame = ev_fifo->event_frame_number();
     _frame_diff = _ev_frame - _last_frame_num;
     _last_frame_num = _ev_frame;
 
-    _trig_num = trig->TriggerNumber();
-    _trig_time = trig->TriggerTime();
-    _delta_t   = _trig_time-_last_trig_time;
-    _last_trig_time = _trig_time;
-    _trig_tree->Fill();
+    // find the 1500-sample window and use it to measure a baseline & rms value
+    for (size_t i=0; i < ev_fifo->size(); i++){
+
+      auto const& wf = ev_fifo->at(i);
+      
+      if (wf.module_address() != 5) continue;
+
+      _ch     = wf.channel_number();
+      if (_ch >= 32) continue;
+
+      if (wf.size() != 1000) continue;
+
+      _n1k_windows[_ch] += 1;
+
+      auto pedestal = GetBaselineRms(wf);
+      _baseline_v[_ch] = pedestal.first;
+      _rms_v[_ch] = pedestal.second;
+      if (pedestal.second < _rms[_ch]){
+	_baselines[_ch] = pedestal.first;
+	_rms[_ch]       = pedestal.second;
+      }// if we should update pedestal and rms
+    }// for all waveforms in the envet
 
 
-
+    if (_verbose){
+      std::cout << "Baselines: " << std::endl
+		<< "[";
+      for (auto pmt : _baseline_v)
+	std::cout << pmt << ", ";
+      std::cout << "]" << std::endl;
+      std::cout << "RMS: " << std::endl
+		<< "[";
+      for (auto pmt : _rms_v)
+	std::cout << pmt << ", ";
+      std::cout << "]" << std::endl;
+    }
 
     for (size_t i=0; i < ev_fifo->size(); i++){
 
       auto const& wf = ev_fifo->at(i);
 
+      if (wf.module_address() != 5) continue;
+
+      _adc_v.clear();
       _ch     = wf.channel_number();
+      if (_ch >= 32) continue;
       _disc   = wf.disc_id();
       _adcs   = wf.size();
-      _adc_v  = wf;
+
+      //if (_adcs != 20) continue;
+
       _frame  = wf.readout_frame_number();
       _sample = wf.readout_sample_number_RAW();
       _frame_diff = _frame-_ev_frame;
+
+      _rms_ch = _rms_v[_ch];
+      _avg_ch = _baseline_v[_ch];
+
+      _first = (int)wf[0];
+
+      _amp = _first;
+      for (auto& adc : wf)
+	if (adc > _amp) { _amp = (int)adc; }
+
+      // cut on amplitude of first tick
+      if ( fabs(_first-_baselines[_ch]) < 3*_rms[_ch] ){
+	if ((_amp-_baselines[_ch]) > _adc_thresh)
+	  _n20_windows_h[_ch] += 1;
+	else
+	  _n20_windows_l[_ch] += 1;
+      }
+
+      if (_save_wf)
+	_adc_v  = wf;
+
       _tree->Fill();
-      
+
     }// for all waveforms in event
 
     _ev += 1;
 
-    std::cout << "event: " << _ev << std::endl;
-  
+    _rate_tree->Fill();
+
     return true;
   }
 
   bool CosmicDiscrimFIFO::finalize() {
 
-    if (_fout and _tree)
-      _tree->Write();
-    if (_fout and _trig_tree)
-      _trig_tree->Write();
+    if (_fout){
+      if (_tree)
+	_tree->Write();
+      if (_trig_tree)
+	_trig_tree->Write();
+      if (_rate_tree)
+	_rate_tree->Write();
+    }
   
     return true;
+  }
+
+  std::pair<double,double> CosmicDiscrimFIFO::GetBaselineRms(const std::vector<unsigned short>& wf)
+  {
+
+    if (wf.size() == 0)
+      return std::pair<double,double>(kMAX_DOUBLE,kMAX_DOUBLE);
+
+    double avg = 0;
+    double rms = 0;
+    
+    for (auto adc : wf)
+      avg += adc;
+    avg /= (double)wf.size();
+
+    for (auto adc : wf)
+      rms += (adc-avg)*(adc-avg);
+    rms = sqrt( rms / ((double)wf.size() - 1) );
+    
+    return std::pair<double,double>(avg,rms);
   }
 
 }

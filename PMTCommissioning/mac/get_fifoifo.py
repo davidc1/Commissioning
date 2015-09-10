@@ -25,8 +25,14 @@ my_proc.set_io_mode(fmwk.storage_manager.kREAD)
 # Specify data output root file name
 my_proc.set_ana_output_file("opdetwf_tree.root")
 
-opdet = fmwk.CosmicDiscrimFIFO()
-my_proc.add_process(opdet)
+fifoana = fmwk.CosmicDiscrimFIFO()
+fifoana.SetTrigProducer('daq')
+fifoana.SetFifoProducer('pmt_xmit')
+fifoana.UseTrigger(False)
+fifoana.SaveWF(True)
+fifoana.SetVerbose(False)
+fifoana.SetADCThresh(40)
+my_proc.add_process(fifoana)
 my_proc.enable_event_alignment(False)
 
 print
