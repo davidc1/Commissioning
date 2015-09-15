@@ -25,6 +25,7 @@ namespace larlite {
     _trig_producer = "";
     _fifo_producer = "";
     _adc_thresh = 0;
+    _hg = true;
   }
 
   bool CosmicDiscrimFIFO::initialize() {
@@ -72,6 +73,23 @@ namespace larlite {
     _rate_tree->Branch("_n1k_windows","std::vector<unsigned short>",&_n1k_windows);
     _rate_tree->Branch("_rms_v","std::vector<double>",&_rms_v);
     _rate_tree->Branch("_baseline_v","std::vector<double>",&_baseline_v);
+    _rate_tree->Branch("_charge_v","std::vector<double>",&_charge_v);
+    _rate_tree->Branch("_pulses_03","std::vector<unsigned short>",&_pulses_03);
+    _rate_tree->Branch("_pulses_06","std::vector<unsigned short>",&_pulses_06);
+    _rate_tree->Branch("_pulses_09","std::vector<unsigned short>",&_pulses_09);
+    _rate_tree->Branch("_pulses_12","std::vector<unsigned short>",&_pulses_12);
+    _rate_tree->Branch("_pulses_15","std::vector<unsigned short>",&_pulses_15);
+    _rate_tree->Branch("_pulses_18","std::vector<unsigned short>",&_pulses_18);
+    _rate_tree->Branch("_pulses_21","std::vector<unsigned short>",&_pulses_21);
+    _rate_tree->Branch("_pulses_24","std::vector<unsigned short>",&_pulses_24);
+    _rate_tree->Branch("_pulses_27","std::vector<unsigned short>",&_pulses_27);
+    _rate_tree->Branch("_pulses_30","std::vector<unsigned short>",&_pulses_30);
+    _rate_tree->Branch("_pulses_33","std::vector<unsigned short>",&_pulses_33);
+    _rate_tree->Branch("_pulses_36","std::vector<unsigned short>",&_pulses_36);
+    _rate_tree->Branch("_pulses_39","std::vector<unsigned short>",&_pulses_39);
+    _rate_tree->Branch("_pulses_42","std::vector<unsigned short>",&_pulses_42);
+    _rate_tree->Branch("_pulses_45","std::vector<unsigned short>",&_pulses_45);
+    _rate_tree->Branch("_pulses_60","std::vector<unsigned short>",&_pulses_60);
     _rate_tree->Branch("_ev",&_ev,"ev/I");
 
     return true;
@@ -94,16 +112,7 @@ namespace larlite {
     }
 
     // resize windows for the number of PMTs we want
-    _n20_windows_h.clear();
-    _n20_windows_h.resize(32);
-    _n20_windows_l.clear();
-    _n20_windows_l.resize(32);
-    _n1k_windows.clear();
-    _n1k_windows.resize(32);
-    _rms_v.clear();
-    _rms_v.resize(32);
-    _baseline_v.clear();
-    _baseline_v.resize(32);
+    ClearVectors();
 
     // if we want to use trigger
     if (_use_trig){
@@ -129,7 +138,8 @@ namespace larlite {
 
       auto const& wf = ev_fifo->at(i);
       
-      if (wf.module_address() != 5) continue;
+      if ( (_hg == true)  &&  (wf.module_address() != 5) ) continue;
+      if ( (_hg == false) &&  (wf.module_address() == 5) ) continue;
 
       _ch     = wf.channel_number();
       if (_ch >= 32) continue;
@@ -141,6 +151,25 @@ namespace larlite {
       auto pedestal = GetBaselineRms(wf);
       _baseline_v[_ch] = pedestal.first;
       _rms_v[_ch] = pedestal.second;
+
+      // find and keep track of SPE pulses in beam-gate window
+      _pulses_03[_ch] = FindSPE(wf,pedestal.first,pedestal.second, 3);
+      _pulses_06[_ch] = FindSPE(wf,pedestal.first,pedestal.second, 6);
+      _pulses_09[_ch] = FindSPE(wf,pedestal.first,pedestal.second, 9);
+      _pulses_12[_ch] = FindSPE(wf,pedestal.first,pedestal.second,12);
+      _pulses_15[_ch] = FindSPE(wf,pedestal.first,pedestal.second,15);
+      _pulses_18[_ch] = FindSPE(wf,pedestal.first,pedestal.second,18);
+      _pulses_21[_ch] = FindSPE(wf,pedestal.first,pedestal.second,21);
+      _pulses_24[_ch] = FindSPE(wf,pedestal.first,pedestal.second,24);
+      _pulses_27[_ch] = FindSPE(wf,pedestal.first,pedestal.second,27);
+      _pulses_30[_ch] = FindSPE(wf,pedestal.first,pedestal.second,30);
+      _pulses_33[_ch] = FindSPE(wf,pedestal.first,pedestal.second,33);
+      _pulses_36[_ch] = FindSPE(wf,pedestal.first,pedestal.second,36);
+      _pulses_39[_ch] = FindSPE(wf,pedestal.first,pedestal.second,39);
+      _pulses_42[_ch] = FindSPE(wf,pedestal.first,pedestal.second,42);
+      _pulses_45[_ch] = FindSPE(wf,pedestal.first,pedestal.second,45);
+      _pulses_60[_ch] = FindSPE(wf,pedestal.first,pedestal.second,60);
+
       if (pedestal.second < _rms[_ch]){
 	_baselines[_ch] = pedestal.first;
 	_rms[_ch]       = pedestal.second;
@@ -165,7 +194,8 @@ namespace larlite {
 
       auto const& wf = ev_fifo->at(i);
 
-      if (wf.module_address() != 5) continue;
+      if ( (_hg == true)  &&  (wf.module_address() != 5) ) continue;
+      if ( (_hg == false) &&  (wf.module_address() == 5) ) continue;
 
       _adc_v.clear();
       _ch     = wf.channel_number();
@@ -190,8 +220,11 @@ namespace larlite {
 
       // cut on amplitude of first tick
       if ( fabs(_first-_baselines[_ch]) < 3*_rms[_ch] ){
-	if ((_amp-_baselines[_ch]) > _adc_thresh)
+	if ((_amp-_baselines[_ch]) > _adc_thresh){
+	  // baseline subtraction
 	  _n20_windows_h[_ch] += 1;
+	  _charge_v[_ch] += _amp-_baselines[_ch];
+	}
 	else
 	  _n20_windows_l[_ch] += 1;
       }
@@ -243,6 +276,87 @@ namespace larlite {
     
     return std::pair<double,double>(avg,rms);
   }
+  
+  unsigned short CosmicDiscrimFIFO::FindSPE(const std::vector<unsigned short>& wf,
+					    const double& avg, const double& rms,
+					    const double& thresh)
+  {
+    
+    bool active = false;
+    double max  = kMIN_DOUBLE;
+    
+    unsigned short pulses = 0;
+
+    for (auto adc : wf){
+      
+      if ( (adc-avg) > thresh){
+	active = true;
+	if ( (adc-avg) > max) max = (adc-avg);
+      }// if in pulse region
+      else{
+	if (active == true){
+	  pulses += 1;
+	  max = kMIN_DOUBLE;
+	  active = false;
+	}// if previously in active region
+      }// if not in pulse region
+
+    }// for all ADCs
+
+    //std::cout << "found " << pulses << " pulses w/ " << thresh << "threshold!" << std::endl;
+    return pulses;
+  }
+
+  void CosmicDiscrimFIFO::ClearVectors()
+  {
+    _n20_windows_h.clear();
+    _n20_windows_h.resize(32);
+    _n20_windows_l.clear();
+    _n20_windows_l.resize(32);
+    _n1k_windows.clear();
+    _n1k_windows.resize(32);
+    _rms_v.clear();
+    _rms_v.resize(32);
+    _baseline_v.clear();
+    _baseline_v.resize(32);
+    _charge_v.clear();
+    _charge_v.resize(32);
+    _pulses_03.clear();
+    _pulses_03.resize(32);
+    _pulses_06.clear();
+    _pulses_06.resize(32);
+    _pulses_09.clear();
+    _pulses_09.resize(32);
+    _pulses_12.clear();
+    _pulses_12.resize(32);
+    _pulses_15.clear();
+    _pulses_15.resize(32);
+    _pulses_18.clear();
+    _pulses_18.resize(32);
+    _pulses_21.clear();
+    _pulses_21.resize(32);
+    _pulses_24.clear();
+    _pulses_24.resize(32);
+    _pulses_27.clear();
+    _pulses_27.resize(32);
+    _pulses_30.clear();
+    _pulses_30.resize(32);
+    _pulses_33.clear();
+    _pulses_33.resize(32);
+    _pulses_36.clear();
+    _pulses_36.resize(32);
+    _pulses_39.clear();
+    _pulses_39.resize(32);
+    _pulses_42.clear();
+    _pulses_42.resize(32);
+    _pulses_45.clear();
+    _pulses_45.resize(32);
+    _pulses_60.clear();
+    _pulses_60.resize(32);
+
+    return;
+  }
+
 
 }
 #endif

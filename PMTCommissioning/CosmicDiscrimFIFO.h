@@ -66,6 +66,8 @@ namespace larlite {
     void SetFifoProducer(std::string s) { _fifo_producer = s; }
     // set ADC threshold (wf counted only if within the 20-sample window the ADC goes above that range)
     void SetADCThresh(short adc) { _adc_thresh = adc; }
+    // set whether to use HG or LG
+    void SetUseHG(bool on) { _hg = on; }
 
     // verbosity
     void SetVerbose(bool on) { _verbose = on; }
@@ -90,9 +92,20 @@ namespace larlite {
     // rms vector -> holds best RMS found per PMT
     std::vector<double> _rms;
 
+    // use HG or LG?
+    bool _hg;
+
     // function to get baseline and rms
     std::pair<double,double> GetBaselineRms(const std::vector<unsigned short>& wf);
 
+    // function to find SPE pulses in beam-gate window
+    unsigned short FindSPE(const std::vector<unsigned short>& wf,
+			   const double& avg, const double& rms,
+			   const double& thresh);
+
+    // clear tree vectors
+    void ClearVectors();
+      
     TTree* _trig_tree;
     int _trig_num;
     double _trig_time;
@@ -119,8 +132,25 @@ namespace larlite {
     std::vector<unsigned short> _n20_windows_l;
     std::vector<unsigned short> _n20_windows_h;
     std::vector<unsigned short> _n1k_windows;
+    std::vector<unsigned short> _pulses_03;
+    std::vector<unsigned short> _pulses_06;
+    std::vector<unsigned short> _pulses_09;
+    std::vector<unsigned short> _pulses_12;
+    std::vector<unsigned short> _pulses_15;
+    std::vector<unsigned short> _pulses_18;
+    std::vector<unsigned short> _pulses_21;
+    std::vector<unsigned short> _pulses_24;
+    std::vector<unsigned short> _pulses_27;
+    std::vector<unsigned short> _pulses_30;
+    std::vector<unsigned short> _pulses_33;
+    std::vector<unsigned short> _pulses_36;
+    std::vector<unsigned short> _pulses_39;
+    std::vector<unsigned short> _pulses_42;
+    std::vector<unsigned short> _pulses_45;
+    std::vector<unsigned short> _pulses_60;
     std::vector<double> _rms_v;
     std::vector<double> _baseline_v;
+    std::vector<double> _charge_v; // per PMT, sum of amplitude of pulses in 20-tick windows seen in each event
     
   };
 }
