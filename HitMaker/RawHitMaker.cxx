@@ -25,8 +25,6 @@ namespace larlite {
   
   bool RawHitMaker::analyze(storage_manager* storage) {
 
-    std::cout << "hi" << std::endl;
-
     // read in RawDigits
     auto const ev_wf   = storage->get_data<event_rawdigit>(_producer);
     // create Hits
@@ -61,6 +59,7 @@ namespace larlite {
 	auto const pl   = larutil::Geometry::GetME()->ChannelToPlane(ch);
 	auto const sigt = larutil::Geometry::GetME()->SignalType(ch);
 	auto wire       = larutil::Geometry::GetME()->ChannelToWireID(ch);
+	/*
 	if (pl == 2){
 	  int wireAnchor = wire.Wire - (wire.Wire % 32);
 	  auto wnum = wireAnchor + 32 - (wire.Wire % 32) - 1;
@@ -69,7 +68,7 @@ namespace larlite {
 	  wire = wire2;
 	  ch = larutil::Geometry::GetME()->PlaneWireToChannel(2,wire.Wire);
 	}
-
+	*/
 
 	h.set_channel(ch);
 	h.set_view(view);
