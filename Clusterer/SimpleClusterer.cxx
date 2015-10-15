@@ -166,8 +166,8 @@ namespace larlite {
       }// if there are 2 hits in cluster
     }
     
-    std::cout << "number of clusters: " << _clusters.size() << std::endl;
-    std::cout << "number of clusters: " << cluster_vector.size() << std::endl;
+    //std::cout << "number of clusters: " << _clusters.size() << std::endl;
+    //std::cout << "number of clusters: " << cluster_vector.size() << std::endl;
     
     // vector for assocaitions
     std::vector<std::vector<unsigned int> > _cluster_hit_ass;
@@ -181,8 +181,8 @@ namespace larlite {
       }
     }
     
-    std::cout << "number of larlite clusters: " << ev_clusters->size() << std::endl;
-    std::cout << "number of clusters to be saved: " << _cluster_hit_ass.size() << std::endl;
+    //std::cout << "number of larlite clusters: " << ev_clusters->size() << std::endl;
+    //std::cout << "number of clusters to be saved: " << _cluster_hit_ass.size() << std::endl;
     cluster_ass_v->set_association(ev_clusters->id(),product_id(data::kHit,evt_hits->name()),_cluster_hit_ass);    
 
     return true;
