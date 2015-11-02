@@ -16,6 +16,7 @@
 #define LARLITE_PADDLETRACKFILTER_H
 
 #include "Analysis/ana_base.h"
+#include "GeoAlgo/GeoAlgo.h"
 
 namespace larlite {
   /**
