@@ -101,7 +101,8 @@ namespace larlite {
     // function to find SPE pulses in beam-gate window
     unsigned short FindSPE(const std::vector<unsigned short>& wf,
 			   const double& avg, const double& rms,
-			   const double& thresh);
+			   const double& thresh,
+			   const int& deadtime=0);
 
     // clear tree vectors
     void ClearVectors();
@@ -135,6 +136,7 @@ namespace larlite {
     std::vector<unsigned short> _pulses_03;
     std::vector<unsigned short> _pulses_06;
     std::vector<unsigned short> _pulses_09;
+    std::vector<double> _areas_09;
     std::vector<unsigned short> _pulses_12;
     std::vector<unsigned short> _pulses_15;
     std::vector<unsigned short> _pulses_18;
@@ -148,6 +150,7 @@ namespace larlite {
     std::vector<unsigned short> _pulses_42;
     std::vector<unsigned short> _pulses_45;
     std::vector<unsigned short> _pulses_60;
+    std::vector<unsigned short> _pulses_100;
     std::vector<double> _rms_v;
     std::vector<double> _baseline_v;
     std::vector<double> _charge_v; // per PMT, sum of amplitude of pulses in 20-tick windows seen in each event

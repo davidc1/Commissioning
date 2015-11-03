@@ -12,38 +12,51 @@ from ROOT import gSystem,TMath
 from ROOT import larlite as fmwk
 from ROOT import larutil
 
-# Create ana_processor instance
-my_proc = fmwk.ana_processor()
+
 
 # Set input root file
 for x in xrange(len(sys.argv)-1):
-    my_proc.add_input_file(sys.argv[x+1])
 
-# Specify IO mode
-my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
+    # Create ana_processor instance
+    my_proc = fmwk.ana_processor()
 
-# Specify analysis output root file name
-my_proc.set_ana_output_file("");
+    fname = sys.argv[x+1]
 
-# Specify data output root file name
-my_proc.set_output_file("rawdigit_clusters.root")
+    run = int(fname[fname.find('run_')+4:fname.find('run_')+11])
+    subrun = int(fname[fname.find('subrun_')+7:fname.find('subrun_')+12])
 
-clusterer = fmwk.SimpleClusterer()
-clusterer.setVerbose(True)
+    print 'run: %i, subrun: %i'%(run,subrun)
 
-my_proc.add_process(clusterer)
+    my_proc.add_input_file(fname)
 
-#my_proc.set_data_to_write(fmwk.data.kHit,'rawhit')
-#my_proc.set_data_to_write(fmwk.data.kRawDigit,'daq')
+    # Specify IO mode
+    my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
+
+    # Specify analysis output root file name
+    my_proc.set_ana_output_file("");
+
+    # Specify data output root file name
+    my_proc.set_output_file("larlite_rawclusters_run_%05i_subrun_%05i.root"%(run,subrun))
+
+    clusterer = fmwk.SimpleClusterer()
+    #clusterer.setHitProducer('rawhit')
+    #clusterer.setHitProducer('cchit')
+    clusterer.setHitProducer('cchit')
+    clusterer.setVerbose(True)
+    
+    my_proc.add_process(clusterer)
+    
+    my_proc.set_data_to_write(fmwk.data.kHit,'cchit')
+    my_proc.set_data_to_write(fmwk.data.kCluster,'rawcluster')
+    my_proc.set_data_to_write(fmwk.data.kAssociation,'rawcluster')
 
 
 
-print
-print  "Finished configuring ana_processor. Start event loop!"
-print
-
-my_proc.run(0,10)
-#my_proc.run()
+    print
+    print  "Finished configuring ana_processor. Start event loop!"
+    print
+    
+    my_proc.run()
 
 sys.exit()
 

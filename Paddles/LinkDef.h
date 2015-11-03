@@ -9,9 +9,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class larlite::SimpleClusterer+;
-#pragma link C++ class larlite::MakeClusterPolygon+;
+#pragma link C++ class larlite::PaddleTrackFilter+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
-
 

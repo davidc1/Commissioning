@@ -77,6 +77,7 @@ namespace larlite {
     _rate_tree->Branch("_pulses_03","std::vector<unsigned short>",&_pulses_03);
     _rate_tree->Branch("_pulses_06","std::vector<unsigned short>",&_pulses_06);
     _rate_tree->Branch("_pulses_09","std::vector<unsigned short>",&_pulses_09);
+    _rate_tree->Branch("_areas_09","std::vector<double>",&_areas_09);
     _rate_tree->Branch("_pulses_12","std::vector<unsigned short>",&_pulses_12);
     _rate_tree->Branch("_pulses_15","std::vector<unsigned short>",&_pulses_15);
     _rate_tree->Branch("_pulses_18","std::vector<unsigned short>",&_pulses_18);
@@ -90,6 +91,7 @@ namespace larlite {
     _rate_tree->Branch("_pulses_42","std::vector<unsigned short>",&_pulses_42);
     _rate_tree->Branch("_pulses_45","std::vector<unsigned short>",&_pulses_45);
     _rate_tree->Branch("_pulses_60","std::vector<unsigned short>",&_pulses_60);
+    _rate_tree->Branch("_pulses_100","std::vector<unsigned short>",&_pulses_100);
     _rate_tree->Branch("_ev",&_ev,"ev/I");
 
     return true;
@@ -169,6 +171,7 @@ namespace larlite {
       _pulses_42[_ch] = FindSPE(wf,pedestal.first,pedestal.second,42);
       _pulses_45[_ch] = FindSPE(wf,pedestal.first,pedestal.second,45);
       _pulses_60[_ch] = FindSPE(wf,pedestal.first,pedestal.second,60);
+      _pulses_100[_ch] = FindSPE(wf,pedestal.first,pedestal.second,100,281);
 
       if (pedestal.second < _rms[_ch]){
 	_baselines[_ch] = pedestal.first;
@@ -279,23 +282,35 @@ namespace larlite {
   
   unsigned short CosmicDiscrimFIFO::FindSPE(const std::vector<unsigned short>& wf,
 					    const double& avg, const double& rms,
-					    const double& thresh)
+					    const double& thresh,
+					    const int& deadtime)
   {
     
     bool active = false;
     double max  = kMIN_DOUBLE;
     
     unsigned short pulses = 0;
+    int time = 0;
+    int lasttime = 0;
 
+    int cntr = 0;
     for (auto adc : wf){
+
+      cntr += 1;
       
       if ( (adc-avg) > thresh){
 	active = true;
-	if ( (adc-avg) > max) max = (adc-avg);
+	if ( (adc-avg) > max){
+	  max = (adc-avg);
+	  time = cntr;
+	}
       }// if in pulse region
       else{
 	if (active == true){
-	  pulses += 1;
+	  if ( (time-lasttime) > deadtime){
+	    pulses += 1;
+	    lasttime = time;
+	  }
 	  max = kMIN_DOUBLE;
 	  active = false;
 	}// if previously in active region
@@ -353,6 +368,8 @@ namespace larlite {
     _pulses_45.resize(32);
     _pulses_60.clear();
     _pulses_60.resize(32);
+    _pulses_100.clear();
+    _pulses_100.resize(32);
 
     return;
   }
