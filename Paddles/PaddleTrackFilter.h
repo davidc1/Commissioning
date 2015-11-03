@@ -17,6 +17,9 @@
 
 #include "Analysis/ana_base.h"
 #include "GeoAlgo/GeoAlgo.h"
+#include "LArUtil/Geometry.h"
+#include "TTree.h"
+
 
 namespace larlite {
   /**
@@ -28,7 +31,9 @@ namespace larlite {
   public:
 
     /// Default constructor
-    PaddleTrackFilter(){ _name="PaddleTrackFilter"; _fout=0;}
+    PaddleTrackFilter()
+      : _tree(nullptr)
+      { _name="PaddleTrackFilter"; _fout=0;}
 
     /// Default destructor
     virtual ~PaddleTrackFilter(){}
@@ -49,6 +54,25 @@ namespace larlite {
     virtual bool finalize();
 
   protected:
+    
+    TTree* _tree;
+    
+    size_t _n_ev_reco;
+
+    int _n_intersections_FV;
+    int _n_intersections_mucs_top;
+    int _n_intersections_mucs_bottom;
+    
+    double _length_xfiducial;
+    double _length_yfiducial;
+    double _length_zfiducial;
+    
+    ::geoalgo::GeoAlgo _geoAlgo;
+    
+    ::geoalgo::AABox _vfiducial;
+    ::geoalgo::AABox _vmucs_top;
+    ::geoalgo::AABox _vmucs_bottom;
+    
     
   };
 }
