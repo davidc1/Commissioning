@@ -36,7 +36,6 @@ namespace larlite {
     for (size_t i=0; i < ev_reco->size(); i++){
       
       auto const& trk = ev_reco->at(i);
-      
       std::cout << "this track has " << trk.NumberTrajectoryPoints() << " steps" << std::endl;
       
       if (trk.NumberTrajectoryPoints() > 1){
@@ -48,8 +47,7 @@ namespace larlite {
 
 	  auto const& pos = trk.LocationAtPoint(pt);
 	  
-	  trj.push_back(::geoalgo::Vector(pos[0],pos[1],pos[2]));
-
+	  trj.push_back(::geoalgo::Vector(pos[0],pos[1],pos[2]));	  	  
 	}// for all points in track
 	
 	std::cout << "the total track length is " << trj.Length() << std::endl;
