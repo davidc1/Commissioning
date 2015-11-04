@@ -30,13 +30,13 @@ namespace larlite {
     
     auto ev_reco = storage->get_data<event_track>("trackkalmanhit");
     if(!ev_reco){
-      std::cout<<"........Couldn't find reco track data product in this event...... "<<std::endl;
+      //std::cout<<"........Couldn't find reco track data product in this event...... "<<std::endl;
     }
 
     for (size_t i=0; i < ev_reco->size(); i++){
       
       auto const& trk = ev_reco->at(i);
-      std::cout << "this track has " << trk.NumberTrajectoryPoints() << " steps" << std::endl;
+      //std::cout << "this track has " << trk.NumberTrajectoryPoints() << " steps" << std::endl;
       
       if (trk.NumberTrajectoryPoints() > 1){
 
@@ -50,14 +50,12 @@ namespace larlite {
 	  trj.push_back(::geoalgo::Vector(pos[0],pos[1],pos[2]));	  	  
 	}// for all points in track
 	
-	std::cout << "the total track length is " << trj.Length() << std::endl;
+	//std::cout << "the total track length is " << trj.Length() << std::endl;
 	
 	// make a HalfLine that starts at the beginning of the track and points
 	// backwards in the track direction:
 	
 	::geoalgo::HalfLine trj_prj(trj[0], trj[0]-trj[trj.size()-1]);
-
-	std::cout<<trj[0]<<std::endl;
 	
 	auto const& intersections_trj     = _geoAlgo.Intersection(_vfiducial,trj);
 	auto const& intersections_trj_prj_bottom = _geoAlgo.Intersection(_vmucs_bottom,trj_prj);
@@ -65,15 +63,18 @@ namespace larlite {
 	
 	if (intersections_trj.size() > 0){
 	  _n_intersections_FV++;
-	  std::cout << "this track intersects the Fiducial Volume!" << std::endl;}
+	  //std::cout << "this track intersects the Fiducial Volume!" << std::endl;
+	}
 	if (intersections_trj_prj_bottom.size() > 0){
 	  _n_intersections_mucs_top++;
-	  std::cout << "this track's projection backwards intersects the MuCS Bottom" << std::endl;}
+	  //std::cout << "this track's projection backwards intersects the MuCS Bottom" << std::endl;
+	}
 	if (intersections_trj_prj_top.size() > 0){
 	  _n_intersections_mucs_bottom++;
-	  std::cout << "this track's projection backwards intersects the MuCS Top" << std::endl;}
+	  //std::cout << "this track's projection backwards intersects the MuCS Top" << std::endl;
+	}
 	
-	std::cout << std::endl;
+	  //std::cout << std::endl;
 	
 	
       }// if there are at least 2 points in the track
