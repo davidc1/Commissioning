@@ -19,6 +19,8 @@ namespace larlite {
     _vmucs_top = ::geoalgo::AABox(-71.795, 398.351, 531.45, -23.695, 398.451, 579.45);
     _vmucs_bottom= ::geoalgo::AABox(-19.6948, 320.05, 533.25, 28.3052, 320.15, 581.25);
 
+    _n_evt = 0;
+    _n_tracks =0;
     _n_intersections_FV = 0;
     _n_intersections_mucs_top = 0;
     _n_intersections_mucs_bottom = 0;
@@ -27,6 +29,8 @@ namespace larlite {
   }
   
   bool PaddleTrackFilter::analyze(storage_manager* storage) {
+    
+    _n_evt++;
     
     auto ev_reco = storage->get_data<event_track>("trackkalmanhit");
     if(!ev_reco){
@@ -37,6 +41,7 @@ namespace larlite {
       
       auto const& trk = ev_reco->at(i);
       //std::cout << "this track has " << trk.NumberTrajectoryPoints() << " steps" << std::endl;
+      _n_tracks++;
       
       if (trk.NumberTrajectoryPoints() > 1){
 
@@ -66,11 +71,11 @@ namespace larlite {
 	  //std::cout << "this track intersects the Fiducial Volume!" << std::endl;
 	}
 	if (intersections_trj_prj_bottom.size() > 0){
-	  _n_intersections_mucs_top++;
+	  _n_intersections_mucs_bottom++;
 	  //std::cout << "this track's projection backwards intersects the MuCS Bottom" << std::endl;
 	}
 	if (intersections_trj_prj_top.size() > 0){
-	  _n_intersections_mucs_bottom++;
+	  _n_intersections_mucs_top++;
 	  //std::cout << "this track's projection backwards intersects the MuCS Top" << std::endl;
 	}
 	
@@ -88,6 +93,7 @@ namespace larlite {
 
     if(_tree)
       _tree->Write();
+    std::cout<<_n_tracks<<"tracks found in "<<_n_evt<<" events"<<std::endl;
     std::cout<<"track intersections with FV: "<<_n_intersections_FV<<std::endl;
     std::cout<<"track intersections with MuCS Bottome Detector: "<<_n_intersections_mucs_bottom<<std::endl;
     std::cout<<"track intersections with MuCS Top Detector: "<<_n_intersections_mucs_top<<std::endl;
