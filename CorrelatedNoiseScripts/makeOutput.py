@@ -32,9 +32,9 @@ ana_unit=evd.DrawRawDigit()
 
 ana_unit.SetCorrectData(True)
 ana_unit.SetSaveData(True)
-ana_unit.SetStepSizeByPlane(2*48,0)
-ana_unit.SetStepSizeByPlane(2*48,1)
-ana_unit.SetStepSizeByPlane(2*96,2)
+ana_unit.SetStepSizeByPlane(48,0)
+ana_unit.SetStepSizeByPlane(48,1)
+ana_unit.SetStepSizeByPlane(96,2)
 
 my_proc.add_process(ana_unit)
 
@@ -45,5 +45,5 @@ print
 print  "Finished configuring ana_processor. Start event loop!"
 print
 
-my_proc.run(0,10)
+my_proc.run(0)
 # my_proc.process_event(2)

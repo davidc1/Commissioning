@@ -141,7 +141,7 @@ plt.axhline(divs[0]+divs[1]-0.5)
 plt.axvline(divs[0]+divs[1]-0.5)
 
 # Compare these waveforms:
-blocks = [10,17,10]
+blocks = [2*10,2*17,2*10]
 
 # Add arrows to show which wires we're using
 arrow_length=8
@@ -203,7 +203,7 @@ freqs2 = numpy.fft.rfftfreq(len(waveform2),0.5E-3)
 
 
 plt.xlabel("kHz")
-plt.plot(freqs0,numpy.absolute(fft0),label="U Wires FFT",color="b")
+# plt.plot(freqs0,numpy.absolute(fft0),label="U Wires FFT",color="b")
 plt.plot(freqs1,numpy.absolute(fft1),label="V Wires FFT",color="g")
 plt.plot(freqs2,numpy.absolute(fft2),label="Y Wires FFT",color="r")
 ax2.get_yaxis().set_ticks([])

@@ -59,6 +59,8 @@ namespace larlite {
     
     size_t _n_ev_reco;
 
+    int _n_evt;
+    int _n_tracks;
     int _n_intersections_FV;
     int _n_intersections_mucs_top;
     int _n_intersections_mucs_bottom;
