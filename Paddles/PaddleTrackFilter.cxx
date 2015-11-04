@@ -59,28 +59,42 @@ bool PaddleTrackFilter::analyze(storage_manager* storage) {
       // backwards in the track direction:
 
       ::geoalgo::HalfLine trj_prj_start(trj[0], trk.DirectionAtPoint(0));
+      ::geoalgo::HalfLine trj_prj_Negstart(trj[0], -trk.DirectionAtPoint(0));
       ::geoalgo::HalfLine trj_prj_end(trj.back(), trk.EndDirection());
+      ::geoalgo::HalfLine trj_prj_Negend(trj.back(), -trk.EndDirection());
 
       std::cout << trj[0] << std::endl;
 
       auto const& intersections_trj_start     = _geoAlgo.Intersection(_vfiducial, trj);
       auto const& intersections_trj_prj_bottom_start = _geoAlgo.Intersection(_vmucs_bottom, trj_prj_start);
       auto const& intersections_trj_prj_top_start = _geoAlgo.Intersection(_vmucs_top, trj_prj_start);
+      
+      auto const& intersections_trj_Negstart     = _geoAlgo.Intersection(_vfiducial, trj);
+      auto const& intersections_trj_prj_bottom_Negstart = _geoAlgo.Intersection(_vmucs_bottom, trj_prj_Negstart);
+      auto const& intersections_trj_prj_top_Negstart = _geoAlgo.Intersection(_vmucs_top, trj_prj_Negstart);
 
       auto const& intersections_trj_end     = _geoAlgo.Intersection(_vfiducial, trj);
       auto const& intersections_trj_prj_bottom_end = _geoAlgo.Intersection(_vmucs_bottom, trj_prj_end);
       auto const& intersections_trj_prj_top_end = _geoAlgo.Intersection(_vmucs_top, trj_prj_end);
+      
+      auto const& intersections_trj_Negend     = _geoAlgo.Intersection(_vfiducial, trj);
+      auto const& intersections_trj_prj_bottom_Negend = _geoAlgo.Intersection(_vmucs_bottom, trj_prj_Negend);
+      auto const& intersections_trj_prj_top_Negend = _geoAlgo.Intersection(_vmucs_top, trj_prj_Negend);
 
 
-      if (intersections_trj_start.size() > 0 || intersections_trj_end.size() > 0 ) {
+      if (intersections_trj_start.size() > 0 || intersections_trj_end.size() > 0 || intersections_trj_Negstart.size() > 0 ||
+           intersections_trj_Negend.size() > 0) {
         _n_intersections_FV++;
         std::cout << "this track intersects the Fiducial Volume!" << std::endl;
       }
-      if (intersections_trj_prj_bottom_start.size() > 0 || intersections_trj_prj_bottom_end.size() > 0) {
+      if (intersections_trj_prj_bottom_start.size() > 0 || intersections_trj_prj_bottom_end.size() > 0 ||
+          intersections_trj_prj_bottom_Negstart.size() > 0 || intersections_trj_prj_bottom_Negend.size() > 0) {
         _n_intersections_mucs_top++;
         std::cout << "this track's projection backwards intersects the MuCS Bottom" << std::endl;
       }
-      if (intersections_trj_prj_top_start.size() > 0 || intersections_trj_prj_top_end.size() > 0) {
+      
+      if (intersections_trj_prj_top_start.size() > 0 || intersections_trj_prj_top_end.size() > 0 ||
+          intersections_trj_prj_top_Negstart.size() > 0 || intersections_trj_prj_top_Negend.size() > 0) {
         _n_intersections_mucs_bottom++;
         std::cout << "this track's projection backwards intersects the MuCS Top" << std::endl;
       }
