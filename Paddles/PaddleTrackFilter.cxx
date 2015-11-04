@@ -19,6 +19,8 @@ namespace larlite {
     _vmucs_top = ::geoalgo::AABox(-71.795, 398.351, 531.45, -23.695, 398.451, 579.45);
     _vmucs_bottom= ::geoalgo::AABox(-19.6948, 320.05, 533.25, 28.3052, 320.15, 581.25);
 
+    _n_evt = 0;
+    _n_tracks =0;
     _n_intersections_FV = 0;
     _n_intersections_mucs_top = 0;
     _n_intersections_mucs_bottom = 0;
@@ -28,15 +30,18 @@ namespace larlite {
   
   bool PaddleTrackFilter::analyze(storage_manager* storage) {
     
+    _n_evt++;
+    
     auto ev_reco = storage->get_data<event_track>("trackkalmanhit");
     if(!ev_reco){
-      std::cout<<"........Couldn't find reco track data product in this event...... "<<std::endl;
+      //std::cout<<"........Couldn't find reco track data product in this event...... "<<std::endl;
     }
 
     for (size_t i=0; i < ev_reco->size(); i++){
       
       auto const& trk = ev_reco->at(i);
-      std::cout << "this track has " << trk.NumberTrajectoryPoints() << " steps" << std::endl;
+      //std::cout << "this track has " << trk.NumberTrajectoryPoints() << " steps" << std::endl;
+      _n_tracks++;
       
       if (trk.NumberTrajectoryPoints() > 1){
 
@@ -50,14 +55,12 @@ namespace larlite {
 	  trj.push_back(::geoalgo::Vector(pos[0],pos[1],pos[2]));	  	  
 	}// for all points in track
 	
-	std::cout << "the total track length is " << trj.Length() << std::endl;
+	//std::cout << "the total track length is " << trj.Length() << std::endl;
 	
 	// make a HalfLine that starts at the beginning of the track and points
 	// backwards in the track direction:
 	
 	::geoalgo::HalfLine trj_prj(trj[0], trj[0]-trj[trj.size()-1]);
-
-	std::cout<<trj[0]<<std::endl;
 	
 	auto const& intersections_trj     = _geoAlgo.Intersection(_vfiducial,trj);
 	auto const& intersections_trj_prj_bottom = _geoAlgo.Intersection(_vmucs_bottom,trj_prj);
@@ -65,15 +68,18 @@ namespace larlite {
 	
 	if (intersections_trj.size() > 0){
 	  _n_intersections_FV++;
-	  std::cout << "this track intersects the Fiducial Volume!" << std::endl;}
+	  //std::cout << "this track intersects the Fiducial Volume!" << std::endl;
+	}
 	if (intersections_trj_prj_bottom.size() > 0){
-	  _n_intersections_mucs_top++;
-	  std::cout << "this track's projection backwards intersects the MuCS Bottom" << std::endl;}
-	if (intersections_trj_prj_top.size() > 0){
 	  _n_intersections_mucs_bottom++;
-	  std::cout << "this track's projection backwards intersects the MuCS Top" << std::endl;}
+	  //std::cout << "this track's projection backwards intersects the MuCS Bottom" << std::endl;
+	}
+	if (intersections_trj_prj_top.size() > 0){
+	  _n_intersections_mucs_top++;
+	  //std::cout << "this track's projection backwards intersects the MuCS Top" << std::endl;
+	}
 	
-	std::cout << std::endl;
+	  //std::cout << std::endl;
 	
 	
       }// if there are at least 2 points in the track
@@ -87,6 +93,7 @@ namespace larlite {
 
     if(_tree)
       _tree->Write();
+    std::cout<<_n_tracks<<"tracks found in "<<_n_evt<<" events"<<std::endl;
     std::cout<<"track intersections with FV: "<<_n_intersections_FV<<std::endl;
     std::cout<<"track intersections with MuCS Bottome Detector: "<<_n_intersections_mucs_bottom<<std::endl;
     std::cout<<"track intersections with MuCS Top Detector: "<<_n_intersections_mucs_top<<std::endl;
