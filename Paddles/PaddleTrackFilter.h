@@ -53,6 +53,13 @@ namespace larlite {
     */
     virtual bool finalize();
 
+    // getter function for TPC volume
+    ::geoalgo::AABox getFiducialVol() { return _vfiducial; }
+    // getter function for top MCS
+    ::geoalgo::AABox getTopMuCS() { return _vmucs_top; }
+    // getter function for bottom MCS
+    ::geoalgo::AABox getBottomMuCS() { return _vmucs_bottom; }
+
   protected:
     
     TTree* _tree;

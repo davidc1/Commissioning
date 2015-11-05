@@ -63,7 +63,7 @@ bool PaddleTrackFilter::analyze(storage_manager* storage) {
       ::geoalgo::HalfLine trj_prj_end(trj.back(), trk.EndDirection());
       ::geoalgo::HalfLine trj_prj_Negend(trj.back(), -trk.EndDirection());
 
-      std::cout << trj[0] << std::endl;
+      //std::cout << trj[0] << std::endl;
 
       auto const& intersections_trj_start     = _geoAlgo.Intersection(_vfiducial, trj);
       auto const& intersections_trj_prj_bottom_start = _geoAlgo.Intersection(_vmucs_bottom, trj_prj_start);
@@ -85,21 +85,21 @@ bool PaddleTrackFilter::analyze(storage_manager* storage) {
       if (intersections_trj_start.size() > 0 || intersections_trj_end.size() > 0 || intersections_trj_Negstart.size() > 0 ||
            intersections_trj_Negend.size() > 0) {
         _n_intersections_FV++;
-        std::cout << "this track intersects the Fiducial Volume!" << std::endl;
+        //std::cout << "this track intersects the Fiducial Volume!" << std::endl;
       }
       if (intersections_trj_prj_bottom_start.size() > 0 || intersections_trj_prj_bottom_end.size() > 0 ||
           intersections_trj_prj_bottom_Negstart.size() > 0 || intersections_trj_prj_bottom_Negend.size() > 0) {
         _n_intersections_mucs_top++;
-        std::cout << "this track's projection backwards intersects the MuCS Bottom" << std::endl;
+        //std::cout << "this track's projection backwards intersects the MuCS Bottom" << std::endl;
       }
       
       if (intersections_trj_prj_top_start.size() > 0 || intersections_trj_prj_top_end.size() > 0 ||
           intersections_trj_prj_top_Negstart.size() > 0 || intersections_trj_prj_top_Negend.size() > 0) {
         _n_intersections_mucs_bottom++;
-        std::cout << "this track's projection backwards intersects the MuCS Top" << std::endl;
+        //std::cout << "this track's projection backwards intersects the MuCS Top" << std::endl;
       }
 
-      std::cout << std::endl;
+      //std::cout << std::endl;
 
 
     }// if there are at least 2 points in the track
