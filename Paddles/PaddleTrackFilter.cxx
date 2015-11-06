@@ -30,6 +30,8 @@ bool PaddleTrackFilter::analyze(storage_manager* storage) {
 
   _n_evt++;
 
+  _trj.clear();
+
   auto ev_reco = storage->get_data<event_track>("trackkalmanhit");
   if (!ev_reco) {
     //std::cout<<"........Couldn't find reco track data product in this event...... "<<std::endl;
@@ -40,7 +42,7 @@ bool PaddleTrackFilter::analyze(storage_manager* storage) {
     auto const& trk = ev_reco->at(i);
     //std::cout << "this track has " << trk.NumberTrajectoryPoints() << " steps" << std::endl;
     _n_tracks++;
-
+    
     if (trk.NumberTrajectoryPoints() > 1) {
 
       // a geoalgo::Trajectory
@@ -52,9 +54,9 @@ bool PaddleTrackFilter::analyze(storage_manager* storage) {
 
         trj.push_back(::geoalgo::Vector(pos[0], pos[1], pos[2]));
       }// for all points in track
-
+      
       //std::cout << "the total track length is " << trj.Length() << std::endl;
-
+      
       // make a HalfLine that starts at the beginning of the track and points
       // backwards in the track direction:
 
@@ -81,29 +83,31 @@ bool PaddleTrackFilter::analyze(storage_manager* storage) {
       auto const& intersections_trj_prj_bottom_Negend = _geoAlgo.Intersection(_vmucs_bottom, trj_prj_Negend);
       auto const& intersections_trj_prj_top_Negend = _geoAlgo.Intersection(_vmucs_top, trj_prj_Negend);
 
-
+      
       if (intersections_trj_start.size() > 0 || intersections_trj_end.size() > 0 || intersections_trj_Negstart.size() > 0 ||
            intersections_trj_Negend.size() > 0) {
         _n_intersections_FV++;
-        //std::cout << "this track intersects the Fiducial Volume!" << std::endl;
       }
       if (intersections_trj_prj_bottom_start.size() > 0 || intersections_trj_prj_bottom_end.size() > 0 ||
           intersections_trj_prj_bottom_Negstart.size() > 0 || intersections_trj_prj_bottom_Negend.size() > 0) {
         _n_intersections_mucs_top++;
-        //std::cout << "this track's projection backwards intersects the MuCS Bottom" << std::endl;
       }
       
       if (intersections_trj_prj_top_start.size() > 0 || intersections_trj_prj_top_end.size() > 0 ||
           intersections_trj_prj_top_Negstart.size() > 0 || intersections_trj_prj_top_Negend.size() > 0) {
         _n_intersections_mucs_bottom++;
-        //std::cout << "this track's projection backwards intersects the MuCS Top" << std::endl;
       }
-
-      //std::cout << std::endl;
-
-
+      //store tracks in an event contained by TPCFV
+      if(_vfiducial.Contain(trj.at(0))==1){_trj_con.push_back(trj);}
+      //store mucs tracks in an event
+      ::geoalgo::HalfLine trj_prj(trj[0], trj[0]-trj[trj.size()-1]);
+      auto const& intersections_trj_prj_top = _geoAlgo.Intersection(_vmucs_top, trj_prj);
+      auto const& intersections_trj_prj_bottom = _geoAlgo.Intersection(_vmucs_bottom, trj_prj);
+      if(intersections_trj_prj_top.size()>0 && intersections_trj_prj_bottom.size()>0){_trj_mucs.push_back(trj);}
+      //store all  tracks in an event
+      _trj.push_back(trj);  
     }// if there are at least 2 points in the track
-
+    
   }// for all tracks
 
   return true;

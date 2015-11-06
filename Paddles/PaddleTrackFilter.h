@@ -59,6 +59,13 @@ namespace larlite {
     ::geoalgo::AABox getTopMuCS() { return _vmucs_top; }
     // getter function for bottom MCS
     ::geoalgo::AABox getBottomMuCS() { return _vmucs_bottom; }
+    // getter function for tracks in an event
+    std::vector<::geoalgo::Trajectory> getTrj() {return _trj;}
+    // getter function for tracks in an event contained by TPCFV
+    std::vector<::geoalgo::Trajectory> getTrj_con() {return _trj;}
+    // getter function for tracks in an event pass MuCS
+    std::vector<::geoalgo::Trajectory> getTrj_mucs() {return _trj;}
+
 
   protected:
     
@@ -81,7 +88,11 @@ namespace larlite {
     ::geoalgo::AABox _vfiducial;
     ::geoalgo::AABox _vmucs_top;
     ::geoalgo::AABox _vmucs_bottom;
-    
+    std::vector<::geoalgo::Trajectory> _trj;
+    //tracks contained in TPC
+    std::vector<::geoalgo::Trajectory> _trj_con; 
+    //tracks pass MuCS
+    std::vector<::geoalgo::Trajectory> _trj_mucs;
     
   };
 }

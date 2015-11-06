@@ -51,12 +51,17 @@ while my_proc.process_event():
     fidVol = my_QRA.getFiducialVol()
     mcsTop = my_QRA.getTopMuCS()
     mcsBot = my_QRA.getBottomMuCS()
-
+    mcsTrj = my_QRA.getTrj()
     # add objects to viewer
     viewer.clear()
     viewer.add(fidVol,'Fid. Vol.','k')
     viewer.add(mcsTop,'Top MuCS','r')
     viewer.add(mcsBot,'Bottom MuCS','m')
+    
+    #for x in range(0,len(mcsTrj)):
+    for i in xrange(len(mcsTrj)):
+        viewer.add(mcsTrj[i],"tr","b")
+
     viewer.show()
 
     # go to next event
