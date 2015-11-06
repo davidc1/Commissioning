@@ -62,11 +62,12 @@ namespace larlite {
     // getter function for tracks in an event
     std::vector<::geoalgo::Trajectory> getTrj() {return _trj;}
     // getter function for tracks in an event contained by TPCFV
-    std::vector<::geoalgo::Trajectory> getTrj_con() {return _trj;}
+    std::vector<::geoalgo::Trajectory> getTrj_con() {return _trj_con;}
     // getter function for tracks in an event pass MuCS
-    std::vector<::geoalgo::Trajectory> getTrj_mucs() {return _trj;}
-
-
+    std::vector<::geoalgo::Trajectory> getTrj_mucs() {return _trj_mucs;}
+    // getter function for back-projected half line
+    std::vector<::geoalgo::HalfLine> getHalfLine() {return _trj_prj;}
+    
   protected:
     
     TTree* _tree;
@@ -93,7 +94,7 @@ namespace larlite {
     std::vector<::geoalgo::Trajectory> _trj_con; 
     //tracks pass MuCS
     std::vector<::geoalgo::Trajectory> _trj_mucs;
-    
+    std::vector<::geoalgo::HalfLine> _trj_prj;
   };
 }
 #endif

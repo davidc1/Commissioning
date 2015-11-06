@@ -52,15 +52,30 @@ while my_proc.process_event():
     mcsTop = my_QRA.getTopMuCS()
     mcsBot = my_QRA.getBottomMuCS()
     mcsTrj = my_QRA.getTrj()
+    mcsTrjCon = my_QRA.getTrj_con()
+    mcsTrjMuCS = my_QRA.getTrj_mucs()
+    mcsHalfLine = my_QRA.getHalfLine()
     # add objects to viewer
     viewer.clear()
     viewer.add(fidVol,'Fid. Vol.','k')
     viewer.add(mcsTop,'Top MuCS','r')
     viewer.add(mcsBot,'Bottom MuCS','m')
+   # viewer.add(mcsHalfLine,'Half Line','y')
     
     #for x in range(0,len(mcsTrj)):
     for i in xrange(len(mcsTrj)):
         viewer.add(mcsTrj[i],"tr","b")
+        
+    for j in xrange(len(mcsTrjCon)):
+        viewer.add(mcsTrjCon[j],"tr_con","g")
+
+    for k in xrange(len(mcsTrjMuCS)):
+        viewer.add(mcsTrjMuCS[k],"tr_mucs","r")        
+    
+#    for h in xrange(len(mcsHalfLine)): 
+        #print h
+ #      viewer.add(mcsHalfLine[h],"halfline","y")       
+
 
     viewer.show()
 
