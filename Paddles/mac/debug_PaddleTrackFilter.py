@@ -55,23 +55,24 @@ while my_proc.process_event():
     mcsTrjCon = my_QRA.getTrj_con()
     mcsTrjMuCS = my_QRA.getTrj_mucs()
     mcsHalfLine = my_QRA.getHalfLine()
+    mcsLineSeg  = my_QRA.getLineseg()
     # add objects to viewer
     viewer.clear()
-    viewer.add(fidVol,'Fid. Vol.','k')
-    viewer.add(mcsTop,'Top MuCS','r')
-    viewer.add(mcsBot,'Bottom MuCS','m')
-   # viewer.add(mcsHalfLine,'Half Line','y')
+    viewer.add(fidVol,'FV.','k')
+    viewer.add(mcsTop,'Top','r')
+    viewer.add(mcsBot,'Bot','m')
     
     #for x in range(0,len(mcsTrj)):
     for i in xrange(len(mcsTrj)):
-        viewer.add(mcsTrj[i],"tr","b")
-        
+        viewer.add(mcsTrj[i],"Out","b")
+        viewer.add(mcsLineSeg[i],'Prj ','y')
+        #viewer.add(mcsHalfLine[i],"halfline","y")
     for j in xrange(len(mcsTrjCon)):
-        viewer.add(mcsTrjCon[j],"tr_con","g")
-
+        viewer.add(mcsTrjCon[j],"In","g")
+        print "hehe"
     for k in xrange(len(mcsTrjMuCS)):
-        viewer.add(mcsTrjMuCS[k],"tr_mucs","r")        
-    
+        viewer.add(mcsTrjMuCS[k],"Tr_mucs","r")        
+        print "STOP!!!!!!!!!I am a tagged MUON !!!!!!!!"
 #    for h in xrange(len(mcsHalfLine)): 
         #print h
  #      viewer.add(mcsHalfLine[h],"halfline","y")       

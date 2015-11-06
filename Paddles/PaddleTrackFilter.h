@@ -59,6 +59,8 @@ namespace larlite {
     ::geoalgo::AABox getTopMuCS() { return _vmucs_top; }
     // getter function for bottom MCS
     ::geoalgo::AABox getBottomMuCS() { return _vmucs_bottom; }
+    
+
     // getter function for tracks in an event
     std::vector<::geoalgo::Trajectory> getTrj() {return _trj;}
     // getter function for tracks in an event contained by TPCFV
@@ -67,6 +69,8 @@ namespace larlite {
     std::vector<::geoalgo::Trajectory> getTrj_mucs() {return _trj_mucs;}
     // getter function for back-projected half line
     std::vector<::geoalgo::HalfLine> getHalfLine() {return _trj_prj;}
+    // getter function for linesegment (proj w/ first and end point)
+    std::vector<::geoalgo::LineSegment> getLineseg(){return _prj_lineseg;}
     
   protected:
     
@@ -85,7 +89,6 @@ namespace larlite {
     double _length_zfiducial;
     
     ::geoalgo::GeoAlgo _geoAlgo;
-    
     ::geoalgo::AABox _vfiducial;
     ::geoalgo::AABox _vmucs_top;
     ::geoalgo::AABox _vmucs_bottom;
@@ -95,6 +98,7 @@ namespace larlite {
     //tracks pass MuCS
     std::vector<::geoalgo::Trajectory> _trj_mucs;
     std::vector<::geoalgo::HalfLine> _trj_prj;
+    std::vector<::geoalgo::LineSegment> _prj_lineseg;
   };
 }
 #endif

@@ -33,6 +33,7 @@ bool PaddleTrackFilter::analyze(storage_manager* storage) {
   _trj.clear();
   _trj_con.clear();
   _trj_mucs.clear();
+  _prj_lineseg.clear();
   
   auto ev_reco = storage->get_data<event_track>("trackkalmanhit");
   if (!ev_reco) {
@@ -99,6 +100,9 @@ bool PaddleTrackFilter::analyze(storage_manager* storage) {
           intersections_trj_prj_top_Negstart.size() > 0 || intersections_trj_prj_top_Negend.size() > 0) {
         _n_intersections_mucs_bottom++;
       }
+      //store tracks proj by lineseg
+      ::geoalgo::LineSegment prj_lineseg((trj[0]+(trj[0]-trj[trj.size()/2-1])*7), trj[trj.size()/2-1]);
+       _prj_lineseg.push_back(prj_lineseg);
       //store tracks in an event contained by TPCFV
       if(_vfiducial.Contain(trj.at(0))==1){_trj_con.push_back(trj);}
       //store mucs tracks in an event
