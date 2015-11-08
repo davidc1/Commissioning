@@ -69,13 +69,12 @@ while my_proc.process_event():
         #viewer.add(mcsHalfLine[i],"halfline","y")
     for j in xrange(len(mcsTrjCon)):
         viewer.add(mcsTrjCon[j],"In","g")
-        print "hehe"
     for k in xrange(len(mcsTrjMuCS)):
         viewer.add(mcsTrjMuCS[k],"Tr_mucs","r")        
-        print "STOP!!!!!!!!!I am a tagged MUON !!!!!!!!"
-#    for h in xrange(len(mcsHalfLine)): 
+        print "STOP!!!!!!!!!I am a MuCS through-going MuON !!!!!!!!"
+        #for h in xrange(len(mcsHalfLine)): 
         #print h
- #      viewer.add(mcsHalfLine[h],"halfline","y")       
+        #viewer.add(mcsHalfLine[h],"halfline","y")       
 
 
     viewer.show()

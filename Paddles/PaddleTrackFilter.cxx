@@ -37,7 +37,7 @@ bool PaddleTrackFilter::analyze(storage_manager* storage) {
   
   auto ev_reco = storage->get_data<event_track>("trackkalmanhit");
   if (!ev_reco) {
-    //std::cout<<"........Couldn't find reco track data product in this event...... "<<std::endl;
+    std::cout<<"........Couldn't find reco track data product in this event...... "<<std::endl;
   }
 
   for (size_t i = 0; i < ev_reco->size(); i++) {
