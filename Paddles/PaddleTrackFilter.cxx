@@ -16,8 +16,9 @@ bool PaddleTrackFilter::initialize() {
   _length_zfiducial = larutil::Geometry::GetME()->DetLength();
 
   _vfiducial = ::geoalgo::AABox(0, -_length_yfiducial, 0, 2 * _length_xfiducial, _length_yfiducial, _length_zfiducial);
-  _vmucs_top = ::geoalgo::AABox(-71.795, 398.351, 531.45, -23.695, 398.451, 579.45);
-  _vmucs_bottom = ::geoalgo::AABox(-19.6948, 320.05, 533.25, 28.3052, 320.15, 581.25);
+  //Postion of MuCS https://docs.google.com/spreadsheets/d/11XsZOU9kNe363-j1mTPTD-sKoNshvGotC5yMcyzXv18/edit#gid=1930333484
+  _vmucs_top = ::geoalgo::AABox(-71.795, 393.941, 531.45, -23.795, 398.451, 579.45);
+  _vmucs_bottom = ::geoalgo::AABox(-19.6948, 316.041, 533.25, 28.3052, 320.551, 581.25);
 
   _n_intersections_FV = 0;
   _n_intersections_mucs_top = 0;

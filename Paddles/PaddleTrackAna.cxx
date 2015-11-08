@@ -8,9 +8,9 @@ namespace larlite {
 
   bool PaddleTrackAna::initialize() {
     if(!_x_z_ints_top)
-      _x_z_ints_top = new TH2F("_x_z_ints_top","Intersection(x,c)_Top_Dectecor",49,-72,-23,49,531,580);
+      _x_z_ints_top = new TH2F("_x_z_ints_top","Intersection(x,c)_Top_Dectecor",12,-71.795,-23.795,12,531.45,579.45);
     if(!_x_z_ints_bottom)
-      _x_z_ints_bottom = new TH2F("_x_z_ints_top","Intersection(x,c)_Bottome_Dectecor",49,-20,-29,49,533,582);
+      _x_z_ints_bottom = new TH2F("_x_z_ints_top","Intersection(x,c)_Bottome_Dectecor",12,-19.6948,28.3052,12,533.25,581.25);
     
     
     if (_tree) {delete _tree;}
@@ -27,8 +27,9 @@ namespace larlite {
     _length_zfiducial = larutil::Geometry::GetME()->DetLength();
 
     _vfiducial = ::geoalgo::AABox(0, -_length_yfiducial, 0, 2 * _length_xfiducial, _length_yfiducial, _length_zfiducial);
-    _vmucs_top = ::geoalgo::AABox(-71.795, 398.451, 531.45, -23.695, 398.551, 579.45);
-    _vmucs_bottom = ::geoalgo::AABox(-19.6948, 320.551, 533.25, 28.3052, 320.552, 581.25);
+    //Postion of MuCS https://docs.google.com/spreadsheets/d/11XsZOU9kNe363-j1mTPTD-sKoNshvGotC5yMcyzXv18/edit#gid=1930333484
+    _vmucs_top = ::geoalgo::AABox(-71.795, 393.941, 531.45, -23.795, 398.451, 579.45);
+    _vmucs_bottom = ::geoalgo::AABox(-19.6948, 316.041, 533.25, 28.3052, 320.551, 581.25);
 
     _n_intersections_FV = 0;
     _n_intersections_mucs_top = 0;
@@ -66,6 +67,8 @@ namespace larlite {
 	}// for all points in track 
       
 	::geoalgo::HalfLine trj_prj(trj[0], trj[0]-trj[trj.size()/2]);
+	//::geoalgo::HalfLine trj_prj_(trj[0], trj[0]-trj[trj.size()/2]);
+	
 	auto const&  intersection_trj_prj_top    = _geoAlgo.Intersection(_vmucs_top,trj_prj);
 	auto const&  intersection_trj_prj_bottom = _geoAlgo.Intersection(_vmucs_bottom,trj_prj);
 	
