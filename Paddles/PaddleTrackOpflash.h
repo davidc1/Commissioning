@@ -1,9 +1,9 @@
 /**
- * \file PaddleTrackAna.h
+ * \file PaddleTrackOpflash.h
  *
  * \ingroup Paddles
  * 
- * \brief Class def header for a class PaddleTrackAna
+ * \brief Class def header for a class PaddleTrackOpflash
  *
  * @author Rui
  */
@@ -12,49 +12,49 @@
 
     @{*/
 
-#ifndef LARLITE_PADDLETRACKANA_H
-#define LARLITE_PADDLETRACKANA_H
+#ifndef LARLITE_PADDLETRACKOPFLASH_H
+#define LARLITE_PADDLETRACKOPFLASH_H
 
 #include "Analysis/ana_base.h"
+#include "DataFormat/track.h"
+#include "DataFormat/ophit.h"
+#include "DataFormat/opflash.h"
 #include "GeoAlgo/GeoAlgo.h"
 #include "LArUtil/Geometry.h"
 #include "TTree.h"
-#include "TH1F.h"
-#include "TH2.h"
+#include "PaddleTrackAna.h"
 
 namespace larlite {
   /**
-     \class PaddleTrackAna
+     \class PaddleTrackOpflash
      User custom analysis class made by SHELL_USER_NAME
    */
-  class PaddleTrackAna : public ana_base{
+  class PaddleTrackOpflash : public ana_base{
   
   public:
 
     /// Default constructor
-    PaddleTrackAna()
+    PaddleTrackOpflash()
       :_tree(nullptr)
-    { _name="PaddleTrackAna";
-      _fout=0;
-      _x_z_ints_top = 0;
-      _x_z_ints_bottom = 0;
-      _save_histos = true;
-    }
+      { _name="PaddleTrackOpflash";
+	_fout=0;
+	_fout=0;
+      }
 
     /// Default destructor
-    virtual ~PaddleTrackAna(){}
+    virtual ~PaddleTrackOpflash(){}
 
-    /** IMPLEMENT in PaddleTrackAna.cc!
+    /** IMPLEMENT in PaddleTrackOpflash.cc!
         Initialization method to be called before the analysis event loop.
     */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in PaddleTrackAna.cc! 
+    /** IMPLEMENT in PaddleTrackOpflash.cc! 
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in PaddleTrackAna.cc! 
+    /** IMPLEMENT in PaddleTrackOpflash.cc! 
         Finalize method to be called after all events processed.
     */
     virtual bool finalize();
@@ -65,19 +65,16 @@ namespace larlite {
     TH2F* _x_z_ints_top;
     TH2F* _x_z_ints_bottom;
     bool _save_histos;
-    
+
     size_t _n_ev_reco;
 
-    int _run;
-    int _subrun;
-    int _event;
-    int _trk_id;
-    
     int _n_evt;
     int _n_tracks;
     int _n_intersections_FV;
     int _n_intersections_mucs_top;
     int _n_intersections_mucs_bottom;
+    
+    std::vector<double> _t_opflash;
     
     //muon intersection w/ MuCS
     double _MuCS_ints_x_top;
@@ -99,7 +96,8 @@ namespace larlite {
     //tracks pass MuCS
     std::vector<::geoalgo::Trajectory> _trj_mucs;
     std::vector<::geoalgo::HalfLine> _trj_prj;
-    std::vector<::geoalgo::LineSegment> _prj_lineseg;    
+    std::vector<::geoalgo::LineSegment> _prj_lineseg;
+    
   };
 }
 #endif

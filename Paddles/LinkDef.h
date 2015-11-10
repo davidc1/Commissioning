@@ -11,8 +11,10 @@
 
 #pragma link C++ class larlite::PaddleTrackFilter+;
 #pragma link C++ class larlite::PaddleTrackAna+;
+#pragma link C++ class larlite::PaddleTrackOpflash+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
 
 
 
