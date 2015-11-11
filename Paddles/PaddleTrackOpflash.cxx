@@ -139,7 +139,7 @@ namespace larlite {
 	  _pe_mchit.resize( 32, 0.0 );
 	  for ( int istep=0; istep<(int)chphotons.size(); istep++ ) {
 	    for (int ich=0; ich<(int)chphotons.at(istep).size(); ich++) {
-	      _pe_mchit.at(ich) += chphotons.at(istep).at(ich);
+	      _pe_mchit.at(ich) += chphotons.at(istep).at(ich)*0.0098;
 	    }
 	  }
 	  
