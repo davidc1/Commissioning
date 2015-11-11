@@ -137,10 +137,13 @@ namespace larlite {
 	  optrackfit::makeVoxelList( hypo, *fPhotonLib, 29000.0, 2.3, 32, midpoints, chphotons );
 	  _pe_mchit.clear();
 	  _pe_mchit.resize( 32, 0.0 );
-	  for ( int istep=0; istep<(int)chphotons.size(); istep++ ) {
-	    for (int ich=0; ich<(int)chphotons.at(istep).size(); ich++) {
-	      _pe_mchit.at(ich) += chphotons.at(istep).at(ich)*0.0098*0.3;
+	  for (int ich=0; ich<32; ich++) {
+	    double chpe = 0.0;
+	    for ( int istep=0; istep<(int)chphotons.size(); istep++ ) {
+	      chpe += chphotons.at(istep).at(ich)*0.0098*0.3;
 	    }
+	    if ( chpe>5.0 )
+	      _pe_mchit.at(ich) += chpe;
 	  }
 	  
 	  _tree->Fill();
