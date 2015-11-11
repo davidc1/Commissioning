@@ -23,6 +23,10 @@
 #include "LArUtil/Geometry.h"
 #include "TTree.h"
 #include "PaddleTrackAna.h"
+#include "iostream"
+#include "fstream"
+#include <functional>
+#include <algorithm>
 
 namespace larlite {
   /**
@@ -37,6 +41,7 @@ namespace larlite {
     PaddleTrackOpflash()
       :_tree(nullptr)
       { _name="PaddleTrackOpflash";
+	_pe_dis_hist = 0;
 	_fout=0;
 	_fout=0;
       }
@@ -62,19 +67,29 @@ namespace larlite {
   protected:
     
     TTree* _tree;
-    TH2F* _x_z_ints_top;
-    TH2F* _x_z_ints_bottom;
+    TH1F* _pe_dis_hist;
+   
+    std::ofstream _track_positions;
+    
     bool _save_histos;
 
     size_t _n_ev_reco;
-
+    
+    int _run;
+    int _subrun;
+    int _event;
+    int _trk_id;
+    
     int _n_evt;
     int _n_tracks;
+    int _opchannel_id;
     int _n_intersections_FV;
     int _n_intersections_mucs_top;
     int _n_intersections_mucs_bottom;
     
     std::vector<double> _t_opflash;
+    std::vector<double> _t_ophit;
+    std::vector<double> _pe_ophit;
     
     //muon intersection w/ MuCS
     double _MuCS_ints_x_top;
