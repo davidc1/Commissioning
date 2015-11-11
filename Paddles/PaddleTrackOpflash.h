@@ -21,12 +21,14 @@
 #include "DataFormat/opflash.h"
 #include "GeoAlgo/GeoAlgo.h"
 #include "LArUtil/Geometry.h"
+#include "OpT0Finder/OpTrackAlg/PhotonLibrary.h"
 #include "TTree.h"
 #include "PaddleTrackAna.h"
 #include "iostream"
 #include "fstream"
 #include <functional>
 #include <algorithm>
+
 
 namespace larlite {
   /**
@@ -90,6 +92,7 @@ namespace larlite {
     std::vector<double> _t_opflash;
     std::vector<double> _t_ophit;
     std::vector<double> _pe_ophit;
+    std::vector<double> _pe_mchit;
     
     //muon intersection w/ MuCS
     double _MuCS_ints_x_top;
@@ -112,6 +115,8 @@ namespace larlite {
     std::vector<::geoalgo::Trajectory> _trj_mucs;
     std::vector<::geoalgo::HalfLine> _trj_prj;
     std::vector<::geoalgo::LineSegment> _prj_lineseg;
+
+    ubphotonlib::PhotonLibrary* fPhotonLib;
     
   };
 }

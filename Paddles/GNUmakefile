@@ -14,6 +14,7 @@ OBJECTS = $(SOURCES:.cxx=.o)
 INCFLAGS  = -I.                       #Include itself
 INCFLAGS += $(shell larlite-config --includes)
 INCFLAGS += $(shell basictool-config --includes)
+INCFLAGS += $(shell seltool-config --includes)
 
 # platform-specific options
 OSNAME          = $(shell uname -s)
@@ -26,5 +27,5 @@ include $(LARLITE_BASEDIR)/Makefile/Makefile.${OSNAME}
 # call the common GNUmakefile
 LDFLAGS += $(shell larlite-config --libs)
 include $(LARLITE_BASEDIR)/Makefile/GNUmakefile.CORE
-LDFLAGS += -L$(LARLITE_LIBDIR) -lBasicTool_GeoAlgo
+LDFLAGS += -L$(LARLITE_LIBDIR) -lBasicTool_GeoAlgo -lSelectionTool_OpTrackAlg
 

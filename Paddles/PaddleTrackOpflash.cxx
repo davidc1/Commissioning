@@ -2,6 +2,8 @@
 #define LARLITE_PADDLETRACKOPFLASH_CXX
 
 #include "PaddleTrackOpflash.h"
+#include "OpT0Finder/OpTrackAlg/TrackHypothesis.h"
+#include "OpT0Finder/OpTrackAlg/OpTrackModule.h"
 
 namespace larlite {
   
@@ -10,12 +12,12 @@ namespace larlite {
     if(!_pe_dis_hist)
       _pe_dis_hist =  new TH1F("PE distribution","PE distribution",32,0,32);
     
-    
     if (_tree) {delete _tree;}
     _tree = new TTree("PaddleTree", "PaddleTree");
     _tree->Branch("t_opflash","std::vector<double>",&_t_opflash);
     _tree->Branch("t_ophit","std::vector<double>",&_t_ophit);
     _tree->Branch("pe_ophit","std::vector<double>",&_pe_ophit);
+    _tree->Branch("pe_mchit","std::vector<double>",&_pe_mchit);
     
     _tree->Branch("run",&_run,"_run/I");
     _tree->Branch("subrun",&_subrun,"_subrun/I");
@@ -36,6 +38,9 @@ namespace larlite {
     _n_evt = 0;
     
     _pe_ophit.resize(32);
+
+    fPhotonLib = new ubphotonlib::PhotonLibrary();
+    fPhotonLib->LoadDefault();
     
     return true;
   }
@@ -125,6 +130,18 @@ namespace larlite {
 	  _track_positions<<"Run: "<<_run<<" , Subrun: "<<_subrun<<" , Event: "<<_event<<" , Track_ID: "<<_trk_id<<std::endl; 
 	  _track_positions<<trj.front()<<std::endl;
 	  _track_positions<<trj.back()<<std::endl;
+
+	  optrackfit::TrackHypothesis hypo( trj.front(), trj.back() );
+	  std::vector< std::vector<double> > midpoints;
+	  std::vector< std::vector<float> > chphotons;
+	  optrackfit::makeVoxelList( hypo, *fPhotonLib, 29000.0, 2.3, 32, midpoints, chphotons );
+	  _pe_mchit.clear();
+	  _pe_mchit.resize( 32, 0.0 );
+	  for ( int istep=0; istep<(int)chphotons.size(); istep++ ) {
+	    for (int ich=0; ich<(int)chphotons.at(istep).size(); ich++) {
+	      _pe_mchit.at(ich) += chphotons.at(istep).at(ich);
+	    }
+	  }
 	  
 	  _tree->Fill();
         }
