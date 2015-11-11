@@ -123,7 +123,8 @@ namespace larlite {
           _trk_id = trk.ID();
 	  //Save positions into txt file
 	  _track_positions<<"Run: "<<_run<<" , Subrun: "<<_subrun<<" , Event: "<<_event<<" , Track_ID: "<<_trk_id<<std::endl; 
-	  _track_positions<<trj;
+	  _track_positions<<trj.front()<<std::endl;
+	  _track_positions<<trj.back()<<std::endl;
 	  
 	  _tree->Fill();
         }
@@ -147,12 +148,12 @@ namespace larlite {
   
   bool PaddleTrackOpflash::finalize() {
     
-    std::cout<<_pe_ophit.size()<<std::endl;
+    /*std::cout<<_pe_ophit.size()<<std::endl;
     for(size_t i=0; i< _pe_ophit.size(); i++){
       double bincontent = _pe_ophit.at(i);
       std::cout<<_pe_ophit.at(i)<<std::endl;
       _pe_dis_hist->SetBinContent(i+1,bincontent);
-    }
+      }*/
     
     _track_positions.close();
     
