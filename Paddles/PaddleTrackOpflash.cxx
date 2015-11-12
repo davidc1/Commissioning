@@ -173,7 +173,14 @@ namespace larlite {
 	  }
 	  // Normalize
 	  double pe_mchit_sum = std::accumulate(std::begin(_pe_mchit),std::end(_pe_mchit),0.0);
+
 	  double pe_ophit_sum = std::accumulate(std::begin(_pe_ophit),std::end(_pe_ophit),0.0);
+	  if(pe_ophit_sum<1) {
+
+	    // Make rough guess on overall PE scale
+	    pe_ophit_sum = 29000.0 * 2.3 * trj.Length();
+
+	  }
 	  
 	  for(auto& v : _pe_mchit) v *= ( pe_ophit_sum / pe_mchit_sum );
 	  
