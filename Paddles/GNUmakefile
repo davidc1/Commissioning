@@ -26,6 +26,7 @@ include $(LARLITE_BASEDIR)/Makefile/Makefile.${OSNAME}
 
 # call the common GNUmakefile
 LDFLAGS += $(shell larlite-config --libs)
+LDFLAGS += $(shell seltool-config --libs)
 include $(LARLITE_BASEDIR)/Makefile/GNUmakefile.CORE
-LDFLAGS += -L$(LARLITE_LIBDIR) -lBasicTool_GeoAlgo -lSelectionTool_OpTrackAlg
+
 
