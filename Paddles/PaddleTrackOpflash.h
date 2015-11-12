@@ -92,7 +92,7 @@ namespace larlite {
     std::vector<double> _t_ophit;
     std::vector<double> _pe_ophit;
     std::vector<double> _pe_mchit;
-    
+        
     //muon intersection w/ MuCS
     double _MuCS_ints_x_top;
     double _MuCS_ints_z_top;
@@ -115,6 +115,7 @@ namespace larlite {
     std::vector<::geoalgo::HalfLine> _trj_prj;
     std::vector<::geoalgo::LineSegment> _prj_lineseg;
 
+    std::vector<TVector3> _trj_filt;
   };
 }
 #endif
