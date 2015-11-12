@@ -21,7 +21,6 @@
 #include "DataFormat/opflash.h"
 #include "GeoAlgo/GeoAlgo.h"
 #include "LArUtil/Geometry.h"
-#include "OpT0Finder/OpTrackAlg/PhotonLibrary.h"
 #include "TTree.h"
 #include "PaddleTrackAna.h"
 #include "iostream"
@@ -116,8 +115,6 @@ namespace larlite {
     std::vector<::geoalgo::HalfLine> _trj_prj;
     std::vector<::geoalgo::LineSegment> _prj_lineseg;
 
-    ubphotonlib::PhotonLibrary* fPhotonLib;
-    
   };
 }
 #endif

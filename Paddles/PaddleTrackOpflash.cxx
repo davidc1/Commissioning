@@ -2,9 +2,11 @@
 #define LARLITE_PADDLETRACKOPFLASH_CXX
 
 #include "PaddleTrackOpflash.h"
-#include "OpT0Finder/OpTrackAlg/TrackHypothesis.h"
-#include "OpT0Finder/OpTrackAlg/OpTrackModule.h"
+//#include "OpT0Finder/OpTrackAlg/TrackHypothesis.h"
+//#include "OpT0Finder/OpTrackAlg/OpTrackModule.h"
 
+#include "OpT0Finder/PhotonLibrary/PhotonVisibilityService.h"
+#include <numeric>
 namespace larlite {
   
   bool PaddleTrackOpflash::initialize() {
@@ -38,14 +40,17 @@ namespace larlite {
     _n_evt = 0;
     
     _pe_ophit.resize(32);
+    _pe_mchit.resize(32);
 
-    fPhotonLib = new ubphotonlib::PhotonLibrary();
-    fPhotonLib->LoadDefault();
+    //fPhotonLib = new ubphotonlib::PhotonLibrary();
+    //fPhotonLib->LoadDefault();
     
     return true;
   }
   
   bool PaddleTrackOpflash::analyze(storage_manager* storage) {
+
+    auto const geo = ::larutil::Geometry::GetME();
     
     _t_opflash.clear();
     _t_ophit.clear();
@@ -114,7 +119,9 @@ namespace larlite {
               _t_ophit.push_back(ophit.PeakTime());
 	      //_pe_ophit.push_back(ophit.PE());
 	      if(ophit.PeakTime()<-0.8 &&ophit.PeakTime()>-1){
-	      _pe_ophit.at(ophit.OpChannel()) = _pe_ophit.at(ophit.OpChannel())+ophit.PE();
+
+		auto const pmt_id = geo->OpDetFromOpChannel(ophit.OpChannel());
+		_pe_ophit[pmt_id] += ophit.PE();
 	      }
 	      //if (ophit.OpChannel()>30)std::cout<<ophit.OpChannel()<<std::endl;
 	      
@@ -131,6 +138,7 @@ namespace larlite {
 	  _track_positions<<trj.front()<<std::endl;
 	  _track_positions<<trj.back()<<std::endl;
 
+	  /*
 	  optrackfit::TrackHypothesis hypo( trj.front(), trj.back() );
 	  std::vector< std::vector<double> > midpoints;
 	  std::vector< std::vector<float> > chphotons;
@@ -145,6 +153,23 @@ namespace larlite {
 	    if ( chpe>5.0 )
 	      _pe_mchit.at(ich) += chpe;
 	  }
+	  */
+
+	  //
+	  // Implement PhotonVisibility VERY NAIEVE usage for now
+	  //
+	  for(auto const& step : trj) {
+
+	    for(size_t pmt_id=0; pmt_id<_pe_mchit.size(); ++pmt_id)
+
+	      _pe_mchit[pmt_id] += ::phot::PhotonVisibilityService::GetME().GetVisibility(step[0],step[1],step[2],pmt_id);
+
+	  }
+	  // Normalize
+	  double pe_mchit_sum = std::accumulate(std::begin(_pe_mchit),std::end(_pe_mchit),0.0);
+	  double pe_ophit_sum = std::accumulate(std::begin(_pe_ophit),std::end(_pe_ophit),0.0);
+	  
+	  for(auto& v : _pe_mchit) v *= ( pe_ophit_sum / pe_mchit_sum );
 	  
 	  _tree->Fill();
         }
