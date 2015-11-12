@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 
 # load viewer
 plt.ion()
-viewer = GeoViewer()
+viewer = GeoViewer(width=4,height=8)
 viewer._use_box = False
 
 # Create ana_processor instance
@@ -44,9 +44,10 @@ my_proc.add_process(my_QRA)
 print
 print  "Finished configuring ana_processor. Start event loop!"
 print
-
+index=0
 while my_proc.process_event():
-
+    print index
+    index +=1
     print 'new event...'
     fidVol = my_QRA.getFiducialVol()
     mcsTop = my_QRA.getTopMuCS()
@@ -76,8 +77,12 @@ while my_proc.process_event():
         #print h
         #viewer.add(mcsHalfLine[h],"halfline","y")       
 
-
-    viewer.show()
+    viewer.construct()
+    viewer._ax.set_xlim(-150,300)
+    viewer._ax.set_ylim(-120,350)
+    viewer._ax.set_zlim(-10,1070)
+    viewer._ax._axis3don = False
+    viewer._fig.canvas.draw()#plt.show()
 
     # go to next event
     usrinput = raw_input("Hit Enter: next evt  ||  q: exit viewer\n")
