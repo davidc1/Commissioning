@@ -23,8 +23,9 @@ namespace larlite {
     _tree->Branch("subrun",&_subrun,"_subrun/I");
     _tree->Branch("event",&_event,"_event/I");
     _tree->Branch("trk_id",&_trk_id,"_trk_id/I");
-
     
+    _tree->Branch("trj_filt","std::vector<TVector3>",&_trj_filt);
+                                      
     _length_xfiducial = larutil::Geometry::GetME()->DetHalfWidth();
     _length_yfiducial = larutil::Geometry::GetME()->DetHalfHeight();
     _length_zfiducial = larutil::Geometry::GetME()->DetLength();
@@ -76,11 +77,13 @@ namespace larlite {
         ::geoalgo::Trajectory trj;
 
         for (size_t pt = 0; pt < trk.NumberTrajectoryPoints(); pt++) {
-
+	  
           auto const& pos = trk.LocationAtPoint(pt);
-
-          trj.push_back(::geoalgo::Vector(pos[0], pos[1], pos[2]));
-        }// for all points in track
+	  
+	  trj.push_back(::geoalgo::Vector(pos[0], pos[1], pos[2]));
+	  
+	  
+	}// for all points in track
 
 	::geoalgo::HalfLine trj_prj(trj[0], trj[0]-trj[trj.size()/2]);
         ::geoalgo::HalfLine trj_prj_neg(trj[trj.size()-1], trj[trj.size()/2]-trj[trj.size()-1]);
@@ -114,7 +117,7 @@ namespace larlite {
               _t_ophit.push_back(ophit.PeakTime());
 	      //_pe_ophit.push_back(ophit.PE());
 	      if(ophit.PeakTime()<-0.8 &&ophit.PeakTime()>-1){
-	      _pe_ophit.at(ophit.OpChannel()) = _pe_ophit.at(ophit.OpChannel())+ophit.PE();
+		_pe_ophit.at(ophit.OpChannel()) = _pe_ophit.at(ophit.OpChannel())+ophit.PE();
 	      }
 	      //if (ophit.OpChannel()>30)std::cout<<ophit.OpChannel()<<std::endl;
 	      
@@ -130,11 +133,22 @@ namespace larlite {
 	  _track_positions<<"Run: "<<_run<<" , Subrun: "<<_subrun<<" , Event: "<<_event<<" , Track_ID: "<<_trk_id<<std::endl; 
 	  _track_positions<<trj.front()<<std::endl;
 	  _track_positions<<trj.back()<<std::endl;
-
+	  
+	  /*
 	  optrackfit::TrackHypothesis hypo( trj.front(), trj.back() );
 	  std::vector< std::vector<double> > midpoints;
 	  std::vector< std::vector<float> > chphotons;
 	  optrackfit::makeVoxelList( hypo, *fPhotonLib, 29000.0, 2.3, 32, midpoints, chphotons );
+	  */
+	  
+	  std::vector< std::vector<double> > midpoints;
+	  std::vector< std::vector<float> > chphotons;
+
+	  for( size_t step=0; step < trj.size()-1; step++){
+	    optrackfit::TrackHypothesis hypo( trj.at(step), trj.at(step+1) );
+	    optrackfit::makeVoxelList( hypo, *fPhotonLib, 29000.0, 2.3, 32, midpoints, chphotons );
+	  }
+	  
 	  _pe_mchit.clear();
 	  _pe_mchit.resize( 32, 0.0 );
 	  for (int ich=0; ich<32; ich++) {
@@ -145,6 +159,16 @@ namespace larlite {
 	    if ( chpe>5.0 )
 	      _pe_mchit.at(ich) += chpe;
 	  }
+	  
+	  std::cout<<trk.NumberTrajectoryPoints()<<std::endl;
+	  
+	  for (size_t pt = 0; pt < trk.NumberTrajectoryPoints(); pt++) {
+
+	    auto const& pos = trk.LocationAtPoint(pt);
+	    _trj_filt.push_back(pos);
+	  
+	  }
+	  
 	  
 	  _tree->Fill();
         }
