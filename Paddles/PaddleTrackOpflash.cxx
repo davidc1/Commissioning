@@ -140,15 +140,8 @@ namespace larlite {
 	  _track_positions<<trj.front()<<std::endl;
 	  _track_positions<<trj.back()<<std::endl;
 	  /*
-	  optrackfit::TrackHypothesis hypo( trj.front(), trj.back() );
 	  std::vector< std::vector<double> > midpoints;
 	  std::vector< std::vector<float> > chphotons;
-	  optrackfit::makeVoxelList( hypo, *fPhotonLib, 29000.0, 2.3, 32, midpoints, chphotons );
-	  */
-	  
-	  std::vector< std::vector<double> > midpoints;
-	  std::vector< std::vector<float> > chphotons;
-
 	  for( size_t step=0; step < trj.size()-1; step++){
 	    optrackfit::TrackHypothesis hypo( trj.at(step), trj.at(step+1) );
 	    optrackfit::makeVoxelList( hypo, *fPhotonLib, 29000.0, 2.3, 32, midpoints, chphotons );
@@ -169,6 +162,8 @@ namespace larlite {
 	  //
 	  // Implement PhotonVisibility VERY NAIEVE usage for now
 	  //
+
+	  for(auto& v : _pe_mchit) v=0;
 	  for(auto const& step : trj) {
 
 	    for(size_t pmt_id=0; pmt_id<_pe_mchit.size(); ++pmt_id)
