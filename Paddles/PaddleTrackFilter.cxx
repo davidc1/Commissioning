@@ -107,11 +107,15 @@ bool PaddleTrackFilter::analyze(storage_manager* storage) {
       //store tracks in an event contained by TPCFV
       if(_vfiducial.Contain(trj.at(0))==1){_trj_con.push_back(trj);}
       //store mucs tracks in an event
-      ::geoalgo::HalfLine trj_prj(trj[0], trj[0]-trj[trj.size()-1]);
+      ::geoalgo::HalfLine trj_prj(trj[0], trj[0]-trj[trj.size()/2]);
       _trj_prj.push_back(trj_prj);
       auto const& intersections_trj_prj_top = _geoAlgo.Intersection(_vmucs_top, trj_prj);
       auto const& intersections_trj_prj_bottom = _geoAlgo.Intersection(_vmucs_bottom, trj_prj);
-      if(intersections_trj_prj_top.size()>0 && intersections_trj_prj_bottom.size()>0){_trj_mucs.push_back(trj);_n_intersections_FV++;}
+      
+      if(intersections_trj_prj_top.size()>0 && intersections_trj_prj_bottom.size()>0){
+	_trj_mucs.push_back(trj);
+	_n_intersections_FV++;
+      }
       //store all  tracks in an event
       _trj.push_back(trj);  
     }// if there are at least 2 points in the track
