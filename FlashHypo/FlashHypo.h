@@ -42,19 +42,20 @@ class FlashHypo{
   ~FlashHypo(){}
   
   // Setter function
-  bool TrackStart( bool a) { _start =a; return _start;}
-  bool TrackEnd  ( bool b) { _end   =b; return _end;}
+  bool TrackStart( bool a) { _start_bool =a; return _start_bool;}
+  bool TrackEnd  ( bool b) { _end_bool   =b; return _end_bool;}
   double Set_Gap (double x){ _gap   =x; return _gap;}
   
   // Getter function
-  std::vector<double> FlashHypothesis(::geoalgo::Trajectory trj) const;
+  std::vector<std::vector<double>> FlashHypothesis(::geoalgo::Trajectory trj) const;
   
   // Calculation fuction
   std::vector<double> PhotonLibrary(::geoalgo::Vector pt_1, ::geoalgo::Vector pt_2, std::vector<double> pe) const;
+  std::vector<std::vector<double>> QCluster(::geoalgo::Vector pt_1, ::geoalgo::Vector pt_2, std::vector<std::vector<double>> Q_cluster) const;
   
  protected:
-  bool   _start = true;
-  bool   _end   = true;
+  bool   _start_bool = true;
+  bool   _end_bool   = true;
   double _gap   = 0.5;
 };
 

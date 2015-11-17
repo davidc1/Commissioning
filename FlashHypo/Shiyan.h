@@ -67,6 +67,23 @@ namespace larlite {
   protected:
     std::vector<double> _pe;
     TTree* _tree;
+    
+    int _n_evt;
+    
+    int _run;
+    int _subrun;
+    int _event;
+    int _trk_id;
+    
+    double _length_xfiducial;
+    double _length_yfiducial;
+    double _length_zfiducial;
+    
+    ::geoalgo::GeoAlgo _geoAlgo;
+    ::geoalgo::AABox _vfiducial;
+    ::geoalgo::AABox _vmucs_top;
+    ::geoalgo::AABox _vmucs_bottom;
+    
   };
 }
 #endif
