@@ -54,8 +54,8 @@ class FlashHypo{
   
  protected:
   bool   _start = true;
-  bool   _end = true;
-  double _gap = 0.5;
+  bool   _end   = true;
+  double _gap   = 0.5;
 };
 
 #endif
