@@ -6,7 +6,7 @@
 std::vector<double> FlashHypo::PhotonLibrary(::geoalgo::Vector pt_1, ::geoalgo::Vector pt_2, std::vector<double> pe) const {
   
   double dist = pt_1.Dist(pt_2);
-  std::cout<<_gap<<std::endl;
+  //std::cout<<_gap<<std::endl;
   if(dist<_gap){
     ::geoalgo::Vector mid_pt((pt_1+pt_2)/2.);
     //std::cout<<mid_pt<<std::endl;
