@@ -20,7 +20,7 @@ endif
 #
 # Define directories to be compile upon a global "make"...
 #
-SUBDIRS := ZigZag  HitMaker OverlapEvents MakeWFTTree PMTCommissioning Paddles #ADD_NEW_SUBDIR ... do not remove this comment from this line
+SUBDIRS := ZigZag  HitMaker OverlapEvents MakeWFTTree PMTCommissioning Paddles FlashHypo #ADD_NEW_SUBDIR ... do not remove this comment from this line
 
 
 #####################################################################################
