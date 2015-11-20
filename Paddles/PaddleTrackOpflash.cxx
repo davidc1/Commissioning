@@ -34,11 +34,11 @@ namespace larlite {
     _length_zfiducial = larutil::Geometry::GetME()->DetLength();
 
     _vfiducial = ::geoalgo::AABox(0, -_length_yfiducial, 0, 2 * _length_xfiducial, _length_yfiducial,_length_zfiducial);
-    //_vmucs_top = ::geoalgo::AABox(-71.795, 393.941, 531.45, -23.795, 398.451, 579.45);
-    _vmucs_top = ::geoalgo::AABox(-271.795, 393.941, 331.45, 223.795, 398.451, 779.45);
+    _vmucs_top = ::geoalgo::AABox(-71.795, 393.941, 531.45, -23.795, 398.451, 579.45);
+    //_vmucs_top = ::geoalgo::AABox(-271.795, 393.941, 331.45, 223.795, 398.451, 779.45);
     
-    //_vmucs_bottom = ::geoalgo::AABox(-19.6948, 316.041, 533.25, 28.3052, 320.551, 581.25);
-    _vmucs_bottom = ::geoalgo::AABox(-119.6948, 316.041, 433.25, 128.3052, 320.551, 681.25);
+    _vmucs_bottom = ::geoalgo::AABox(-19.6948, 316.041, 533.25, 28.3052, 320.551, 581.25);
+    //_vmucs_bottom = ::geoalgo::AABox(-119.6948, 316.041, 433.25, 128.3052, 320.551, 681.25);
 
     _track_positions.open ("TrackPositions.txt");
     
@@ -218,8 +218,8 @@ namespace larlite {
 	  //Get Q ratio
 	  std::sort(_pe_ophit.begin(),_pe_ophit.end());
 	  std::sort(_pe_mchit.begin(),_pe_mchit.end());
-	  double QRatio_pl = _pe_mchit.at(31)/pe_ophit_sum;
-	  double QRatio_re = _pe_mchit.at(31)/pe_ophit_sum;
+	  double QRatio_pl = _pe_mchit.at(31)/pe_mchit_sum;//photon library
+	  double QRatio_re = _pe_ophit.at(31)/pe_ophit_sum;//ophit
 	  _qratio_pl = QRatio_pl;
 	  _qratio_re = QRatio_re;
 	  
