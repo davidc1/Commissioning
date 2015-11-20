@@ -38,7 +38,7 @@ namespace larlite {
     //_vmucs_top = ::geoalgo::AABox(-271.795, 393.941, 331.45, 223.795, 398.451, 779.45);
     
     _vmucs_bottom = ::geoalgo::AABox(-19.6948, 316.041, 533.25, 28.3052, 320.551, 581.25);
-    //_vmucs_bottom = ::geoalgo::AABox(-119.6948, 316.041, 433.25, 128.3052, 320.551, 681.25);
+    //_vmucs_bottom = ::geoalgo::AABox(-219.6948, 316.041, 333.25, 228.3052, 320.551, 781.25);
 
     _track_positions.open ("TrackPositions.txt");
     
@@ -204,7 +204,7 @@ namespace larlite {
 	  // Normalize
 	  double pe_mchit_sum = std::accumulate(std::begin(_pe_mchit),std::end(_pe_mchit),0.0);
 	  double pe_ophit_sum = std::accumulate(std::begin(_pe_ophit),std::end(_pe_ophit),0.0);
-	  
+	  /*
 	  if(pe_ophit_sum<1) {
 	    // Make rough guess on overall PE scale
 	    pe_ophit_sum = 29000.0 * 2.3 * trj.Length();
@@ -215,6 +215,7 @@ namespace larlite {
 	    auto const& pos = trk.LocationAtPoint(pt);
 	    _trj_filt.push_back(pos);
 	  }
+	  */
 	  //Get Q ratio
 	  std::sort(_pe_ophit.begin(),_pe_ophit.end());
 	  std::sort(_pe_mchit.begin(),_pe_mchit.end());
