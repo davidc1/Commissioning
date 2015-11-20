@@ -2,11 +2,9 @@
 #define LARLITE_PADDLETRACKOPFLASH_CXX
 
 #include "PaddleTrackOpflash.h"
-//#include "OpT0Finder/OpTrackAlg/TrackHypothesis.h"
-//#include "OpT0Finder/OpTrackAlg/OpTrackModule.h"
-
 #include "OpT0Finder/PhotonLibrary/PhotonVisibilityService.h"
 #include <numeric>
+
 namespace larlite {
   
   bool PaddleTrackOpflash::initialize() {
@@ -25,6 +23,9 @@ namespace larlite {
     _tree->Branch("subrun",&_subrun,"_subrun/I");
     _tree->Branch("event",&_event,"_event/I");
     _tree->Branch("trk_id",&_trk_id,"_trk_id/I");
+    _tree->Branch("zenith",&_theta,"_theta/D");
+    _tree->Branch("QRatio_pl",&_qratio_pl,"_qratio_pl/D"); 
+    _tree->Branch("QRatio_re",&_qratio_re,"_qratio_re/D");
     
     _tree->Branch("trj_filt","std::vector<TVector3>",&_trj_filt);
                                       
@@ -33,8 +34,11 @@ namespace larlite {
     _length_zfiducial = larutil::Geometry::GetME()->DetLength();
 
     _vfiducial = ::geoalgo::AABox(0, -_length_yfiducial, 0, 2 * _length_xfiducial, _length_yfiducial,_length_zfiducial);
-    _vmucs_top = ::geoalgo::AABox(-71.795, 393.941, 531.45, -23.795, 398.451, 579.45);
-    _vmucs_bottom = ::geoalgo::AABox(-19.6948, 316.041, 533.25, 28.3052, 320.551, 581.25);
+    //_vmucs_top = ::geoalgo::AABox(-71.795, 393.941, 531.45, -23.795, 398.451, 579.45);
+    _vmucs_top = ::geoalgo::AABox(-271.795, 393.941, 331.45, 223.795, 398.451, 779.45);
+    
+    //_vmucs_bottom = ::geoalgo::AABox(-19.6948, 316.041, 533.25, 28.3052, 320.551, 581.25);
+    _vmucs_bottom = ::geoalgo::AABox(-119.6948, 316.041, 433.25, 128.3052, 320.551, 681.25);
 
     _track_positions.open ("TrackPositions.txt");
     
@@ -88,19 +92,48 @@ namespace larlite {
 	  trj.push_back(::geoalgo::Vector(pos[0], pos[1], pos[2]));
 	  
 	  
-	}// for all points in track
-
+	}//Save points in track trk into trajectory trj
+	
 	::geoalgo::HalfLine trj_prj(trj[0], trj[0]-trj[trj.size()/2]);
         ::geoalgo::HalfLine trj_prj_neg(trj[trj.size()-1], trj[trj.size()/2]-trj[trj.size()-1]);
-
-        auto const&  intersection_trj_prj_top    = _geoAlgo.Intersection(_vmucs_top,trj_prj);
+	
+	auto const&  intersection_trj_prj_top    = _geoAlgo.Intersection(_vmucs_top,trj_prj);
         auto const&  intersection_trj_prj_bottom = _geoAlgo.Intersection(_vmucs_bottom,trj_prj);
 	
-        auto const&  intersection_trj_prj_top_neg    = _geoAlgo.Intersection(_vmucs_top,trj_prj_neg);
-        auto const&  intersection_trj_prj_bottom_neg = _geoAlgo.Intersection(_vmucs_bottom,trj_prj_neg);
+	
+        //auto const&  intersection_trj_prj_top_neg    = _geoAlgo.Intersection(_vmucs_top,trj_prj_neg);
+        //auto const&  intersection_trj_prj_bottom_neg = _geoAlgo.Intersection(_vmucs_bottom,trj_prj_neg);
 	
 	if(intersection_trj_prj_top.size()>0 && intersection_trj_prj_bottom.size()>0){
-          _n_evt++;
+	
+	  //1 for intersec on mucs_top, 2 for intersect on mucs_bottom, 3 for 1 project on mucs_bottom
+	  std::vector<double> pt1,pt2,pt3,delta_p12,delta_p13,delta_p23;
+	  pt1.resize(3,0.0);
+	  pt2.resize(3,0.0);
+	  pt3.resize(3,0.0);
+	  delta_p12.resize(3,0.0);
+	  delta_p13.resize(3,0.0);
+	  delta_p23.resize(3,0.0);
+	  pt1 = intersection_trj_prj_top[0];
+	  pt2 = intersection_trj_prj_bottom[0];
+	  pt3 = {intersection_trj_prj_top[0].at(0),intersection_trj_prj_bottom[0].at(1),intersection_trj_prj_top[0].at(2)};
+	  
+	  for (size_t i = 0; i<3 ; i++){
+	    delta_p12.push_back(pt1.at(i)-pt2.at(i));
+	    delta_p13.push_back(pt1.at(i)-pt3.at(i));
+	    delta_p23.push_back(pt2.at(i)-pt3.at(i));
+	  }
+	  double length_12 = sqrt(std::inner_product(begin(delta_p12), end(delta_p12), begin(delta_p12), 0.0));
+	  double length_13 = sqrt(std::inner_product(begin(delta_p13), end(delta_p13), begin(delta_p13), 0.0));
+	  double length_23 = sqrt(std::inner_product(begin(delta_p23), end(delta_p23), begin(delta_p23), 0.0));
+	  
+	  double cos_theta = (pow(length_12,2)+pow(length_13,2)-pow(length_23,2))/(2.*length_12*length_13); 
+	  //std::cout<<cos_theta<<std::endl;
+	  if(length_12*length_13>0)_theta = acos (cos_theta) * 180.0 / M_PI;
+
+	  
+	  //std::cout<<intersection_trj_prj_top[0]<<std::endl;
+	  _n_evt++;
 	  //std::cout<<intersection_trj_prj_top.size()<<",";
 	  _MuCS_ints_x_top = intersection_trj_prj_top.at(0).at(0);
           _MuCS_ints_z_top = intersection_trj_prj_top.at(0).at(2);
@@ -165,35 +198,33 @@ namespace larlite {
 
 	  for(auto& v : _pe_mchit) v=0;
 	  for(auto const& step : trj) {
-
 	    for(size_t pmt_id=0; pmt_id<_pe_mchit.size(); ++pmt_id)
-
 	      _pe_mchit[pmt_id] += ::phot::PhotonVisibilityService::GetME().GetVisibility(step[0],step[1],step[2],pmt_id);
-
 	  }
 	  // Normalize
 	  double pe_mchit_sum = std::accumulate(std::begin(_pe_mchit),std::end(_pe_mchit),0.0);
-
 	  double pe_ophit_sum = std::accumulate(std::begin(_pe_ophit),std::end(_pe_ophit),0.0);
+	  
 	  if(pe_ophit_sum<1) {
-
 	    // Make rough guess on overall PE scale
 	    pe_ophit_sum = 29000.0 * 2.3 * trj.Length();
-
 	  }
-	  
 	  for(auto& v : _pe_mchit) v *= ( pe_ophit_sum / pe_mchit_sum );
-	  
-	  std::cout<<trk.NumberTrajectoryPoints()<<std::endl;
-	  
+	  //std::cout<<trk.NumberTrajectoryPoints()<<std::endl;
 	  for (size_t pt = 0; pt < trk.NumberTrajectoryPoints(); pt++) {
-
 	    auto const& pos = trk.LocationAtPoint(pt);
 	    _trj_filt.push_back(pos);
-	  
 	  }
+	  //Get Q ratio
+	  std::sort(_pe_ophit.begin(),_pe_ophit.end());
+	  std::sort(_pe_mchit.begin(),_pe_mchit.end());
+	  double QRatio_pl = _pe_mchit.at(31)/pe_ophit_sum;
+	  double QRatio_re = _pe_mchit.at(31)/pe_ophit_sum;
+	  _qratio_pl = QRatio_pl;
+	  _qratio_re = QRatio_re;
 	  
-	  
+	  //std::cout<<pe_ophit_sum<<std::endl;
+	  //std::cout<<_pe_ophit.at(31)<<std::endl; 
 	  _tree->Fill();
         }
         //correct for wrong recon direction

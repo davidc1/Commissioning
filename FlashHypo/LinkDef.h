@@ -11,7 +11,9 @@
 
 #pragma link C++ class FlashHypo+;
 #pragma link C++ class larlite::Shiyan+;
+#pragma link C++ class larlite::Qmax_Q+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
 
 

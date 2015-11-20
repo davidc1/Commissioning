@@ -27,7 +27,7 @@
 #include "fstream"
 #include <functional>
 #include <algorithm>
-
+#include <math.h>
 
 namespace larlite {
   /**
@@ -102,6 +102,10 @@ namespace larlite {
     double _length_xfiducial;
     double _length_yfiducial;
     double _length_zfiducial;
+    
+    double _theta;
+    double _qratio_pl;
+    double _qratio_re;
     
     ::geoalgo::GeoAlgo _geoAlgo;
     ::geoalgo::AABox _vfiducial;
