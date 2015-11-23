@@ -64,15 +64,16 @@ namespace larlite {
       std::cout<<"........Couldn't find reco track data product in this event...... "<<std::endl;
     }
 
-    auto ev_ophit = storage->get_data<event_ophit>("opFlash");
+    auto ev_ophit = storage->get_data<event_ophit>("OpHitFinder");
     if (!ev_ophit) {
       std::cout<<"........Couldn't find ophit data product in this event...... "<<std::endl;
     }
-    
+    /*
     auto ev_opflash = storage->get_data<event_opflash>("opFlash");
     if (!ev_opflash) {
       std::cout<<"........Couldn't find opflash data product in this event...... "<<std::endl;
     }
+    */
     
     for(size_t i = 0; i <ev_reco->size(); i++ ){
       
@@ -135,11 +136,13 @@ namespace larlite {
           _MuCS_ints_z_bottom =  intersection_trj_prj_bottom.at(0).at(2);
 	  
 	  {
+	    /*
 	    for(size_t opf = 0; opf < ev_opflash->size(); opf++){
 	      auto const& opflash = ev_opflash->at(opf);
 	      _t_opflash.push_back(opflash.Time());
 	      
 	    }
+	    */
 	  }//loop over all opflashes
 	  
 	  {
@@ -200,6 +203,7 @@ namespace larlite {
 	    }*/
 	  
 	  flash_obj.pe_v.resize(32,0.0);
+	  std::cout << "pe_v size before estimate filling: " << flash_obj.pe_v.size() << std::endl;
 	  AAA.FillEstimate(tpc_obj,flash_obj);
 	  
 	  //for(size_t i = 0; i<32;i++)std::cout<<flash_obj.pe_v.at(i);
