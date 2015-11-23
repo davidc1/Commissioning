@@ -34,12 +34,11 @@ namespace larlite {
     _length_zfiducial = larutil::Geometry::GetME()->DetLength();
 
     _vfiducial = ::geoalgo::AABox(0, -_length_yfiducial, 0, 2 * _length_xfiducial, _length_yfiducial,_length_zfiducial);
-    _vmucs_top = ::geoalgo::AABox(-71.795, 393.941, 531.45, -23.795, 398.451, 579.45);
-    //_vmucs_top = ::geoalgo::AABox(-271.795, 393.941, 331.45, 223.795, 398.451, 779.45);
+    //_vmucs_top = ::geoalgo::AABox(-71.795, 393.941, 531.45, -23.795, 398.451, 579.45);
+    _vmucs_top = ::geoalgo::AABox(-271.795, 393.941, 331.45, 223.795, 398.451, 779.45);
     
     _vmucs_bottom = ::geoalgo::AABox(-19.6948, 316.041, 533.25, 28.3052, 320.551, 581.25);
-    //_vmucs_bottom = ::geoalgo::AABox(-219.6948, 316.041, 333.25, 228.3052, 320.551, 781.25);
-
+    
     _track_positions.open ("TrackPositions.txt");
     
     _n_evt = 0;
