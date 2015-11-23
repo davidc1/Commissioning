@@ -19,6 +19,7 @@
 #include "DataFormat/track.h"
 #include "DataFormat/ophit.h"
 #include "DataFormat/opflash.h"
+#include "DataFormat/calorimetry.h"
 #include "GeoAlgo/GeoAlgo.h"
 #include "LArUtil/Geometry.h"
 #include "TTree.h"
@@ -28,6 +29,11 @@
 #include <functional>
 #include <algorithm>
 #include <math.h>
+#include "OpT0Finder/Base/FlashMatchManager.h"
+#include "OpT0Finder/Algorithms/LightPath.h"
+#include "OpT0Finder/PhotonLibrary/PhotonVisibilityService.h"
+#include "OpT0Finder/Algorithms/PhotonLibHypothesis.h"
+#include <numeric>
 
 namespace larlite {
   /**

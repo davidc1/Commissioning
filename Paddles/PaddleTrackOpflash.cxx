@@ -2,8 +2,6 @@
 #define LARLITE_PADDLETRACKOPFLASH_CXX
 
 #include "PaddleTrackOpflash.h"
-#include "OpT0Finder/PhotonLibrary/PhotonVisibilityService.h"
-#include <numeric>
 
 namespace larlite {
   
@@ -14,10 +12,6 @@ namespace larlite {
     
     if (_tree) {delete _tree;}
     _tree = new TTree("PaddleTree", "PaddleTree");
-    _tree->Branch("t_opflash","std::vector<double>",&_t_opflash);
-    _tree->Branch("t_ophit","std::vector<double>",&_t_ophit);
-    _tree->Branch("pe_ophit","std::vector<double>",&_pe_ophit);
-    _tree->Branch("pe_mchit","std::vector<double>",&_pe_mchit);
     
     _tree->Branch("run",&_run,"_run/I");
     _tree->Branch("subrun",&_subrun,"_subrun/I");
@@ -29,14 +23,18 @@ namespace larlite {
     
     _tree->Branch("trj_filt","std::vector<TVector3>",&_trj_filt);
                                       
+    _tree->Branch("t_opflash","std::vector<double>",&_t_opflash);
+    _tree->Branch("t_ophit","std::vector<double>",&_t_ophit);
+    _tree->Branch("pe_ophit","std::vector<double>",&_pe_ophit);
+    _tree->Branch("pe_mchit","std::vector<double>",&_pe_mchit);
+    
     _length_xfiducial = larutil::Geometry::GetME()->DetHalfWidth();
     _length_yfiducial = larutil::Geometry::GetME()->DetHalfHeight();
     _length_zfiducial = larutil::Geometry::GetME()->DetLength();
 
     _vfiducial = ::geoalgo::AABox(0, -_length_yfiducial, 0, 2 * _length_xfiducial, _length_yfiducial,_length_zfiducial);
-    //_vmucs_top = ::geoalgo::AABox(-71.795, 393.941, 531.45, -23.795, 398.451, 579.45);
-    _vmucs_top = ::geoalgo::AABox(-271.795, 393.941, 331.45, 223.795, 398.451, 779.45);
-    
+    _vmucs_top = ::geoalgo::AABox(-71.795, 393.941, 531.45, -23.795, 398.451, 579.45);
+    //_vmucs_top = ::geoalgo::AABox(-271.795, 393.941, 331.45, 223.795, 398.451, 779.45);
     _vmucs_bottom = ::geoalgo::AABox(-19.6948, 316.041, 533.25, 28.3052, 320.551, 581.25);
     
     _track_positions.open ("TrackPositions.txt");
@@ -54,6 +52,7 @@ namespace larlite {
   
   bool PaddleTrackOpflash::analyze(storage_manager* storage) {
 
+    
     auto const geo = ::larutil::Geometry::GetME();
     
     _t_opflash.clear();
@@ -78,10 +77,9 @@ namespace larlite {
     for(size_t i = 0; i <ev_reco->size(); i++ ){
       
       auto const& trk = ev_reco->at(i);
-
+      
       if (trk.NumberTrajectoryPoints() > 1) {
-
-        //a geoalgo::Trajectory            
+	
         ::geoalgo::Trajectory trj;
 
         for (size_t pt = 0; pt < trk.NumberTrajectoryPoints(); pt++) {
@@ -91,10 +89,10 @@ namespace larlite {
 	  trj.push_back(::geoalgo::Vector(pos[0], pos[1], pos[2]));
 	  
 	  
-	}//Save points in track trk into trajectory trj
+	}//Construct trajectory using points on track
 	
 	::geoalgo::HalfLine trj_prj(trj[0], trj[0]-trj[trj.size()/2]);
-        ::geoalgo::HalfLine trj_prj_neg(trj[trj.size()-1], trj[trj.size()/2]-trj[trj.size()-1]);
+        //::geoalgo::HalfLine trj_prj_neg(trj[trj.size()-1], trj[trj.size()/2]-trj[trj.size()-1]);
 	
 	auto const&  intersection_trj_prj_top    = _geoAlgo.Intersection(_vmucs_top,trj_prj);
         auto const&  intersection_trj_prj_bottom = _geoAlgo.Intersection(_vmucs_bottom,trj_prj);
@@ -104,9 +102,10 @@ namespace larlite {
         //auto const&  intersection_trj_prj_bottom_neg = _geoAlgo.Intersection(_vmucs_bottom,trj_prj_neg);
 	
 	if(intersection_trj_prj_top.size()>0 && intersection_trj_prj_bottom.size()>0){
-	
-	  //1 for intersec on mucs_top, 2 for intersect on mucs_bottom, 3 for 1 project on mucs_bottom
-	  std::vector<double> pt1,pt2,pt3,delta_p12,delta_p13,delta_p23;
+	  
+	  _n_evt++;
+	  
+	  std::vector<double> pt1,pt2,pt3,delta_p12,delta_p13,delta_p23;//1,2 for intersections on mucs_top/bottom, 3 for 1 project to mucs_bottom 
 	  pt1.resize(3,0.0);
 	  pt2.resize(3,0.0);
 	  pt3.resize(3,0.0);
@@ -127,13 +126,9 @@ namespace larlite {
 	  double length_23 = sqrt(std::inner_product(begin(delta_p23), end(delta_p23), begin(delta_p23), 0.0));
 	  
 	  double cos_theta = (pow(length_12,2)+pow(length_13,2)-pow(length_23,2))/(2.*length_12*length_13); 
-	  //std::cout<<cos_theta<<std::endl;
-	  if(length_12*length_13>0)_theta = acos (cos_theta) * 180.0 / M_PI;
-
 	  
-	  //std::cout<<intersection_trj_prj_top[0]<<std::endl;
-	  _n_evt++;
-	  //std::cout<<intersection_trj_prj_top.size()<<",";
+	  if(length_12*length_13>0)_theta = acos (cos_theta) * 180.0 / M_PI;
+	  
 	  _MuCS_ints_x_top = intersection_trj_prj_top.at(0).at(0);
           _MuCS_ints_z_top = intersection_trj_prj_top.at(0).at(2);
           _MuCS_ints_x_bottom =  intersection_trj_prj_bottom.at(0).at(0);
@@ -145,11 +140,10 @@ namespace larlite {
 	      _t_opflash.push_back(opflash.Time());
 	      
 	    }
-	  }//for all opflashes
+	  }//loop over all opflashes
 	  
 	  {
-	    //std::cout<<ev_ophit->size()<<std::endl;
-            for(size_t oph = 0; oph < ev_ophit->size(); oph++){
+	    for(size_t oph = 0; oph < ev_ophit->size(); oph++){
               auto const& ophit = ev_ophit->at(oph);
               _t_ophit.push_back(ophit.PeakTime());
 	      //_pe_ophit.push_back(ophit.PE());
@@ -157,11 +151,8 @@ namespace larlite {
 		auto const pmt_id = geo->OpDetFromOpChannel(ophit.OpChannel());
 		_pe_ophit[pmt_id] += ophit.PE();
 	      }
-	      //if (ophit.OpChannel()>30)std::cout<<ophit.OpChannel()<<std::endl;
-	      
 	    }
-	    //std::cout<<_pe_ophit.at(31)<<std::endl;
-          }//for all ophit
+	  }//loop over all ophit
 	  
 	  _run    = storage->get_data<event_track>("trackkalmanhit")->run();
           _subrun = storage->get_data<event_track>("trackkalmanhit")->subrun();
@@ -192,14 +183,36 @@ namespace larlite {
 	  */
 
 	  //
-	  // Implement PhotonVisibility VERY NAIEVE usage for now
+	  // Implement PhotonVisibility from OpT0Finder now
 	  //
-
+	  
+	  //::flashana::LightPath LP;
+	  
+	  ::flashana::QCluster_t tpc_obj;
+	  ::flashana::LightPath LP;
+	  ::flashana::Flash_t flash_obj;
+	  ::flashana::PhotonLibHypothesis AAA("xxx");
+	  std::cout  << "Algo name: " << AAA.AlgorithmName() << std::endl;
+	  tpc_obj = LP.FlashHypothesis(trj);
+	  /*
+	  for(size_t i=0;i<tpc_obj.size();i++){
+	    std::cout<<"wtf?"<<tpc_obj.at(i).q<<std::endl;
+	    }*/
+	  
+	  flash_obj.pe_v.resize(32,0.0);
+	  AAA.FillEstimate(tpc_obj,flash_obj);
+	  
+	  //for(size_t i = 0; i<32;i++)std::cout<<flash_obj.pe_v.at(i);
+	  
+	  //std::cout<<PL.FillEstimate(tpc_obj,flash_obj)<<std::endl;
+	  
+	  /*
 	  for(auto& v : _pe_mchit) v=0;
 	  for(auto const& step : trj) {
-	    for(size_t pmt_id=0; pmt_id<_pe_mchit.size(); ++pmt_id)
+	  a  for(size_t pmt_id=0; pmt_id<_pe_mchit.size(); ++pmt_id)
 	      _pe_mchit[pmt_id] += ::phot::PhotonVisibilityService::GetME().GetVisibility(step[0],step[1],step[2],pmt_id);
 	  }
+	  */
 	  // Normalize
 	  double pe_mchit_sum = std::accumulate(std::begin(_pe_mchit),std::end(_pe_mchit),0.0);
 	  double pe_ophit_sum = std::accumulate(std::begin(_pe_ophit),std::end(_pe_ophit),0.0);
@@ -239,6 +252,7 @@ namespace larlite {
 	  _tree->Fill();
         }
 	*/
+      
       }
     }///for all tracks
    
