@@ -108,8 +108,12 @@ namespace larlite {
     double _length_xfiducial;
     double _length_yfiducial;
     double _length_zfiducial;
+    double _length_trj_prj_fv;
+    double _length_trj_prj_fv_neg;
     
     double _theta;
+    double _pe_mchit_sum;
+    double _pe_ophit_sum;
     double _qratio_pl;
     double _qratio_re;
     

@@ -20,6 +20,8 @@ namespace larlite {
     _tree->Branch("zenith",&_theta,"_theta/D");
     _tree->Branch("QRatio_pl",&_qratio_pl,"_qratio_pl/D"); 
     _tree->Branch("QRatio_re",&_qratio_re,"_qratio_re/D");
+    _tree->Branch("pe_mchit_sum",&_pe_mchit_sum,"_pe_mchit_sum/D");
+    _tree->Branch("pe_ophit_sum",&_pe_ophit_sum,"_pe_ophit_sum/D");
     
     _tree->Branch("trj_filt","std::vector<TVector3>",&_trj_filt);
                                       
@@ -41,9 +43,6 @@ namespace larlite {
     
     _n_evt = 0;
     
-    _pe_ophit.resize(32);
-    _pe_mchit.resize(32);
-
     //fPhotonLib = new ubphotonlib::PhotonLibrary();
     //fPhotonLib->LoadDefault();
     
@@ -55,6 +54,8 @@ namespace larlite {
     
     auto const geo = ::larutil::Geometry::GetME();
     
+    _pe_ophit.resize(32,0.0);
+    _pe_mchit.resize(32,0.0);
     _t_opflash.clear();
     _t_ophit.clear();
     std::fill(_pe_ophit.begin(), _pe_ophit.end(), 0);
@@ -93,18 +94,21 @@ namespace larlite {
 	}//Construct trajectory using points on track
 	
 	::geoalgo::HalfLine trj_prj(trj[0], trj[0]-trj[trj.size()/2]);
-        //::geoalgo::HalfLine trj_prj_neg(trj[trj.size()-1], trj[trj.size()/2]-trj[trj.size()-1]);
+        ::geoalgo::HalfLine trj_prj_neg(trj[trj.size()-1], trj[trj.size()-1]-trj[trj.size()/2]);
 	
 	auto const&  intersection_trj_prj_top    = _geoAlgo.Intersection(_vmucs_top,trj_prj);
         auto const&  intersection_trj_prj_bottom = _geoAlgo.Intersection(_vmucs_bottom,trj_prj);
 	
-	
-        //auto const&  intersection_trj_prj_top_neg    = _geoAlgo.Intersection(_vmucs_top,trj_prj_neg);
+	//auto const&  intersection_trj_prj_top_neg    = _geoAlgo.Intersection(_vmucs_top,trj_prj_neg);
         //auto const&  intersection_trj_prj_bottom_neg = _geoAlgo.Intersection(_vmucs_bottom,trj_prj_neg);
+	
+	auto const&  intersection_trj_prj_fv        = _geoAlgo.Intersection(_vfiducial,trj_prj);
+	auto const&  intersection_trj_prj_fv_neg    = _geoAlgo.Intersection(_vfiducial,trj_prj_neg);
+	//auto const&  intersection_trj_fv            = _geoAlgo.Intersection(_vfiducial,trj);
 	
 	if(intersection_trj_prj_top.size()>0 && intersection_trj_prj_bottom.size()>0){
 	  
-	  _n_evt++;
+	  //_n_evt++;
 	  
 	  std::vector<double> pt1,pt2,pt3,delta_p12,delta_p13,delta_p23;//1,2 for intersections on mucs_top/bottom, 3 for 1 project to mucs_bottom 
 	  pt1.resize(3,0.0);
@@ -137,7 +141,7 @@ namespace larlite {
 	  
 	  {
 	    /*
-	    for(size_t opf = 0; opf < ev_opflash->size(); opf++){
+	      for(size_t opf = 0; opf < ev_opflash->size(); opf++){
 	      auto const& opflash = ev_opflash->at(opf);
 	      _t_opflash.push_back(opflash.Time());
 	      
@@ -161,65 +165,41 @@ namespace larlite {
           _subrun = storage->get_data<event_track>("trackkalmanhit")->subrun();
           _event  = storage->get_data<event_track>("trackkalmanhit")->event_id();
           _trk_id = trk.ID();
+	  
 	  //Save positions into txt file
 	  _track_positions<<"Run: "<<_run<<" , Subrun: "<<_subrun<<" , Event: "<<_event<<" , Track_ID: "<<_trk_id<<std::endl; 
-	  _track_positions<<trj.front()<<std::endl;
-	  _track_positions<<trj.back()<<std::endl;
-	  /*
-	  std::vector< std::vector<double> > midpoints;
-	  std::vector< std::vector<float> > chphotons;
-	  for( size_t step=0; step < trj.size()-1; step++){
-	    optrackfit::TrackHypothesis hypo( trj.at(step), trj.at(step+1) );
-	    optrackfit::makeVoxelList( hypo, *fPhotonLib, 29000.0, 2.3, 32, midpoints, chphotons );
-	  }
-	  
-	  _pe_mchit.clear();
-	  _pe_mchit.resize( 32, 0.0 );
-	  for (int ich=0; ich<32; ich++) {
-	    double chpe = 0.0;
-	    for ( int istep=0; istep<(int)chphotons.size(); istep++ ) {
-	      chpe += chphotons.at(istep).at(ich)*0.0098*0.3;
-	    }
-	    if ( chpe>5.0 )
-	      _pe_mchit.at(ich) += chpe;
-	  }
-	  */
+	  //_track_positions<<trj.front()<<std::endl;
+	  //_track_positions<<trj.back()<<std::endl;
 
 	  //
 	  // Implement PhotonVisibility from OpT0Finder now
 	  //
 	  
-	  //::flashana::LightPath LP;
-	  
 	  ::flashana::QCluster_t tpc_obj;
 	  ::flashana::LightPath LP;
 	  ::flashana::Flash_t flash_obj;
-	  ::flashana::PhotonLibHypothesis AAA("xxx");
-	  std::cout  << "Algo name: " << AAA.AlgorithmName() << std::endl;
+	  ::flashana::PhotonLibHypothesis PL;
+	  
 	  tpc_obj = LP.FlashHypothesis(trj);
 	  /*
 	  for(size_t i=0;i<tpc_obj.size();i++){
 	    std::cout<<"wtf?"<<tpc_obj.at(i).q<<std::endl;
 	    }*/
-	  
 	  flash_obj.pe_v.resize(32,0.0);
-	  std::cout << "pe_v size before estimate filling: " << flash_obj.pe_v.size() << std::endl;
-	  AAA.FillEstimate(tpc_obj,flash_obj);
-	  
+	  PL.FillEstimate(tpc_obj,flash_obj);
+	  _pe_mchit =  flash_obj.pe_v;
 	  //for(size_t i = 0; i<32;i++)std::cout<<flash_obj.pe_v.at(i);
-	  
-	  //std::cout<<PL.FillEstimate(tpc_obj,flash_obj)<<std::endl;
-	  
-	  /*
-	  for(auto& v : _pe_mchit) v=0;
-	  for(auto const& step : trj) {
-	  a  for(size_t pmt_id=0; pmt_id<_pe_mchit.size(); ++pmt_id)
-	      _pe_mchit[pmt_id] += ::phot::PhotonVisibilityService::GetME().GetVisibility(step[0],step[1],step[2],pmt_id);
-	  }
-	  */
+	  	  
 	  // Normalize
-	  double pe_mchit_sum = std::accumulate(std::begin(_pe_mchit),std::end(_pe_mchit),0.0);
-	  double pe_ophit_sum = std::accumulate(std::begin(_pe_ophit),std::end(_pe_ophit),0.0);
+	  double pe_mchit_sum = 0;
+	  double pe_ophit_sum = 0;
+	  
+	  pe_mchit_sum = std::accumulate(std::begin(_pe_mchit),std::end(_pe_mchit),0.0);
+	  pe_ophit_sum = std::accumulate(std::begin(_pe_ophit),std::end(_pe_ophit),0.0);
+	  
+	  _pe_mchit_sum = pe_mchit_sum;
+	  _pe_ophit_sum = pe_ophit_sum;
+	  
 	  /*
 	  if(pe_ophit_sum<1) {
 	    // Make rough guess on overall PE scale
@@ -240,23 +220,46 @@ namespace larlite {
 	  _qratio_pl = QRatio_pl;
 	  _qratio_re = QRatio_re;
 	  
-	  //std::cout<<pe_ophit_sum<<std::endl;
-	  //std::cout<<_pe_ophit.at(31)<<std::endl; 
-	  _tree->Fill();
+	  /////////////////further select events
+	  
+	  {
+            double length = trj.Length();
+            _length_trj_prj_fv = 0;
+            _length_trj_prj_fv_neg = 0;
+
+            if(length>150){//1ST, track length larger than 50cm
+	      std::vector<double> pt1,pt2,delta_p12;
+              pt1.resize(3,0.0);
+              pt2.resize(3,0.0);
+              delta_p12.resize(3,0.0);
+              if(intersection_trj_prj_fv.size()>0){//2ND, sum of gaps btw start/end of track and fv smaller than
+                pt1 = intersection_trj_prj_fv[0];
+                for(size_t i = 0; i<3 ; i++){
+                  pt2[i] = trj.at(0).at(i);
+                  delta_p12.push_back(pt1.at(i)-pt2.at(i));
+                }
+                _length_trj_prj_fv = sqrt(std::inner_product(begin(delta_p12), end(delta_p12), begin(delta_p12), 0.0));
+              }
+              pt1.resize(3,0.0);
+              pt2.resize(3,0.0);
+              delta_p12.resize(3,0.0);
+              if(intersection_trj_prj_fv_neg.size()>0){
+                pt1 = intersection_trj_prj_fv_neg[0];
+                for(size_t i = 0; i<3 ; i++){
+                  pt2[i] = trj.at(trj.size()-1).at(i);
+                  delta_p12.push_back(pt1.at(i)-pt2.at(i));
+                }
+                _length_trj_prj_fv_neg = sqrt(std::inner_product(begin(delta_p12), end(delta_p12), begin(delta_p12), 0.0));
+              }
+              if(_length_trj_prj_fv+_length_trj_prj_fv_neg<100){
+                _n_evt++;
+		//std::cout<<_run<<" "<<_subrun<<" "<<_event<<std::endl;
+		_tree->Fill();
+	      }
+	    }
+          }
+	  //_tree->Fill();
         }
-        //correct for wrong recon direction
-	/*
-	if(intersection_trj_prj_top_neg.size()>0 && intersection_trj_prj_bottom_neg.size()>0){
-          _n_evt++;
-	  //std::cout<<intersection_trj_prj_top_neg.size();
-          _MuCS_ints_x_top = intersection_trj_prj_top_neg.at(0).at(0);
-          _MuCS_ints_z_top = intersection_trj_prj_top_neg.at(0).at(2);
-          _MuCS_ints_x_bottom =  intersection_trj_prj_bottom_neg.at(0).at(0);
-          _MuCS_ints_z_bottom =  intersection_trj_prj_bottom_neg.at(0).at(2);
-	  _tree->Fill();
-        }
-	*/
-      
       }
     }///for all tracks
    

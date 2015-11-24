@@ -15,8 +15,3 @@
 #pragma link C++ class larlite::ValidateNIM+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
-
-
-
-
-
