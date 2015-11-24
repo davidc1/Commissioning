@@ -62,15 +62,20 @@ namespace larlite {
     
 
     // getter function for tracks in an event
-    std::vector<::geoalgo::Trajectory> getTrj() {return _trj;}
+    std::vector<::geoalgo::Trajectory> getTrj()      {return _trj;}
     // getter function for tracks in an event contained by TPCFV
-    std::vector<::geoalgo::Trajectory> getTrj_con() {return _trj_con;}
+    std::vector<::geoalgo::Trajectory> getTrj_con()  {return _trj_con;}
     // getter function for tracks in an event pass MuCS
     std::vector<::geoalgo::Trajectory> getTrj_mucs() {return _trj_mucs;}
     // getter function for back-projected half line
-    std::vector<::geoalgo::HalfLine> getHalfLine() {return _trj_prj;}
+    std::vector<::geoalgo::HalfLine> getHalfLine()   {return _trj_prj;}
     // getter function for linesegment (proj w/ first and end point)
-    std::vector<::geoalgo::LineSegment> getLineseg(){return _prj_lineseg;}
+    std::vector<::geoalgo::LineSegment> getLineseg() {return _prj_lineseg;}
+    // getter functions for event information
+    int getRun()    {return _run;}
+    int getSubrun() {return _subrun;}
+    int getEvent()  {return _event;}
+    int getTrackID(){return _trk_id;}
     
   protected:
     
@@ -78,6 +83,12 @@ namespace larlite {
     
     size_t _n_ev_reco;
 
+    int _run;
+    int _subrun;
+    int _event;
+    int _trk_id;
+
+    
     int _n_evt;
     int _n_tracks;
     int _n_intersections_FV;

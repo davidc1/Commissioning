@@ -115,6 +115,12 @@ bool PaddleTrackFilter::analyze(storage_manager* storage) {
       if(intersections_trj_prj_top.size()>0 && intersections_trj_prj_bottom.size()>0){
 	_trj_mucs.push_back(trj);
 	_n_intersections_FV++;
+
+	_run    = storage->get_data<event_track>("trackkalmanhit")->run();
+	_subrun = storage->get_data<event_track>("trackkalmanhit")->subrun();
+	_event  = storage->get_data<event_track>("trackkalmanhit")->event_id();
+	_trk_id = trk.ID();
+	
       }
       //store all  tracks in an event
       _trj.push_back(trj);  

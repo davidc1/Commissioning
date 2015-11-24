@@ -49,14 +49,20 @@ while my_proc.process_event():
     print index
     index +=1
     print 'new event...'
-    fidVol = my_QRA.getFiducialVol()
-    mcsTop = my_QRA.getTopMuCS()
-    mcsBot = my_QRA.getBottomMuCS()
-    mcsTrj = my_QRA.getTrj()
-    mcsTrjCon = my_QRA.getTrj_con()
-    mcsTrjMuCS = my_QRA.getTrj_mucs()
+    fidVol      = my_QRA.getFiducialVol()
+    mcsTop      = my_QRA.getTopMuCS()
+    mcsBot      = my_QRA.getBottomMuCS()
+    mcsTrj      = my_QRA.getTrj()
+    mcsTrjCon   = my_QRA.getTrj_con()
+    mcsTrjMuCS  = my_QRA.getTrj_mucs()
     mcsHalfLine = my_QRA.getHalfLine()
     mcsLineSeg  = my_QRA.getLineseg()
+    run         = my_QRA.getRun()
+    subrun      = my_QRA.getSubrun()
+    event       = my_QRA.getEvent()
+    print "run:   ", run
+    print "subrun:", subrun
+    print "event: ", event
     # add objects to viewer
     viewer.clear()
     viewer.add(fidVol,'FV.','k')
