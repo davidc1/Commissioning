@@ -212,14 +212,7 @@ namespace larlite {
 	    _trj_filt.push_back(pos);
 	  }
 	  */
-	  //Get Q ratio
-	  std::sort(_pe_ophit.begin(),_pe_ophit.end());
-	  std::sort(_pe_mchit.begin(),_pe_mchit.end());
-	  double QRatio_pl = _pe_mchit.at(31)/pe_mchit_sum;//photon library
-	  double QRatio_re = _pe_ophit.at(31)/pe_ophit_sum;//ophit
-	  _qratio_pl = QRatio_pl;
-	  _qratio_re = QRatio_re;
-	  
+	  	  
 	  /////////////////further select events
 	  
 	  {
@@ -258,6 +251,15 @@ namespace larlite {
 	      }
 	    }
           }
+	  
+	  //Get Q ratio
+	  std::sort(_pe_ophit.begin(),_pe_ophit.end());
+	  std::sort(_pe_mchit.begin(),_pe_mchit.end());
+          double QRatio_pl = _pe_mchit.at(31)/pe_mchit_sum;//photon library
+          double QRatio_re = _pe_ophit.at(31)/pe_ophit_sum;//ophit
+          _qratio_pl = QRatio_pl;
+          _qratio_re = QRatio_re;
+	  
 	  //_tree->Fill();
         }
       }
