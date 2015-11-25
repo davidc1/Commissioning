@@ -19,6 +19,7 @@
 #include "DataFormat/track.h"
 #include "DataFormat/ophit.h"
 #include "DataFormat/opflash.h"
+#include "DataFormat/mctrack.h"
 #include "DataFormat/calorimetry.h"
 #include "GeoAlgo/GeoAlgo.h"
 #include "LArUtil/Geometry.h"
@@ -31,6 +32,7 @@
 #include <math.h>
 #include "OpT0Finder/Base/FlashMatchManager.h"
 #include "OpT0Finder/Algorithms/LightPath.h"
+#include "OpT0Finder/App/MCQCluster.h"
 #include "OpT0Finder/PhotonLibrary/PhotonVisibilityService.h"
 #include "OpT0Finder/Algorithms/PhotonLibHypothesis.h"
 #include <numeric>
@@ -71,6 +73,12 @@ namespace larlite {
     */
     virtual bool finalize();
 
+    //setter function
+    bool UseData       (bool use) {_useData       = use ; return  _useData;}
+    bool UseSimulation (bool use) {_useSimulation = use ; return  _useSimulation;}
+    bool UseMCQCluster (bool use) {_useMCQCluster = use ; return  _useMCQCluster;}
+    bool UseQCluster   (bool use) {_useQCluster   = use ; return  _useQCluster;}
+    
   protected:
     
     TTree* _tree;
@@ -79,6 +87,10 @@ namespace larlite {
     std::ofstream _track_positions;
     
     bool _save_histos;
+    bool _useData;
+    bool _useSimulation;
+    bool _useMCQCluster;
+    bool _useQCluster;
 
     size_t _n_ev_reco;
     
@@ -116,6 +128,9 @@ namespace larlite {
     double _pe_ophit_sum;
     double _qratio_pl;
     double _qratio_re;
+
+    double _mc_e;
+    double _mc_e_dep;
     
     ::geoalgo::GeoAlgo _geoAlgo;
     ::geoalgo::AABox _vfiducial;
