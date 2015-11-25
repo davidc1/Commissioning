@@ -27,9 +27,22 @@ my_proc.set_ana_output_file("PaddleTrackOpflash_output.root");
 
 # Attach an analysis unit ... here we use a base class which does nothing.
 # Replace with your analysis unit if you wish.
-my_QRA = fmwk.PaddleTrackOpflash()
-#my_QRA.SetSaveHistos(True)
-my_proc.add_process(my_QRA)
+my_unit = fmwk.PaddleTrackOpflash()
+
+#my_unit.UseData(True)
+my_unit.UseData(False)
+
+my_unit.UseSimulation(True)
+#my_unit.UseSimulation(False)
+
+#my_unit.UseMCQCluster(True)
+my_unit.UseMCQCluster(False)
+
+my_unit.UseQCluster(True)
+#my_unit.UseQCluster(False)
+
+#my_unit.SetSaveHistos()
+my_proc.add_process(my_unit)
 
 print
 print  "Finished configuring ana_processor. Start event loop!"

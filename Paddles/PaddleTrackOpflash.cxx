@@ -292,12 +292,13 @@ namespace larlite {
         if(trk.NumberTrajectoryPoints() > 1){
 
           ::geoalgo::Trajectory trj;
-
+	  
           for (size_t pt = 0; pt < trk.NumberTrajectoryPoints(); pt++) {
 
             auto const& pos = trk.LocationAtPoint(pt);
-
-            trj.push_back(::geoalgo::Vector(pos[0], pos[1], pos[2]));
+	    
+	    if(_vfiducial.Contain(pos)==0)std::cout<<"wtf?";
+            if(_vfiducial.Contain(pos)>0)trj.push_back(::geoalgo::Vector(pos[0], pos[1], pos[2]));
 
           }
 	  {
@@ -306,7 +307,7 @@ namespace larlite {
 	    _mc_e = mctrk.Start().E();//Truth start energy
 	    
 	    if(mctrk.size()>1){
-	      _mc_e_dep = mctrk.front().E()-mctrk.back().E();//Deposited energy
+	      _mc_e_dep = mctrk.Start().E()-mctrk.End().E();//Deposited energy
 	    }
 	    
 	    double t = mctrk.Start().T()/1000.;//Convert start time into us	
