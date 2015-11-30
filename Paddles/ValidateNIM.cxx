@@ -98,11 +98,13 @@ namespace larlite {
       if ( ( (ch >= 36)  && (ch < 100) ) ||
 	   ( (ch >= 136) && (ch < 200) ) )
 	{
-	  std::cout << "looking at channel " << ch << "\t wf size : " << wf.size() << std::endl;
+	  if (_verbose)
+	    std::cout << "looking at channel " << ch << "\t wf size : " << wf.size() << std::endl;
 	  
 	  for (size_t i=0; i < wf.size(); i++){
 	    if ( wf[i] > 2200 ){
-	      std::cout << "found a pulse!" << std::endl;
+	      if (_verbose)
+		std::cout << "found a pulse!" << std::endl;
 	      if ( ch ==  39 ) { _rwm   = 1; }
 	      if ( ch ==  38 ) { _strb1 = 1; }
 	      if ( ch ==  37 ) { _numi  = 1; }
