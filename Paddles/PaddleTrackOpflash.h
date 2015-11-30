@@ -74,10 +74,8 @@ namespace larlite {
     virtual bool finalize();
 
     //setter function
-    bool UseData       (bool use) {_useData       = use ; return  _useData;}
-    bool UseSimulation (bool use) {_useSimulation = use ; return  _useSimulation;}
-    bool UseMCQCluster (bool use) {_useMCQCluster = use ; return  _useMCQCluster;}
-    bool UseQCluster   (bool use) {_useQCluster   = use ; return  _useQCluster;}
+    bool UseData       (bool use) {_useData       = use ; _useSimulation = !use; return  _useData;}
+    bool UseQCluster   (bool use) {_useQCluster   = use ; _useMCQCluster = !use ;return  _useQCluster;}
     
   protected:
     
@@ -99,7 +97,10 @@ namespace larlite {
     int _event;
     int _trk_id;
     
+    int _test=0;
     int _n_evt;
+    int _n_evt_paddle;
+    int _n_evt_mc;
     int _n_tracks;
     int _opchannel_id;
     int _n_intersections_FV;
@@ -128,7 +129,7 @@ namespace larlite {
     double _pe_ophit_sum;
     double _qratio_pl;
     double _qratio_re;
-
+    
     double _mc_e;
     double _mc_e_dep;
     

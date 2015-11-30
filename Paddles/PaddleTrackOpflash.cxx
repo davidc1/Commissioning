@@ -26,7 +26,7 @@ namespace larlite {
     _tree->Branch("mc_e_dep",&_mc_e_dep,"_mc_e_dep/D");
     
     _tree->Branch("trj_filt","std::vector<TVector3>",&_trj_filt);
-                                      
+    
     _tree->Branch("t_opflash","std::vector<double>",&_t_opflash);
     _tree->Branch("t_ophit","std::vector<double>",&_t_ophit);
     _tree->Branch("pe_ophit","std::vector<double>",&_pe_ophit);
@@ -43,16 +43,16 @@ namespace larlite {
     
     _track_positions.open ("TrackPositions.txt");
     
-    _n_evt = 0;
-    
+    _n_evt        = 0;
+    _n_evt_paddle = 0;
+    _n_evt_mc     = 0;
     return true;
   }
   
   bool PaddleTrackOpflash::analyze(storage_manager* storage) {
     
-    
     auto const geo = ::larutil::Geometry::GetME();
-    
+    _n_evt++;
     _pe_ophit.resize(32,0.0);
     _pe_mchit.resize(32,0.0);
     _t_opflash.clear();
@@ -65,6 +65,7 @@ namespace larlite {
 	std::cout<<"........Couldn't find reco track data product in this event...... "<<std::endl;
       }
       
+      //auto ev_ophit = storage->get_data<event_ophit>("opFlash");
       auto ev_ophit = storage->get_data<event_ophit>("OpHitFinder");
       if (!ev_ophit) {
 	std::cout<<"........Couldn't find ophit data product in this event...... "<<std::endl;
@@ -109,7 +110,7 @@ namespace larlite {
 	  
 	  if(intersection_trj_prj_top.size()>0 && intersection_trj_prj_bottom.size()>0){//2)This strict requirement basically excludes all simulated data
 	    
-	    //_n_evt++;
+	    //_n_evt_paddle++;
 	    
 	    //3)Calculate zenith angle
 	    std::vector<double> pt1,pt2,pt3,delta_p12,delta_p13,delta_p23;//1,2 for intersections on mucs_top/bottom, 3 for 1 project to mucs_bottom 
@@ -155,7 +156,7 @@ namespace larlite {
 	      for(size_t oph = 0; oph < ev_ophit->size(); oph++){
 		auto const& ophit = ev_ophit->at(oph);
 		_t_ophit.push_back(ophit.PeakTime());
-		if(ophit.PeakTime()>-1 &&ophit.PeakTime()<-0.8){
+		if(ophit.PeakTime()>-1 &&ophit.PeakTime()<-0.85){
 		  auto const pmt_id = geo->OpDetFromOpChannel(ophit.OpChannel());
 		  _pe_ophit[pmt_id] += ophit.PE();
 		}
@@ -181,8 +182,8 @@ namespace larlite {
 	    ::flashana::Flash_t flash_obj;
 	    ::flashana::PhotonLibHypothesis PL;
 	    
-	    LP.TrackStart(false);
-	    LP.TrackEnd(false);
+	    LP.TrackStart(true);
+	    LP.TrackEnd(true);
 	    tpc_obj = LP.FlashHypothesis(trj);
 	    /*
 	      for(size_t i=0;i<tpc_obj.size();i++){
@@ -252,7 +253,7 @@ namespace larlite {
 		  _length_trj_prj_fv_neg = sqrt(std::inner_product(begin(delta_p12), end(delta_p12), begin(delta_p12), 0.0));
 		}
 		if(_length_trj_prj_fv+_length_trj_prj_fv_neg<100){
-		  _n_evt++;
+		  _n_evt_paddle++;
 		  //std::cout<<_run<<" "<<_subrun<<" "<<_event<<std::endl;
 		  _tree->Fill();
 		}
@@ -285,40 +286,39 @@ namespace larlite {
       if (!ev_ophit) {
 	std::cout<<"........Couldn't find ophit data product in this event...... "<<std::endl;
       }
-
+      
       for(size_t i = 0; i <ev_reco->size(); i++ ){
-        auto const& trk = ev_reco->at(i);
-
+        
+	auto const& trk = ev_reco->at(i);
+	
         if(trk.NumberTrajectoryPoints() > 1){
-
+	  
           ::geoalgo::Trajectory trj;
 	  
           for (size_t pt = 0; pt < trk.NumberTrajectoryPoints(); pt++) {
-
+	    
             auto const& pos = trk.LocationAtPoint(pt);
 	    
-	    if(_vfiducial.Contain(pos)==0)std::cout<<"wtf?";
+	    //if(_vfiducial.Contain(pos)==0)std::cout<<"wtf?";
             if(_vfiducial.Contain(pos)>0)trj.push_back(::geoalgo::Vector(pos[0], pos[1], pos[2]));
 
           }
-	  {
-	    auto const& mctrk = ev_mct->at(0);
-	    
-	    _mc_e = mctrk.Start().E();//Truth start energy
-	    
-	    if(mctrk.size()>1){
-	      _mc_e_dep = mctrk.Start().E()-mctrk.End().E();//Deposited energy
-	    }
-	    
+	  auto const& mctrk = ev_mct->at(0);
+	  
+	  _mc_e = mctrk.Start().E();//Truth start energy
+	  
+	  if(mctrk.size()>1){
+	    _mc_e_dep = mctrk.Start().E()-mctrk.End().E();//Deposited energy
+	  }
+	   
+	  {//###Get Ophit
 	    double t = mctrk.Start().T()/1000.;//Convert start time into us	
 	    
 	    for(size_t oph = 0; oph < ev_ophit->size(); oph++){
 	      
 	      auto const& ophit = ev_ophit->at(oph);
-	      
-	      _t_ophit.push_back(ophit.PeakTime());
-	      
-	      if(ophit.PeakTime()>t &&ophit.PeakTime()<t+0.1){
+	      _t_ophit.push_back(ophit.PeakTime()-t);
+	      if(ophit.PeakTime()>=t+0.04 &&ophit.PeakTime()<=t+0.09){
 		
 		auto const pmt_id = geo->OpDetFromOpChannel(ophit.OpChannel());
 		
@@ -326,11 +326,12 @@ namespace larlite {
 		
 	      }
 	    }
-	  }//Get Ophits
+	  }//###Get Ophit
 	  
 	  {//QCluster
 	    ::flashana::QCluster_t tpc_obj;
 	    ::flashana::LightPath LP;
+	    
 	    ::flashana::Flash_t flash_obj;
 	    ::flashana::PhotonLibHypothesis PL;
 	    
@@ -342,7 +343,7 @@ namespace larlite {
 	    tpc_obj_mc = MCQ.QCluster(0);//0 for 0th track, works for single particle
 	    
 	    LP.TrackStart(false);
-	    LP.TrackEnd(false);
+	    LP.TrackEnd(true);
 	    tpc_obj = LP.FlashHypothesis(trj);
 	    
 	    flash_obj.pe_v.resize(32,0.0);
@@ -352,8 +353,8 @@ namespace larlite {
 	    _pe_mchit =  flash_obj.pe_v;
 	    
 	    _pe_mchit_sum = std::accumulate(std::begin(_pe_mchit),std::end(_pe_mchit),0.0);
-	    auto const& mctrk = ev_mct->at(0);
-	    if(_pe_mchit_sum<10)std::cout<<mctrk.size()<<std::endl;
+	    //auto const& mctrk = ev_mct->at(0);
+	    //if(_pe_mchit_sum<10)std::cout<<mctrk.size()<<std::endl;
 	    _pe_ophit_sum = std::accumulate(std::begin(_pe_ophit),std::end(_pe_ophit),0.0);
 	  }
 	  _tree->Fill();
@@ -374,10 +375,20 @@ namespace larlite {
     
     _track_positions.close();
     
-    if(_fout){
-      _fout->cd();
-      if(_tree) _tree->Write();
-      std::cout<<"\nThrough-going muon found in "<<_n_evt<<" events!!!???"<<std::endl;
+    if(_useData){
+      if(_fout){
+	_fout->cd();
+	if(_tree) _tree->Write();
+	std::cout<<"\n"<<_n_evt_paddle<<" MuCS-through-going muons found in "<<_n_evt<<" events"<<std::endl;
+      }
+    }
+    
+    if(_useSimulation){
+      if(_fout){
+        _fout->cd();
+        if(_tree) _tree->Write();
+	std::cout<<"\n"<<_n_evt_mc<<" events found to be contained in Fiducial Volume of TPC of total evts "<<_n_evt<<std::endl;
+      }
     }
     
     if(_save_histos){
