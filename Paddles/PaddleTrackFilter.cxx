@@ -63,7 +63,7 @@ bool PaddleTrackFilter::analyze(storage_manager* storage) {
       
       // make a HalfLine that starts at the beginning of the track and points
       // backwards in the track direction:
-
+      
       ::geoalgo::HalfLine trj_prj_start(trj[0], trk.DirectionAtPoint(0));
       ::geoalgo::HalfLine trj_prj_Negstart(trj[0], -trk.DirectionAtPoint(0));
       ::geoalgo::HalfLine trj_prj_end(trj.back(), trk.EndDirection());
@@ -100,19 +100,20 @@ bool PaddleTrackFilter::analyze(storage_manager* storage) {
       if (intersections_trj_prj_top_start.size() > 0 || intersections_trj_prj_top_end.size() > 0 ||
           intersections_trj_prj_top_Negstart.size() > 0 || intersections_trj_prj_top_Negend.size() > 0) {
         _n_intersections_mucs_bottom++;
-      }
+	}
       //store tracks proj by lineseg
       ::geoalgo::LineSegment prj_lineseg((trj[0]+(trj[0]-trj[trj.size()/2-1])*7), trj[trj.size()/2-1]);
        _prj_lineseg.push_back(prj_lineseg);
       //store tracks in an event contained by TPCFV
       if(_vfiducial.Contain(trj.at(0))==1){_trj_con.push_back(trj);}
       //store mucs tracks in an event
-      ::geoalgo::HalfLine trj_prj(trj[0], trj[0]-trj[trj.size()/2]);
+      //::geoalgo::HalfLine trj_prj(trj[0], trj[0]-trj[trj.size()/2]);
+      ::geoalgo::HalfLine trj_prj(trj[0], trj[0]-trj[1]);
       _trj_prj.push_back(trj_prj);
       auto const& intersections_trj_prj_top = _geoAlgo.Intersection(_vmucs_top, trj_prj);
       auto const& intersections_trj_prj_bottom = _geoAlgo.Intersection(_vmucs_bottom, trj_prj);
       
-      if(intersections_trj_prj_top.size()>0 && intersections_trj_prj_bottom.size()>0){
+      if(intersections_trj_prj_top.size()>0 || intersections_trj_prj_bottom.size()>0){
 	_trj_mucs.push_back(trj);
 	_n_intersections_FV++;
 

@@ -36,6 +36,7 @@
 #include "OpT0Finder/PhotonLibrary/PhotonVisibilityService.h"
 #include "OpT0Finder/Algorithms/PhotonLibHypothesis.h"
 #include <numeric>
+#include "TH2.h"
 
 namespace larlite {
   /**
@@ -50,7 +51,7 @@ namespace larlite {
     PaddleTrackOpflash()
       :_tree(nullptr)
       { _name="PaddleTrackOpflash";
-	_pe_dis_hist = 0;
+	_v_pe_hist = 0;
 	_fout=0;
 	_fout=0;
       }
@@ -81,6 +82,7 @@ namespace larlite {
     
     TTree* _tree;
     TH1F* _pe_dis_hist;
+    TH2F* _v_pe_hist;
    
     std::ofstream _track_positions;
     
@@ -106,11 +108,31 @@ namespace larlite {
     int _n_intersections_FV;
     int _n_intersections_mucs_top;
     int _n_intersections_mucs_bottom;
+    int _n_mctrack;
+    int _n_recotrack;
+
+    double _retrk_start_x;
+    double _retrk_start_y;
+    double _retrk_start_z;
+    double _retrk_end_x;
+    double _retrk_end_y;
+    double _retrk_end_z;
+    double _retrk_len;
+    double _retrk_len_tot;
+    
+    double _mctrk_start_x;
+    double _mctrk_start_y;
+    double _mctrk_start_z;
+    double _mctrk_end_x;
+    double _mctrk_end_y;
+    double _mctrk_end_z;
+    double _mctrk_len;
     
     std::vector<double> _t_opflash;
     std::vector<double> _t_ophit;
-    std::vector<double> _pe_ophit;
-    std::vector<double> _pe_mchit;
+    std::vector<double> _pe_ophit;//sum of PE on each PMT
+    std::vector<double> _pe_mchit;//sum of PE on each PMT
+    std::vector<double> _pe_hit;  //PE in each hit  
         
     //muon intersection w/ MuCS
     double _MuCS_ints_x_top;
@@ -146,6 +168,16 @@ namespace larlite {
     std::vector<::geoalgo::LineSegment> _prj_lineseg;
 
     std::vector<TVector3> _trj_filt;
+    
+    ::flashana::QCluster_t tpc_obj;
+    ::flashana::LightPath LP;
+
+    ::flashana::Flash_t flash_obj;
+    ::flashana::PhotonLibHypothesis PL;
+
+    ::flashana::QCluster_t tpc_obj_mc;
+    ::flashana::MCQCluster MCQ;
+
   };
 }
 #endif

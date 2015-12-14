@@ -3,12 +3,14 @@
 
 #include "PaddleTrackOpflash.h"
 
+double multi (double x) {return x*.23;}
+
 namespace larlite {
   
   bool PaddleTrackOpflash::initialize() {
     
-    if(!_pe_dis_hist)
-      _pe_dis_hist =  new TH1F("PE distribution","PE distribution",32,0,32);
+    if(!_v_pe_hist)
+      _v_pe_hist =  new TH2F("PE","PE",100,-5,20,100,0,3000);
     
     if (_tree) {delete _tree;}
     _tree = new TTree("PaddleTree", "PaddleTree");
@@ -17,6 +19,26 @@ namespace larlite {
     _tree->Branch("subrun",&_subrun,"_subrun/I");
     _tree->Branch("event",&_event,"_event/I");
     _tree->Branch("trk_id",&_trk_id,"_trk_id/I");
+    _tree->Branch("n_mctrack",&_n_mctrack,"_n_mctrack/I");
+    _tree->Branch("n_recotrack",&_n_recotrack,"_n_recotrack/I");
+
+    _tree->Branch("retrk_start_x",&_retrk_start_x,"_retrk_start_x/D");
+    _tree->Branch("retrk_start_y",&_retrk_start_y,"_retrk_start_y/D");
+    _tree->Branch("retrk_start_z",&_retrk_start_z,"_retrk_start_z/D");
+    _tree->Branch("retrk_end_x",&_retrk_end_x,"_retrk_end_x/D");
+    _tree->Branch("retrk_end_y",&_retrk_end_y,"_retrk_end_y/D");
+    _tree->Branch("retrk_end_z",&_retrk_end_z,"_retrk_end_z/D");
+
+    _tree->Branch("mctrk_start_x",&_mctrk_start_x,"_mctrk_start_x/D");
+    _tree->Branch("mctrk_start_y",&_mctrk_start_y,"_mctrk_start_y/D");
+    _tree->Branch("mctrk_start_z",&_mctrk_start_z,"_mctrk_start_z/D");
+    _tree->Branch("mctrk_end_x",&_mctrk_end_x,"_mctrk_end_x/D");
+    _tree->Branch("mctrk_end_y",&_mctrk_end_y,"_mctrk_end_y/D");
+    _tree->Branch("mctrk_end_z",&_mctrk_end_z,"_mctrk_end_z/D");
+    
+    _tree->Branch("retrk_len_tot",&_retrk_len_tot,"_retrk_len_tot/D");
+    _tree->Branch("mctrk_len",&_mctrk_len,"_mctrk_len/D");
+    
     _tree->Branch("zenith",&_theta,"_theta/D");
     _tree->Branch("QRatio_pl",&_qratio_pl,"_qratio_pl/D"); 
     _tree->Branch("QRatio_re",&_qratio_re,"_qratio_re/D");
@@ -30,13 +52,15 @@ namespace larlite {
     _tree->Branch("t_opflash","std::vector<double>",&_t_opflash);
     _tree->Branch("t_ophit","std::vector<double>",&_t_ophit);
     _tree->Branch("pe_ophit","std::vector<double>",&_pe_ophit);
+    _tree->Branch("pe_hit","std::vector<double>",&_pe_hit);
     _tree->Branch("pe_mchit","std::vector<double>",&_pe_mchit);
     
     _length_xfiducial = larutil::Geometry::GetME()->DetHalfWidth();
     _length_yfiducial = larutil::Geometry::GetME()->DetHalfHeight();
     _length_zfiducial = larutil::Geometry::GetME()->DetLength();
 
-    _vfiducial = ::geoalgo::AABox(0, -_length_yfiducial, 0, 2 * _length_xfiducial, _length_yfiducial,_length_zfiducial);
+    _vfiducial = ::geoalgo::AABox(0, -_length_yfiducial, 0,
+				  2 * _length_xfiducial, _length_yfiducial,_length_zfiducial);
     _vmucs_top = ::geoalgo::AABox(-71.795, 393.941, 531.45, -23.795, 398.451, 579.45);
     //_vmucs_top = ::geoalgo::AABox(-271.795, 393.941, 331.45, 223.795, 398.451, 779.45);
     _vmucs_bottom = ::geoalgo::AABox(-19.6948, 316.041, 533.25, 28.3052, 320.551, 581.25);
@@ -53,10 +77,18 @@ namespace larlite {
     
     auto const geo = ::larutil::Geometry::GetME();
     _n_evt++;
+    
+    _pe_ophit.clear();
+    _pe_mchit.clear();
     _pe_ophit.resize(32,0.0);
     _pe_mchit.resize(32,0.0);
     _t_opflash.clear();
     _t_ophit.clear();
+    _pe_hit.clear();
+    _pe_mchit_sum = 0;
+    _pe_ophit_sum = 0;
+    _retrk_len_tot = 0;
+    
     std::fill(_pe_ophit.begin(), _pe_ophit.end(), 0);
 
     if(_useData){
@@ -156,6 +188,7 @@ namespace larlite {
 	      for(size_t oph = 0; oph < ev_ophit->size(); oph++){
 		auto const& ophit = ev_ophit->at(oph);
 		_t_ophit.push_back(ophit.PeakTime());
+		_pe_hit.push_back(ophit.PE());
 		if(ophit.PeakTime()>-1 &&ophit.PeakTime()<-0.85){
 		  auto const pmt_id = geo->OpDetFromOpChannel(ophit.OpChannel());
 		  _pe_ophit[pmt_id] += ophit.PE();
@@ -182,8 +215,8 @@ namespace larlite {
 	    ::flashana::Flash_t flash_obj;
 	    ::flashana::PhotonLibHypothesis PL;
 	    
-	    LP.TrackStart(true);
-	    LP.TrackEnd(true);
+	    LP.TrackStart(false);
+	    LP.TrackEnd(false);
 	    tpc_obj = LP.FlashHypothesis(trj);
 	    /*
 	      for(size_t i=0;i<tpc_obj.size();i++){
@@ -198,6 +231,9 @@ namespace larlite {
 	    double pe_mchit_sum = 0;
 	    double pe_ophit_sum = 0;
 	    
+	    std::transform(_pe_mchit.begin(), _pe_mchit.end(), _pe_mchit.begin(),
+			   multi);
+	    	    
 	    pe_mchit_sum = std::accumulate(std::begin(_pe_mchit),std::end(_pe_mchit),0.0);
 	    pe_ophit_sum = std::accumulate(std::begin(_pe_ophit),std::end(_pe_ophit),0.0);
 	    
@@ -287,6 +323,9 @@ namespace larlite {
 	std::cout<<"........Couldn't find ophit data product in this event...... "<<std::endl;
       }
       
+      _n_mctrack   = ev_mct->size();
+      _n_recotrack = ev_reco->size();
+      
       for(size_t i = 0; i <ev_reco->size(); i++ ){
         
 	auto const& trk = ev_reco->at(i);
@@ -301,8 +340,9 @@ namespace larlite {
 	    
 	    //if(_vfiducial.Contain(pos)==0)std::cout<<"wtf?";
             if(_vfiducial.Contain(pos)>0)trj.push_back(::geoalgo::Vector(pos[0], pos[1], pos[2]));
-
+	    
           }
+	  
 	  auto const& mctrk = ev_mct->at(0);
 	  
 	  _mc_e = mctrk.Start().E();//Truth start energy
@@ -310,7 +350,7 @@ namespace larlite {
 	  if(mctrk.size()>1){
 	    _mc_e_dep = mctrk.Start().E()-mctrk.End().E();//Deposited energy
 	  }
-	   
+	  
 	  {//###Get Ophit
 	    double t = mctrk.Start().T()/1000.;//Convert start time into us	
 	    
@@ -318,6 +358,8 @@ namespace larlite {
 	      
 	      auto const& ophit = ev_ophit->at(oph);
 	      _t_ophit.push_back(ophit.PeakTime()-t);
+	      _pe_hit.push_back(ophit.PE());
+	      _v_pe_hist->Fill(ophit.PeakTime()-t,ophit.PE());
 	      if(ophit.PeakTime()>=t+0.04 &&ophit.PeakTime()<=t+0.09){
 		
 		auto const pmt_id = geo->OpDetFromOpChannel(ophit.OpChannel());
@@ -327,18 +369,31 @@ namespace larlite {
 	      }
 	    }
 	  }//###Get Ophit
-	  
-	  {//QCluster
-	    ::flashana::QCluster_t tpc_obj;
-	    ::flashana::LightPath LP;
+	  	  	    
+	    _retrk_start_x = trj.front().at(0);
+	    _retrk_start_y = trj.front().at(1);
+	    _retrk_start_z = trj.front().at(2);
+	    _retrk_end_x   = trj.back().at(0);
+	    _retrk_end_y   = trj.back().at(1);
+	    _retrk_end_z   = trj.back().at(2);
+	    _retrk_len     = sqrt(pow((_retrk_start_x-_retrk_end_x),2)+ 
+				  pow((_retrk_start_y-_retrk_end_y),2)+
+				  pow((_retrk_start_z-_retrk_end_z),2));
 	    
-	    ::flashana::Flash_t flash_obj;
-	    ::flashana::PhotonLibHypothesis PL;
+	    _mctrk_start_x = mctrk.Start().X();
+	    _mctrk_start_y = mctrk.Start().Y();
+	    _mctrk_start_z = mctrk.Start().Z();
+	    _mctrk_end_x   = mctrk.End().X();
+	    _mctrk_end_y   = mctrk.End().Y();
+	    _mctrk_end_z   = mctrk.End().Z();
+
+	    _mctrk_len     = sqrt(pow((_mctrk_start_x-_mctrk_end_x),2)+
+				  pow((_mctrk_start_y-_mctrk_end_y),2)+
+				  pow((_mctrk_start_z-_mctrk_end_z),2));
 	    
-	    //MCQCluster
-	    ::flashana::QCluster_t tpc_obj_mc;
-	    ::flashana::MCQCluster MCQ;
-        
+	    flash_obj.pe_v.resize(32,0.0);
+	    
+	    MCQ.UseXshift(true);
 	    MCQ.Construct(*ev_mct,*ev_mcs);
 	    tpc_obj_mc = MCQ.QCluster(0);//0 for 0th track, works for single particle
 	    
@@ -346,20 +401,20 @@ namespace larlite {
 	    LP.TrackEnd(true);
 	    tpc_obj = LP.FlashHypothesis(trj);
 	    
-	    flash_obj.pe_v.resize(32,0.0);
 	    if(_useQCluster  )PL.FillEstimate(tpc_obj,flash_obj);   //LightPathQCluster
 	    if(_useMCQCluster)PL.FillEstimate(tpc_obj_mc,flash_obj);//MCQCluster
 	    
-	    _pe_mchit =  flash_obj.pe_v;
 	    
-	    _pe_mchit_sum = std::accumulate(std::begin(_pe_mchit),std::end(_pe_mchit),0.0);
-	    //auto const& mctrk = ev_mct->at(0);
-	    //if(_pe_mchit_sum<10)std::cout<<mctrk.size()<<std::endl;
-	    _pe_ophit_sum = std::accumulate(std::begin(_pe_ophit),std::end(_pe_ophit),0.0);
-	  }
-	  _tree->Fill();
-	}///for all tracks
-      }
+	}
+	std::transform(_pe_mchit.begin(), _pe_mchit.end(),flash_obj.pe_v.begin(), _pe_mchit.begin(),std::plus<double>());
+	_pe_mchit = flash_obj.pe_v;
+	_retrk_len_tot = _retrk_len_tot+_retrk_len;
+	
+      }//loop over all tracks
+      
+      _pe_mchit_sum = std::accumulate(std::begin(_pe_mchit),std::end(_pe_mchit),0.0);
+      _pe_ophit_sum = std::accumulate(std::begin(_pe_ophit),std::end(_pe_ophit),0.0);
+      _tree->Fill();
     }
     return true;
   }
@@ -388,11 +443,10 @@ namespace larlite {
         _fout->cd();
         if(_tree) _tree->Write();
 	std::cout<<"\n"<<_n_evt_mc<<" events found to be contained in Fiducial Volume of TPC of total evts "<<_n_evt<<std::endl;
+	
+	_v_pe_hist->Write();
+	
       }
-    }
-    
-    if(_save_histos){
-      _pe_dis_hist->Write();
     }
     
     return true;
