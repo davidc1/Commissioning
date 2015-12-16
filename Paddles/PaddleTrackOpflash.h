@@ -127,12 +127,15 @@ namespace larlite {
     double _mctrk_end_y;
     double _mctrk_end_z;
     double _mctrk_len;
+    double _t_mcstart;
     
     std::vector<double> _t_opflash;
     std::vector<double> _t_ophit;
+    std::vector<double> _t_ophit_wrt;
+    std::vector<double> _ophit_amplitude;
+    std::vector<double> _ophit_pe;
     std::vector<double> _pe_ophit;//sum of PE on each PMT
     std::vector<double> _pe_mchit;//sum of PE on each PMT
-    std::vector<double> _pe_hit;  //PE in each hit  
         
     //muon intersection w/ MuCS
     double _MuCS_ints_x_top;
