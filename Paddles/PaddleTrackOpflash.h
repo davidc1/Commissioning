@@ -21,6 +21,7 @@
 #include "DataFormat/opflash.h"
 #include "DataFormat/mctrack.h"
 #include "DataFormat/calorimetry.h"
+#include "DataFormat/simphotons.h"
 #include "GeoAlgo/GeoAlgo.h"
 #include "LArUtil/Geometry.h"
 #include "TTree.h"
@@ -110,7 +111,13 @@ namespace larlite {
     int _n_intersections_mucs_bottom;
     int _n_mctrack;
     int _n_recotrack;
-
+    size_t _n_mctrk_size , _n_mctrk_size_tot;
+    size_t _n_retrk_size , _n_retrk_size_tot;
+    size_t _n_QClusters_size;
+    size_t _n_QClusters_size_size;
+    
+    double _pe_g4pho_sum;
+    
     double _retrk_start_x;
     double _retrk_start_y;
     double _retrk_start_z;
@@ -127,6 +134,7 @@ namespace larlite {
     double _mctrk_end_y;
     double _mctrk_end_z;
     double _mctrk_len;
+    double _mctrk_len_tot;
     double _t_mcstart;
     
     std::vector<double> _t_opflash;

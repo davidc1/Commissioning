@@ -30,16 +30,10 @@ my_proc.set_ana_output_file("PaddleTrackOpflash_output.root");
 my_unit = fmwk.PaddleTrackOpflash()
 
 #my_unit.UseData(True)
-my_unit.UseData(False)
+my_unit.UseData(False)# Flase use simulation data
 
-my_unit.UseSimulation(True)
-#my_unit.UseSimulation(False)
-
-#my_unit.UseMCQCluster(True)
-my_unit.UseMCQCluster(False)
-
-my_unit.UseQCluster(True)
-#my_unit.UseQCluster(False)
+#my_unit.UseQCluster(True)
+my_unit.UseQCluster(False)# Flase use MCQCluster
 
 #my_unit.SetSaveHistos()
 my_proc.add_process(my_unit)
