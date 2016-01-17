@@ -8,9 +8,7 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
 
-from ROOT import gSystem,TMath
-from ROOT import larlite as fmwk
-from ROOT import larutil
+from larlite import larlite as fmwk
 
 # Create ana_processor instance
 my_proc = fmwk.ana_processor()
@@ -32,12 +30,12 @@ my_proc.set_output_file("larlite_rawclusters.root")
 clusterer = fmwk.SimpleClusterer()
 #clusterer.setHitProducer('rawhit')
 #clusterer.setHitProducer('cchit')
-clusterer.setHitProducer('gausshit')
+clusterer.setHitProducer('gaushit')
 clusterer.setVerbose(True)
 
 my_proc.add_process(clusterer)
 
-my_proc.set_data_to_write(fmwk.data.kHit,'gausshit')
+my_proc.set_data_to_write(fmwk.data.kHit,'gaushit')
 my_proc.set_data_to_write(fmwk.data.kCluster,'rawcluster')
 my_proc.set_data_to_write(fmwk.data.kAssociation,'rawcluster')
 

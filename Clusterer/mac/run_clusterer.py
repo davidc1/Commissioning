@@ -8,11 +8,7 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
 
-from ROOT import gSystem,TMath
-from ROOT import larlite as fmwk
-from ROOT import larutil
-
-
+from larlite import larlite as fmwk
 
 # Set input root file
 for x in xrange(len(sys.argv)-1):
@@ -41,12 +37,12 @@ for x in xrange(len(sys.argv)-1):
     clusterer = fmwk.SimpleClusterer()
     #clusterer.setHitProducer('rawhit')
     #clusterer.setHitProducer('cchit')
-    clusterer.setHitProducer('cchit')
+    clusterer.setHitProducer('gaushit')
     clusterer.setVerbose(True)
     
     my_proc.add_process(clusterer)
     
-    my_proc.set_data_to_write(fmwk.data.kHit,'cchit')
+    my_proc.set_data_to_write(fmwk.data.kHit,'gaushit')
     my_proc.set_data_to_write(fmwk.data.kCluster,'rawcluster')
     my_proc.set_data_to_write(fmwk.data.kAssociation,'rawcluster')
 
