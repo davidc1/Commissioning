@@ -30,7 +30,7 @@ print fmwk.ValidateNIM()
 print fmwk.PaddleTrackFilter()
 NIM_validation = fmwk.ValidateNIM()
 print NIM_validation
-NIM_validation.setVerbose(True)
+NIM_validation.setVerbose(False)
 my_proc.add_process(NIM_validation)
 
 print

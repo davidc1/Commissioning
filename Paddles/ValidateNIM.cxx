@@ -36,6 +36,9 @@ namespace larlite {
 
     if (_tree) delete _tree;
     _tree = new TTree("trigger_tree","Trigger Tree");
+    _tree->Branch("_run",&_run,"run/I");
+    _tree->Branch("_subrun",&_subrun,"subrun/I");
+    _tree->Branch("_event",&_event,"event/I");
     _tree->Branch("_trig_num",&_trig_num,"trig_num/I");
     _tree->Branch("_trig_time",&_trig_time,"trig_time/D");
     _tree->Branch("_beam_time",&_beam_time,"beam_time/D");
@@ -48,6 +51,11 @@ namespace larlite {
     _tree->Branch("_pdls",&_pdls,"pdls/I");
     _tree->Branch("_led",&_led,"led/I");
     _tree->Branch("_flash",&_flash,"flash/I");
+    _tree->Branch("_dt",&_dt,"dt/D");
+    _tree->Branch("_dt_same",&_dt_same,"dt_same/D");
+
+    _dt = 0;
+    _t_rwm = _t_strb1 = _t_strb2 = _t_numi = _t_bnb = _t_numi = _t_led = _t_flash = _t_pdls = 0;
 
     return true;
   }
@@ -69,8 +77,13 @@ namespace larlite {
       return false;
     } 
 
+    _run    = storage->run_id();
+    _subrun = storage->subrun_id();
+    _event  = storage->event_id();
+
     // save trigger information
     _trig_num  = trig->TriggerNumber();
+    _dt        = trig->TriggerTime() - _trig_time;
     _trig_time = trig->TriggerTime();
     _beam_time = trig->BeamGateTime();
     _trig_bits = bitConversion(trig->TriggerBits());
@@ -105,14 +118,54 @@ namespace larlite {
 	    if ( wf[i] > 2200 ){
 	      if (_verbose)
 		std::cout << "found a pulse!" << std::endl;
-	      if ( ch ==  39 ) { _rwm   = 1; }
-	      if ( ch ==  38 ) { _strb1 = 1; }
-	      if ( ch ==  37 ) { _numi  = 1; }
-	      if ( ch ==  36 ) { _bnb   = 1; }
-	      if ( ch == 139 ) { _flash = 1; }
-	      if ( ch == 138 ) { _strb2 = 1; }
-	      if ( ch == 137 ) { _pdls  = 1; }
-	      if ( ch == 136 ) { _led   = 1; }
+	      if ( ch ==  39 ) 
+		{ 
+		  _rwm   = 1; 
+		  _dt_same = _trig_time - _t_rwm;;
+		  _t_rwm = _trig_time;
+		}
+	      if ( ch ==  38 )
+		{
+		  _strb1 = 1;
+		  _dt_same = _trig_time - _t_strb1;
+		  _t_strb1 = _trig_time;
+		}
+	      if ( ch ==  37 )
+		{
+		  _numi  = 1;
+		  _dt_same = _trig_time - _t_numi;
+		  _t_numi = _trig_time;
+		}
+	      if ( ch ==  36 )
+		{
+		  _bnb   = 1; 
+		  _dt_same = _trig_time - _t_bnb;
+		  _t_bnb = _trig_time;
+		}
+	      if ( ch == 139 )
+		{
+		  _flash = 1; 
+		  _dt_same = _trig_time - _t_flash;
+		  _t_flash = _trig_time;
+		}
+	      if ( ch == 138 )
+		{
+		  _strb2 = 1; 
+		  _dt_same = _trig_time - _t_strb2;
+		  _t_strb2 = _trig_time;
+		}
+	      if ( ch == 137 )
+		{
+		  _pdls  = 1; 
+		  _dt_same = _trig_time - _t_pdls;
+		  _t_pdls = _trig_time;
+		}
+	      if ( ch == 136 )
+		{
+		  _led   = 1; 
+		  _dt_same = _trig_time - _t_led;
+		  _t_led = _trig_time;
+		}
 	      break;
 	    }
 	  }

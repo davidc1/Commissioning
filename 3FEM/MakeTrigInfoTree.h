@@ -28,7 +28,7 @@ namespace larlite {
   public:
 
     /// Default constructor
-    MakeTrigInfoTree(){ _name="MakeTrigInfoTree"; _fout=0;}
+    MakeTrigInfoTree();
 
     /// Default destructor
     virtual ~MakeTrigInfoTree(){}
@@ -43,8 +43,8 @@ namespace larlite {
 
     TTree* _tree;
     double _trig_time;
-    std::vector<short> _ch0, _ch1;
-    int _event;
+    std::vector<unsigned short> _ch0, _ch1;
+    int _event, _event_frame_num, _fem_trig_sample_number_RAW;
     
   };
 }
