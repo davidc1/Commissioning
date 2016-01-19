@@ -11,7 +11,9 @@
 
 #pragma link C++ class larlite::SimpleClusterer+;
 #pragma link C++ class larlite::MakeClusterPolygon+;
+#pragma link C++ class larlite::MakeHits+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
 
 

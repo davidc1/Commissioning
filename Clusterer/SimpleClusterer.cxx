@@ -34,9 +34,9 @@ namespace larlite {
     auto cluster_ass_v = storage->get_data<event_ass>(ev_clusters->name());
 
     //set event ID through storage manager
-    storage->set_id(storage->get_data<event_hit>(_hitProducer)->run(),
-		    storage->get_data<event_hit>(_hitProducer)->subrun(),
-		    storage->get_data<event_hit>(_hitProducer)->event_id()); 
+    storage->set_id(evt_hits->run(),
+		    evt_hits->subrun(),
+		    evt_hits->event_id()); 
 
     if (!evt_hits){
       std::cout << "No hits!" << std::endl;
@@ -54,11 +54,9 @@ namespace larlite {
     // keep track of largest cluster ID created
     size_t maxClusterID = 0;
 
-    for (int pl=0; pl < 3; pl++){
+    for (int pl=2; pl < 3; pl++){
       
       MakeHitMap(evt_hits,pl);
-      
-
       
       // iterator for hit cell map
       std::map<std::pair<int,int>, std::vector<size_t> >::iterator it;
@@ -66,9 +64,7 @@ namespace larlite {
       // loop through hits in each cell to find matches
       for (it = _hitMap.begin(); it != _hitMap.end(); it++){
 
-	// keep track of compatible hits
-	int numCompat = 0;
-	
+	// pair = (i,j) indices of this cell in the _hitMap
 	auto const& pair = it->first;
 	
 	// wire-space cell index
@@ -77,27 +73,30 @@ namespace larlite {
 	// |__|__|__|
 	// |__|__|__|
 	// |__|__|__|
+	std::vector<size_t> cellhits = it->second;
+
 	std::vector<size_t> neighborhits;
 	getNeighboringHits(pair,neighborhits);
-	for (size_t h1=0; h1 < neighborhits.size(); h1++){
+
+	for (size_t h1=0; h1 < cellhits.size(); h1++){
 	  // has this hit been added to a cluster?
 	  // if so not necessary to look at
-	  auto const& hit1 = neighborhits[h1];
+	  auto const& hit1 = cellhits[h1];
 	  // keep track if the hit will ever be matched to another
 	  bool matched = false;
 	  // if not find hits it should be clustered with and add it to the appropriate cluster
-	  for (size_t h2=h1+1; h2 < neighborhits.size(); h2++){
+	  for (size_t h2=0; h2 < neighborhits.size(); h2++){
 	    auto const& hit2 = neighborhits[h2];
+	    if (hit1 == hit2) continue;
 	    // are the hits compatible?
-	    bool compat = HitsCompatible(evt_hits->at(h1), evt_hits->at(h2));
+	    bool compat = HitsCompatible(evt_hits->at(hit1), evt_hits->at(hit2));
 	    // should the hits go in the same cluster?
 	    if (compat){
-	      //std::cout << "hits compatible!" << std::endl;
 	      matched = true;
-	      numCompat += 1;
 	      // if both hits have already been assigned to a cluster then we can merge the cluster indices!
 	      if ( (_clusterMap.find(hit1) != _clusterMap.end()) and
 		   (_clusterMap.find(hit2) != _clusterMap.end()) ){
+		// if in the same cluster -> do nothing
 		// if they are in different clusters:
 		if (_clusterMap[hit1] != _clusterMap[hit2]){
 		  auto idx1 = _clusterMap[hit1];
@@ -114,17 +113,19 @@ namespace larlite {
 		  _clusters[idx1] = hits1;
 		  // erase cluster @ index2
 		  _clusters.erase(idx2);
-		}
+		}// if they are in different clusters
 	      }
 	      // if compatible and the 2nd hit has been added to a cluster
 	      // add hit1 to the same cluster
-	      else if (_clusterMap.find(hit2) != _clusterMap.end()){
+	      else if ( (_clusterMap.find(hit2) != _clusterMap.end()) and
+			(_clusterMap.find(hit1) == _clusterMap.end()) ){
 		auto clusIdx = _clusterMap[hit2];
 		_clusterMap[hit1] = clusIdx;
 		_clusters[clusIdx].push_back(hit1);
 	      }
 	      // otherwise, add both to a new cluster
-	      else if (_clusterMap.find(hit1) != _clusterMap.end()){
+	      else if ( (_clusterMap.find(hit1) != _clusterMap.end()) and
+			(_clusterMap.find(hit2) == _clusterMap.end()) ){
 		auto clusIdx = _clusterMap[hit1];
 		_clusterMap[hit2] = clusIdx;
 		_clusters[clusIdx].push_back(hit2);
@@ -138,7 +139,6 @@ namespace larlite {
 		_clusters[maxClusterID] = cl;
 		maxClusterID += 1;
 	      }
-	      //std::cout << std::endl;
 	    }// if the two hits are compatible
 	  }// 2nd loop through hits in the cell
 	  // has this hit been matched? if not we still need to add it as its own cluster
@@ -151,14 +151,14 @@ namespace larlite {
 	}// 1st loop through hits in the cell
       }// loop through all cells
 
-    }
+    }// loop through all planes
 
     // make a vector for the clusters
     std::vector<std::vector<unsigned int> > cluster_vector;
     for (auto it = _clusters.begin(); it != _clusters.end(); it++){
       auto indices = it->second;
       // if there are enough indices, make a cluster
-      if (indices.size() > 2){
+      if (indices.size() > 10){
 	std::vector<unsigned int> clus;
 	for (auto idx : indices)
 	  clus.push_back(idx);
@@ -175,14 +175,17 @@ namespace larlite {
     for (size_t i=0; i < cluster_vector.size(); i++){
       if (cluster_vector[i].size() > 0){
 	larlite::cluster clus;
+	clus.set_n_hits(cluster_vector[i].size());
+	clus.set_view(larlite::geo::View_t::kW);
+	//clus.set_planeID(2);
 	// vector for associations
 	ev_clusters->push_back(clus);
 	_cluster_hit_ass.push_back(cluster_vector[i]);
       }
     }
     
-    //std::cout << "number of larlite clusters: " << ev_clusters->size() << std::endl;
-    //std::cout << "number of clusters to be saved: " << _cluster_hit_ass.size() << std::endl;
+    std::cout << "number of larlite clusters: " << ev_clusters->size() << std::endl;
+    std::cout << "number of clusters to be saved: " << _cluster_hit_ass.size() << std::endl;
     cluster_ass_v->set_association(ev_clusters->id(),product_id(data::kHit,evt_hits->name()),_cluster_hit_ass);    
 
     return true;
@@ -297,9 +300,6 @@ namespace larlite {
     // temporary pair
     std::pair<int,int> tmpPair;
 
-    // set maximum cell size
-    _maxI = 0;
-    _maxJ = 0;
     
     for (size_t h=0; h < hitlist->size(); h++){
       auto const& hit = hitlist->at(h);
@@ -314,8 +314,6 @@ namespace larlite {
       int i = int(w/_cellSize);
       int j = int(t/_cellSize);
       tmpPair = std::make_pair(i,j);
-      if (i > _maxI) _maxI = i;
-      if (j > _maxJ) _maxJ = j;
       // does this entry exist in the map?
       // if yes -> append to vector
       // if no create new vector and add to map
