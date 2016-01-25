@@ -109,7 +109,8 @@ namespace larlite {
     std::fill(_pe_ophit.begin(), _pe_ophit.end(), 0);
 
     if(_useData){
-      auto ev_reco = storage->get_data<event_track>("trackkalmanhit");
+      //auto ev_reco = storage->get_data<event_track>("trackkalmanhit");
+      auto ev_reco = storage->get_data<event_track>("stitchkalmanhit");
       if (!ev_reco) {
 	std::cout<<"........Couldn't find reco track data product in this event...... "<<std::endl;
       }
@@ -227,16 +228,9 @@ namespace larlite {
 	    //5)Implement PhotonVisibility from OpT0Finder now
 	    //
 	    
-	    ::flashana::QCluster_t tpc_obj;
-	    ::flashana::LightPath LP;
-	    ::flashana::Flash_t flash_obj;
-	    ::flashana::PhotonLibHypothesis PL;
-	    
-	    LP.TrackStart(true);
-	    LP.TrackEnd(true);
 	    tpc_obj = LP.FlashHypothesis(trj);
-	    /*
-	      for(size_t i=0;i<tpc_obj.size();i++){
+	    
+	    /* for(size_t i=0;i<tpc_obj.size();i++){
 	      std::cout<<"wtf?"<<tpc_obj.at(i).q<<std::endl;
 	      }*/
 	    flash_obj.pe_v.resize(32,0.0);
@@ -245,17 +239,11 @@ namespace larlite {
 	    //for(size_t i = 0; i<32;i++)std::cout<<flash_obj.pe_v.at(i);
 	    
 	    // Normalize
-	    double pe_mchit_sum = 0;
-	    double pe_ophit_sum = 0;
 	    
-	    std::transform(_pe_mchit.begin(), _pe_mchit.end(), _pe_mchit.begin(),
-			   multi);
+	    std::transform(_pe_mchit.begin(), _pe_mchit.end(), _pe_mchit.begin(), multi);
 	    	    
-	    pe_mchit_sum = std::accumulate(std::begin(_pe_mchit),std::end(_pe_mchit),0.0);
-	    pe_ophit_sum = std::accumulate(std::begin(_pe_ophit),std::end(_pe_ophit),0.0);
-	    
-	    _pe_mchit_sum = pe_mchit_sum;
-	    _pe_ophit_sum = pe_ophit_sum;
+	    _pe_mchit_sum = std::accumulate(std::begin(_pe_mchit),std::end(_pe_mchit),0.0);
+	    _pe_ophit_sum = std::accumulate(std::begin(_pe_ophit),std::end(_pe_ophit),0.0);
 	    
 	    //6)Get Q ratio
 	    
@@ -267,8 +255,8 @@ namespace larlite {
 	    pe_mchit = _pe_mchit;
 	    std::sort(pe_ophit.begin(),pe_ophit.end());
 	    std::sort(pe_mchit.begin(),pe_mchit.end());
-	    double QRatio_pl = pe_mchit.at(31)/pe_mchit_sum;//photon library
-	    double QRatio_re = pe_ophit.at(31)/pe_ophit_sum;//ophit
+	    double QRatio_pl = pe_mchit.at(31)/_pe_mchit_sum;//photon library
+	    double QRatio_re = pe_ophit.at(31)/_pe_ophit_sum;//ophit
 	    
 	    _qratio_pl = QRatio_pl;
 	    _qratio_re = QRatio_re;
@@ -320,7 +308,12 @@ namespace larlite {
     /////Using Single Muons////////////////////
     if(_useSimulation){
       
-      auto ev_reco = storage->get_data<event_track>("trackkalmanhit");
+      //auto ev_reco = storage->get_data<event_track>("trackkalmanhit");
+      //auto ev_reco = storage->get_data<event_track>("trackkalmanhitcc");
+      //auto ev_reco = storage->get_data<event_track>("stitchkalmanhit");
+      //auto ev_reco = storage->get_data<event_track>("stitchkalmanhitcc");
+      //auto ev_reco = storage->get_data<event_track>("pandoraCosmicKHit");
+      auto ev_reco = storage->get_data<event_track>("pandoraNuKHit");
       if (!ev_reco) {
 	std::cout<<"........Couldn't find reco track data product in this event...... "<<std::endl;
       }
@@ -361,7 +354,7 @@ namespace larlite {
 	_ophit_amplitude.push_back(ophit.Amplitude());
 	_ophit_pe.push_back(ophit.PE());
 	
-	if(ophit.PeakTime()>=t &&ophit.PeakTime()<=t+5){
+	//if(ophit.PeakTime()>=t &&ophit.PeakTime()<=t+5){
 	    
 	  _v_pe_hist->Fill(ophit.PeakTime()-t,ophit.PE());
 	  
@@ -369,7 +362,7 @@ namespace larlite {
 	  
 	  _pe_ophit[pmt_id] += ophit.PE();
 	  
-	}
+	  //}
       }
 
       //g4 Photons
@@ -420,10 +413,7 @@ namespace larlite {
 	      trj1.push_back(::geoalgo::Vector(MCQ.QCluster(i).at(pt).x, MCQ.QCluster(i).at(pt).y, MCQ.QCluster(i).at(pt).z));
 	      
 	    }
-	    
-	    LP.TrackStart(false);
-            LP.TrackEnd(false);
-            
+	                
 	    tpc_obj_mc = LP.FlashHypothesis(trj1);
 	    //tpc_obj_mc = MCQ.QCluster(i);
 	    
@@ -451,23 +441,24 @@ namespace larlite {
 	      if(_vfiducial.Contain(pos)>0)trj.push_back(::geoalgo::Vector(pos[0], pos[1], pos[2]));
 	    
 	    }
-	
-	    _retrk_start_x = trj.front().at(0);
-	    _retrk_start_y = trj.front().at(1);
-	    _retrk_start_z = trj.front().at(2);
-	    _retrk_end_x   = trj.back().at(0);
-	    _retrk_end_y   = trj.back().at(1);
-	    _retrk_end_z   = trj.back().at(2);
-	    _retrk_len     = sqrt(pow((_retrk_start_x-_retrk_end_x),2)+ 
-				  pow((_retrk_start_y-_retrk_end_y),2)+
-				  pow((_retrk_start_z-_retrk_end_z),2));
 	    
-	    flash_obj.pe_v.resize(32,0.0);
-	    LP.TrackStart(false);
-	    LP.TrackEnd(false);
-	    tpc_obj = LP.FlashHypothesis(trj);
-	    PL.FillEstimate(tpc_obj,flash_obj);   //LightPathQCluster
+	    if (trj.size()>0){
 	    
+	      _retrk_start_x = trj.front().at(0);
+	      _retrk_start_y = trj.front().at(1);
+	      _retrk_start_z = trj.front().at(2);
+	      _retrk_end_x   = trj.back().at(0);
+	      _retrk_end_y   = trj.back().at(1);
+	      _retrk_end_z   = trj.back().at(2);
+	      _retrk_len     = sqrt(pow((_retrk_start_x-_retrk_end_x),2)+ 
+				    pow((_retrk_start_y-_retrk_end_y),2)+
+				    pow((_retrk_start_z-_retrk_end_z),2));
+	      
+	      tpc_obj = LP.FlashHypothesis(trj);
+	      
+	      flash_obj.pe_v.resize(32,0.0);
+	      PL.FillEstimate(tpc_obj,flash_obj);
+	    }
 	  }
 	  
 	  std::transform(_pe_mchit.begin(), _pe_mchit.end(),flash_obj.pe_v.begin(), _pe_mchit.begin(),
