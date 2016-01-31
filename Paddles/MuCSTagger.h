@@ -54,21 +54,33 @@ namespace larlite {
 
     const std::string& producer() const { return _producer; }
 
+    const std::vector<geoalgo::Trajectory> matched_trajectory() const { return _matched_trj_v; }
+
+    const std::vector<geoalgo::HalfLine> matched_dir() const { return _matched_dir_v; }
+
+    const ::geoalgo::AABox upper_box() const { return _mucs_upper_box; }
+
+    const ::geoalgo::AABox lower_box() const { return _mucs_lower_box; }
+
   protected:
 
     bool Intersect(const TVector3& start, const TVector3& end);
+    bool IntersectDumb(const TVector3& start, const TVector3& end);
 
     bool _configured;
     ::geoalgo::AABox _mucs_upper_box;
     ::geoalgo::AABox _mucs_lower_box;
     ::geoalgo::HalfLine _mucs_dir;
 
+    std::vector<geoalgo::HalfLine> _matched_dir_v;
+    std::vector<geoalgo::Trajectory> _matched_trj_v;
+    
     std::string _producer;
     double _xmin;
     double _xmax;
-    
-    bool   _hit_upper_box;
-    bool   _hit_lower_box;
+
+    bool   _store_match;
+    bool   _hit_both_box;
     double _min_track_length;
     double _segment_length;
     double _scan_length;

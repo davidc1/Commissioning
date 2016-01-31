@@ -25,7 +25,7 @@ for x in xrange(len(sys.argv)-2):
     my_proc.add_input_file(sys.argv[x+2])
 
 # Specify IO mode
-my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
+my_proc.set_io_mode(fmwk.storage_manager.kREAD)
 
 # Specify output root file name
 my_proc.set_ana_output_file("mucs_tagger_ana.root");

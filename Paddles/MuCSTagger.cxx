@@ -22,6 +22,8 @@ namespace larlite {
 
     auto const& main_cfg = cfg_mgr.Config().get_pset(_name);
 
+    _store_match = main_cfg.get<bool>("StoreMatch");
+
     std::vector<double> upper_box = main_cfg.get<std::vector<double> >("UpperBox");
     if(upper_box.size()!=6) {
       print(msg::kERROR,__FUNCTION__,"UpperBox needs length 6 floating point...");
@@ -44,14 +46,7 @@ namespace larlite {
 
     _producer = main_cfg.get<std::string>("Producer","trackkalmanhit");
 
-    _hit_upper_box = main_cfg.get<bool>("HitUpperBox");
-
-    _hit_lower_box = main_cfg.get<bool>("HitLowerBox");
-
-    if(!_hit_upper_box && !_hit_lower_box) {
-      print(msg::kERROR,__FUNCTION__,"Both HitUpperBox and HitLowerBox cannot be false!");
-      throw std::exception();
-    }
+    _hit_both_box = main_cfg.get<bool>("HitBoth");
 
     _min_track_length = main_cfg.get<double>("MinTrackLength",50.);
 
@@ -87,23 +82,66 @@ namespace larlite {
 
   bool MuCSTagger::Intersect(const TVector3& start, const TVector3& end) {
 
-    bool res = true;
-
     ::geoalgo::GeoAlgo alg;
 
     _mucs_dir.Start(start[0],start[1],start[2]);
 
     _mucs_dir.Dir(end[0]-start[0], end[1]-start[2], end[1]-start[2]);
+
+    bool res = alg.Intersection(_mucs_upper_box,_mucs_dir).empty();
+
+    if(!res && _hit_both_box) return false;
     
-    if(_hit_upper_box && alg.Intersection(_mucs_upper_box,_mucs_dir).empty()) res=false;
+    if(res && !_hit_both_box) return true;
 
-    if(res && _hit_lower_box && alg.Intersection(_mucs_lower_box,_mucs_dir).empty()) res=false;
+    return !(alg.Intersection(_mucs_lower_box,_mucs_dir).empty());
 
-    return res;
+  }
+
+  bool MuCSTagger::IntersectDumb(const TVector3& start, const TVector3& end) {
+
+    TVector3 dir = end - start;
+    double mag = dir.Mag();
+    dir[0] /= mag;
+    dir[1] /= mag;
+    dir[2] /= mag;
+    if(dir[1]>0) return false;
+    std::cout<<"start "<<start[0]<<" "<<start[1]<<" "<<start[2]<<std::endl;
+    std::cout<<"end   "<<end[0]<<" "<<end[1]<<" "<<end[2]<<std::endl;
+    std::cout<<"dir   "<<dir[0]<<" "<<dir[1]<<" "<<dir[2]<<std::endl;
+
+    auto const& upper_min = _mucs_upper_box.Min();
+    auto const& upper_max = _mucs_upper_box.Max();
+    auto const& lower_min = _mucs_lower_box.Min();
+    auto const& lower_max = _mucs_lower_box.Max();
+
+    double upper_x = start[0] + dir[0] * upper_min[1];
+    double upper_z = start[2] + dir[2] * upper_min[1];
+
+    double lower_x = start[0] + dir[0] * lower_min[1];
+    double lower_z = start[2] + dir[2] * lower_min[1];
+
+    std::cout<<"upper xs: "<<upper_x<<" "<<upper_z<<std::endl;
+    std::cout<<"lower xs: "<<lower_x<<" "<<lower_z<<std::endl;
+
+    bool upper_hit = ( upper_x > upper_min[0] && upper_x < upper_max[0] &&
+		       upper_z > upper_min[2] && upper_z < upper_max[2] );
+
+    bool lower_hit = ( lower_x > lower_min[0] && lower_x < lower_max[0] &&
+		       lower_z > lower_min[2] && lower_z < lower_max[2] );
+
+    std::cout << "upper: " << (upper_hit ? "yes" : "no") << " ... "
+	      << "lower: " << (upper_hit ? "yes" : "no") << std::endl << std::endl;
+    
+    if(_hit_both_box) return (upper_hit && lower_hit);
+    return (upper_hit || lower_hit);
 
   }
   
   bool MuCSTagger::analyze(storage_manager* storage) {
+
+    _matched_trj_v.clear();
+    _matched_dir_v.clear();
 
     auto ev_track = storage->get_data<event_track>(_producer);
     if(!ev_track) {
@@ -167,7 +205,20 @@ namespace larlite {
       if(ctag.fCosmicScore>0) {
 
 	if(ev_ctag) ev_ctag->emplace_back(ctag);
-	
+
+	if(_store_match) {
+	  _matched_dir_v.push_back(_mucs_dir);
+	  ::geoalgo::Trajectory trj;
+	  trj.resize(trk.NumberTrajectoryPoints());
+	  for(size_t i=0; i<trk.NumberTrajectoryPoints(); ++i) {
+
+	    auto const& pt = trk.LocationAtPoint(i);
+
+	    trj.emplace_back(::geoalgo::Vector(pt));
+
+	  }
+	  _matched_trj_v.emplace_back(trj);
+	}	  
 	++num_tagged;
       }
     }

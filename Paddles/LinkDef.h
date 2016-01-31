@@ -13,5 +13,7 @@
 #pragma link C++ class larlite::PaddleTrackAna+;
 #pragma link C++ class larlite::PaddleTrackOpflash+;
 #pragma link C++ class larlite::ValidateNIM+;
+#pragma link C++ class larlite::MuCSTagger+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
