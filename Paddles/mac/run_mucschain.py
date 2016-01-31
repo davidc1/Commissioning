@@ -9,6 +9,7 @@ if len(sys.argv) < 2:
 
 import ROOT
 from larlite import larlite as fmwk
+from ROOT import flashana
 # Create ana_processor instance
 my_proc = fmwk.ana_processor()
 
@@ -25,7 +26,7 @@ for x in xrange(len(sys.argv)-2):
     my_proc.add_input_file(sys.argv[x+2])
 
 # Specify IO mode
-my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
+my_proc.set_io_mode(fmwk.storage_manager.kREAD)
 
 # Specify output root file name
 my_proc.set_ana_output_file("mucs_tagger_ana.root");
@@ -34,19 +35,30 @@ my_proc.set_output_file("mucs_tagger.root")
 
 # Attach an analysis unit ... here we use a base class which does nothing.
 # Replace with your analysis unit if you wish.
-myunit = fmwk.MuCSTagger()
-myunit.configure(cfg)
+tagger = fmwk.MuCSTagger()
+tagger.configure(cfg)
+
+ana = fmwk.MuCSOpStudy()
+ana.configure(cfg)
+
+mgr=ana.FlashMatchManager()
+mgr.SetAlgo(flashana.NPtFilter())
+mgr.SetAlgo(flashana.MaxNPEWindow())
+mgr.SetAlgo(flashana.TimeCompatMatch())
+mgr.Configure('flashmatch_mucs.fcl')
+
+my_proc.add_process(tagger)
+my_proc.add_process(ana)
 
 my_proc.set_data_to_read(fmwk.data.kOpDetWaveform,"saturation")
 my_proc.set_data_to_read(fmwk.data.kOpHit,"ophitCFD")
-my_proc.set_data_to_read(fmwk.data.kTrack,myunit.producer())
+my_proc.set_data_to_read(fmwk.data.kTrack,tagger.producer())
+my_proc.set_data_to_read(fmwk.data.kCosmicTag,"MuCSTagger")
 
 my_proc.set_data_to_write(fmwk.data.kCosmicTag,"MuCSTagger")
 my_proc.set_data_to_write(fmwk.data.kOpDetWaveform,"saturation")
 my_proc.set_data_to_write(fmwk.data.kOpHit,"ophitCFD")
-my_proc.set_data_to_write(fmwk.data.kTrack,myunit.producer())
-                        
-my_proc.add_process(myunit)
+my_proc.set_data_to_write(fmwk.data.kTrack,tagger.producer())
 
 print
 print  "Finished configuring ana_processor. Start event loop!"
