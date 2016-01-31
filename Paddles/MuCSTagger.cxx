@@ -86,7 +86,7 @@ namespace larlite {
 
     _mucs_dir.Start(start[0],start[1],start[2]);
 
-    _mucs_dir.Dir(end[0]-start[0], end[1]-start[2], end[1]-start[2]);
+    _mucs_dir.Dir(end[0]-start[0], end[1]-start[1], end[2]-start[2]);
 
     bool res = alg.Intersection(_mucs_upper_box,_mucs_dir).empty();
 
@@ -150,22 +150,31 @@ namespace larlite {
     }
 
     ::geoalgo::HalfLine dir(0,0,0,1,1,1);
-    
-    auto ev_ctag = storage->get_data<event_cosmictag>("MuCSTagger");
 
+    auto ev_ctag = storage->get_data<event_cosmictag>("MuCSTagger");
+    if(ev_ctag) ev_ctag->reserve(ev_track->size());
+
+    cosmictag ctag;
     size_t num_tracks = 0;
     size_t num_tagged = 0;
-    for(auto const& trk : *ev_track) {
+    bool tagged = false;
+    for(size_t track_index=0; track_index<ev_track->size(); ++track_index) {
 
-      if(trk.NumberTrajectoryPoints()<2) continue;
+      auto const& trk = (*ev_track)[track_index];
 
+      if(trk.NumberTrajectoryPoints()<2) {
+	if(ev_ctag) ev_ctag->push_back(ctag);
+	continue;
+      }
+      
       auto const& start = trk.LocationAtPoint(0);
       auto const& end   = trk.LocationAtPoint(trk.NumberTrajectoryPoints()-1);
 
-      if(start[0] < _xmin || start[0] > _xmax) continue;
-      if(end[0]   < _xmin || end[0]   > _xmax) continue;
+      if( (start[0] < _xmin || start[0] > _xmax) || (end[0]   < _xmin || end[0]   > _xmax) ) {
+	if(ev_ctag) ev_ctag->push_back(ctag);
+	continue;
+      }
 
-      cosmictag ctag;
       ctag.fCosmicScore = -1;
 	
       double length = 0;
@@ -182,8 +191,11 @@ namespace larlite {
 	if(length > _min_track_length) break;
       }
 
-      if(length < _min_track_length) continue;
-
+      if(length < _min_track_length) {
+	if(ev_ctag) ev_ctag->push_back(ctag);
+	continue;
+      }
+      
       ++num_tracks;
       
       if(ctag.fCosmicScore<0. && _allow_flip_direction) {
@@ -203,9 +215,7 @@ namespace larlite {
       }
 
       if(ctag.fCosmicScore>0) {
-
-	if(ev_ctag) ev_ctag->emplace_back(ctag);
-
+	tagged = true;
 	if(_store_match) {
 	  _matched_dir_v.push_back(_mucs_dir);
 	  ::geoalgo::Trajectory trj;
@@ -221,6 +231,8 @@ namespace larlite {
 	}	  
 	++num_tagged;
       }
+
+      if(ev_ctag) ev_ctag->push_back(ctag);
     }
 
     _hNumTracks->Fill(num_tracks);
@@ -229,8 +241,13 @@ namespace larlite {
     storage->set_id(storage->run_id(),
 		    storage->subrun_id(),
 		    storage->event_id());
-    
-    return true;
+
+    if(ev_ctag && ev_ctag->size()!=ev_track->size()) {
+      print(msg::kERROR,__FUNCTION__,"Mismatch in ctag & track length!");
+      throw std::exception();
+    }
+
+    return tagged;
   }
 
   bool MuCSTagger::finalize() {

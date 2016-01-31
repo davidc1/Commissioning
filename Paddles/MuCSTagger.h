@@ -19,7 +19,6 @@
 #include "GeoAlgo/GeoAlgo.h"
 #include <TH1D.h>
 #include <string>
-
 namespace larlite {
   /**
      \class MuCSTagger
