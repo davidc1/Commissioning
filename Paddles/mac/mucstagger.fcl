@@ -1,0 +1,14 @@
+
+MuCSTagger: {
+  UpperBox: [-71.795,-23.795,398.451,397.451,579.45,627.45] # top box edges [cm]
+  LowerBox: [-19.6948,28.3052,320.551,319.551,581.25,629.25]# bottom box edges [cm]
+  XMin: -50.
+  XMax: 300.
+  Producer: trackkalmanhit
+  HitUpperBox: true
+  HitLowerBox: true
+  MinTrackLength: 50
+  ScanLength: 5
+  SegmentLength: 10
+  AllowFlip: true
+}
