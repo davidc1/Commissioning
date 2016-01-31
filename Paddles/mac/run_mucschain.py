@@ -26,7 +26,7 @@ for x in xrange(len(sys.argv)-2):
     my_proc.add_input_file(sys.argv[x+2])
 
 # Specify IO mode
-my_proc.set_io_mode(fmwk.storage_manager.kREAD)
+my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
 
 # Specify output root file name
 my_proc.set_ana_output_file("mucs_tagger_ana.root");
@@ -44,21 +44,26 @@ ana.configure(cfg)
 mgr=ana.FlashMatchManager()
 mgr.SetAlgo(flashana.NPtFilter())
 mgr.SetAlgo(flashana.MaxNPEWindow())
-mgr.SetAlgo(flashana.TimeCompatMatch())
+#mgr.SetAlgo(flashana.TimeCompatMatch())
 mgr.Configure('flashmatch_mucs.fcl')
+
+if not ana.track_producer() == tagger.producer():
+
+    print 'Error: track producer is different between ana & tagger'
+    sys.exit(1)
 
 my_proc.add_process(tagger)
 my_proc.add_process(ana)
 
-my_proc.set_data_to_read(fmwk.data.kOpDetWaveform,"saturation")
-my_proc.set_data_to_read(fmwk.data.kOpHit,"ophitCFD")
-my_proc.set_data_to_read(fmwk.data.kTrack,tagger.producer())
+my_proc.set_data_to_read(fmwk.data.kOpHit,ana.ophit_producer())
+my_proc.set_data_to_read(fmwk.data.kTrack,ana.track_producer())
 my_proc.set_data_to_read(fmwk.data.kCosmicTag,"MuCSTagger")
+my_proc.set_data_to_read(fmwk.data.kOpFlash,ana.opflash_producer())
 
+my_proc.set_data_to_write(fmwk.data.kOpHit,ana.ophit_producer())
+my_proc.set_data_to_write(fmwk.data.kTrack,ana.track_producer())
 my_proc.set_data_to_write(fmwk.data.kCosmicTag,"MuCSTagger")
-my_proc.set_data_to_write(fmwk.data.kOpDetWaveform,"saturation")
-my_proc.set_data_to_write(fmwk.data.kOpHit,"ophitCFD")
-my_proc.set_data_to_write(fmwk.data.kTrack,tagger.producer())
+my_proc.set_data_to_write(fmwk.data.kOpFlash,ana.opflash_producer())
 
 print
 print  "Finished configuring ana_processor. Start event loop!"

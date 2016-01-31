@@ -108,7 +108,10 @@ namespace larlite {
       _ophit_flash.time += oph.PeakTime() * oph.PE();
     }
     double ophit_qtot=0;
-    for(auto const& v : _ophit_flash.pe_v) ophit_qtot += v;
+    for(auto& v : _ophit_flash.pe_v) {
+      v *= (1./0.23);
+      ophit_qtot += v;
+    }
     _ophit_flash.time /= ophit_qtot;
     _ophit_flash.idx = _flash_v.size();
     _flash_v.push_back(_ophit_flash);
@@ -129,7 +132,7 @@ namespace larlite {
       for(size_t i=0; i<trk.NumberTrajectoryPoints(); ++i) {
 
 	auto const& pt = trk.LocationAtPoint(i);
-	trj.emplace_back(pt[0],pt[1],pt[2]);
+	trj.emplace_back(::geoalgo::Vector(pt[0],pt[1],pt[2]));
 
       }
       
@@ -138,7 +141,14 @@ namespace larlite {
       ::flashana::Flash_t hypo;
       hypo.pe_v.resize(32);
       _fhypo.FillEstimate(qc,hypo);
-      _hHitFlashScore->Fill(_qll.QLL(hypo,_ophit_flash));
+      //std::cout<<track_index<<std::endl;
+      double score = _qll.QLL(hypo,_ophit_flash);
+      _hHitFlashScore->Fill(score);
+      //std::cout<<score<<std::endl;
+
+      //auto match = _qll.Match(qc,_ophit_flash);
+      //_hHitFlashScore->Fill(match.score);
+      //std::cout<<match.score<<std::endl;
 
       for(size_t ch=0; ch<hypo.pe_v.size(); ++ch)
 

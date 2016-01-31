@@ -26,7 +26,7 @@ MuCSTagger: {
 MuCSOpStudy: {
   OpHitTMin: -0.8
   OpHitTMax: 0.
-  OpHitProducer: ophitCFD
+  OpHitProducer: ophitSatCFD
   OpFlashProducer: opflashSat
   TrackProducer: trackkalmanhit
   CosmicTagProducer: MuCSTagger

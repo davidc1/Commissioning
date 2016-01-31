@@ -152,7 +152,8 @@ namespace larlite {
     ::geoalgo::HalfLine dir(0,0,0,1,1,1);
 
     auto ev_ctag = storage->get_data<event_cosmictag>("MuCSTagger");
-    if(ev_ctag) ev_ctag->reserve(ev_track->size());
+    if(ev_ctag) ev_ctag->resize(ev_track->size());
+    //if(ev_ctag) ev_ctag->reserve(ev_track->size());
 
     cosmictag ctag;
     size_t num_tracks = 0;
@@ -160,10 +161,11 @@ namespace larlite {
     bool tagged = false;
     for(size_t track_index=0; track_index<ev_track->size(); ++track_index) {
 
+      ctag.fCosmicScore = -1;
       auto const& trk = (*ev_track)[track_index];
 
       if(trk.NumberTrajectoryPoints()<2) {
-	if(ev_ctag) ev_ctag->push_back(ctag);
+	if(ev_ctag) (*ev_ctag)[track_index].fCosmicScore = -1;
 	continue;
       }
       
@@ -171,7 +173,8 @@ namespace larlite {
       auto const& end   = trk.LocationAtPoint(trk.NumberTrajectoryPoints()-1);
 
       if( (start[0] < _xmin || start[0] > _xmax) || (end[0]   < _xmin || end[0]   > _xmax) ) {
-	if(ev_ctag) ev_ctag->push_back(ctag);
+	//if(ev_ctag) ev_ctag->push_back(ctag);
+	if(ev_ctag) (*ev_ctag)[track_index].fCosmicScore = -1;
 	continue;
       }
 
@@ -192,7 +195,8 @@ namespace larlite {
       }
 
       if(length < _min_track_length) {
-	if(ev_ctag) ev_ctag->push_back(ctag);
+	//if(ev_ctag) ev_ctag->push_back(ctag);
+	if(ev_ctag) (*ev_ctag)[track_index].fCosmicScore = -1;
 	continue;
       }
       
@@ -231,8 +235,9 @@ namespace larlite {
 	}	  
 	++num_tagged;
       }
-
-      if(ev_ctag) ev_ctag->push_back(ctag);
+      //if(ctag.fCosmicScore>0) std::cout<<"\033[93m"<<track_index<<"\033[00m"<<std::endl;
+      //if(ev_ctag) ev_ctag->push_back(ctag);
+      if(ev_ctag) (*ev_ctag)[track_index].fCosmicScore = ctag.fCosmicScore;
     }
 
     _hNumTracks->Fill(num_tracks);

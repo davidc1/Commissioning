@@ -20,6 +20,7 @@
 #include "OpT0Finder/Algorithms/LightPath.h"
 #include "OpT0Finder/Algorithms/PhotonLibHypothesis.h"
 #include "OpT0Finder/Algorithms/QLLMatch.h"
+#include "OpT0Finder/Algorithms/QWeightPoint.h"
 #include <TH1D.h>
 #include <TH2D.h>
 namespace larlite {
@@ -56,6 +57,10 @@ namespace larlite {
 
     ::flashana::FlashMatchManager& FlashMatchManager() { return _mgr; }
 
+    const std::string& ophit_producer() const { return _ophit_producer; }
+    const std::string& opflash_producer() const { return _opflash_producer; }
+    const std::string& cosmictag_producer() const { return _ctag_producer; }
+    const std::string& track_producer() const { return _track_producer; }
   protected:
 
     std::vector<geoalgo::Trajectory>  _cand_trj_v;
@@ -74,6 +79,7 @@ namespace larlite {
     ::flashana::LightPath _lpath;
     ::flashana::PhotonLibHypothesis _fhypo;
     ::flashana::QLLMatch _qll;
+    //::flashana::QWeightPoint _qll;
 
     double _ophit_tmin;
     double _ophit_tmax;
