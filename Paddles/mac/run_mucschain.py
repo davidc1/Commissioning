@@ -44,7 +44,7 @@ ana.configure(cfg)
 mgr=ana.FlashMatchManager()
 mgr.SetAlgo(flashana.NPtFilter())
 mgr.SetAlgo(flashana.MaxNPEWindow())
-#mgr.SetAlgo(flashana.TimeCompatMatch())
+mgr.SetAlgo(flashana.TimeCompatMatch())
 mgr.Configure('flashmatch_mucs.fcl')
 
 if not ana.track_producer() == tagger.producer():

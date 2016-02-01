@@ -5,8 +5,12 @@ MuCSTagger: {
   LowerBox: [-19.6948,319.551,581.25,28.3052,320.551,629.25] # bottom  [xmin,ymin,zmin,xmax,ymax,zmax]
 
   # Shift/Expansion (-20 cm X shift)
-  UpperShift: [-20,0,0,-20,0,0]
-  LowerShift: [-20,0,0,-20,0,0]
+  #UpperShift: [40,0,0,40,0,0]
+  #LowerShift: [40,0,0,40,0,0]
+    
+  # Recommended: X shift 25, Z shift 15 + expansion 25 cm
+  UpperShift: [25,0,-5,25,0,40]
+  LowerShift: [25,0,-5,25,0,40]
     
   # Shift/Expansion (20 cm expansion)
   #UpperShift: [-20,-20,-20,20,20,20]

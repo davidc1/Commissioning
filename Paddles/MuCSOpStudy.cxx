@@ -14,8 +14,8 @@ namespace larlite {
     _name="MuCSOpStudy";
     _fout=nullptr;
     _mgr.AddCustomAlgo(&_lpath);
-    _mgr.SetAlgo(&_fhypo);
     _mgr.SetAlgo(&_qll);
+    _mgr.SetAlgo(&_fhypo);
   }
   
   void MuCSOpStudy::configure(const std::string config_file) {
@@ -58,6 +58,8 @@ namespace larlite {
   }
   
   bool MuCSOpStudy::analyze(storage_manager* storage) {
+
+    _mgr.Reset();
   
     auto ev_ophit   = storage->get_data<event_ophit>(_ophit_producer);
     auto ev_opflash = storage->get_data<event_opflash>(_opflash_producer);
@@ -88,6 +90,7 @@ namespace larlite {
       f.y_err = opf.YWidth();
       f.z_err = opf.ZWidth();
       f.pe_v.resize(32);
+      f.time = opf.Time();
       for(size_t ch=0; ch<f.pe_v.size(); ++ch) 
 	f.pe_v[ch] = opf.PE(ch);
       f.idx = flash_index;
@@ -96,6 +99,7 @@ namespace larlite {
     }
 
     _ophit_flash = ::flashana::Flash_t();
+    _ophit_flash.time = 0;
     _ophit_flash.pe_v.resize(32);
     for(auto const& oph : *ev_ophit) {
       
@@ -142,18 +146,19 @@ namespace larlite {
       hypo.pe_v.resize(32);
       _fhypo.FillEstimate(qc,hypo);
       //std::cout<<track_index<<std::endl;
-      double score = _qll.QLL(hypo,_ophit_flash);
-      _hHitFlashScore->Fill(score);
+      //double score = _qll.QLL(hypo,_ophit_flash);
+      //_hHitFlashScore->Fill(score);
       //std::cout<<score<<std::endl;
 
-      //auto match = _qll.Match(qc,_ophit_flash);
-      //_hHitFlashScore->Fill(match.score);
+      auto match = _qll.Match(qc,_ophit_flash);
+      _hHitFlashScore->Fill(match.score);
       //std::cout<<match.score<<std::endl;
 
-      for(size_t ch=0; ch<hypo.pe_v.size(); ++ch)
-
+      for(size_t ch=0; ch<hypo.pe_v.size(); ++ch) {
+	//std::cout<<_ophit_flash.pe_v[ch]<< " : "<<hypo.pe_v[ch]<<std::endl;
+	if(_ophit_flash.pe_v[ch]<(5/0.23) || hypo.pe_v[ch]<(5/0.23)) continue;
 	_hRatioMap->Fill(ch, (_ophit_flash.pe_v[ch] - hypo.pe_v[ch]) / (_ophit_flash.pe_v[ch] + hypo.pe_v[ch]) * 2.);
-
+      }
       if(_run_match) _mgr.Add(qc);
       _qcluster_v.emplace_back(qc);
       _cand_trj_v.emplace_back(trj);

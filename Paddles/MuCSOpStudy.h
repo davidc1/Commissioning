@@ -78,8 +78,8 @@ namespace larlite {
     ::flashana::FlashMatchManager _mgr;
     ::flashana::LightPath _lpath;
     ::flashana::PhotonLibHypothesis _fhypo;
-    ::flashana::QLLMatch _qll;
-    //::flashana::QWeightPoint _qll;
+    //::flashana::QLLMatch _qll;
+    ::flashana::QWeightPoint _qll;
 
     double _ophit_tmin;
     double _ophit_tmax;
