@@ -224,14 +224,16 @@ namespace larlite {
 	  _matched_dir_v.push_back(_mucs_dir);
 	  ::geoalgo::Trajectory trj;
 	  trj.resize(trk.NumberTrajectoryPoints());
+	  std::cout<<"trk size is ::"<<trk.NumberTrajectoryPoints()<<std::endl;
 	  for(size_t i=0; i<trk.NumberTrajectoryPoints(); ++i) {
 
-	    auto const& pt = trk.LocationAtPoint(i);
-
-	    trj.emplace_back(::geoalgo::Vector(pt));
-
+	    //auto const& pt = trk.LocationAtPoint(i);
+	    //trj.emplace_back(::geoalgo::Vector(pt));
+	    trj[i] = trk.LocationAtPoint(i);
+	    
 	  }
 	  _matched_trj_v.emplace_back(trj);
+	  
 	}	  
 	++num_tagged;
       }
