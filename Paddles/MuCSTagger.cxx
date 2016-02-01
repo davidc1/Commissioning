@@ -11,6 +11,7 @@ namespace larlite {
     : ana_base()
     , _mucs_upper_box(0,0,0,1,1,1)
     , _mucs_lower_box(0,0,0,1,1,1)
+    , _tpc_av(0,0,0,1,1,1)
     , _mucs_dir(0,0,0,1,1,1)
   { _name="MuCSTagger"; _fout=0; _configured=false;}
 
@@ -35,12 +36,20 @@ namespace larlite {
       throw std::exception();
     }
 
+    std::vector<double> tpc_box = main_cfg.get<std::vector<double> >("TPC_Active_Volume");
+    if(tpc_box.size()!=6) {
+      print(msg::kERROR,__FUNCTION__,"TPC AV needs length 6 floating point...");
+      throw std::exception();
+    }
     _mucs_upper_box.Min(upper_box[0],upper_box[1],upper_box[2]);
     _mucs_upper_box.Max(upper_box[3],upper_box[4],upper_box[5]);
 
     _mucs_lower_box.Min(lower_box[0],lower_box[1],lower_box[2]);
     _mucs_lower_box.Max(lower_box[3],lower_box[4],lower_box[5]);
 
+    _tpc_av.Min(tpc_box[0],tpc_box[1],tpc_box[2]);
+    _tpc_av.Max(tpc_box[3],tpc_box[4],tpc_box[5]);
+    
     _xmin = main_cfg.get<double>("XMin",-50.);
     _xmax = main_cfg.get<double>("XMax",300.);
 
@@ -72,7 +81,7 @@ namespace larlite {
     }
     
     _hNumTracks = new TH1D("hNumTracks","# Tracks above min length; # Tracks; Events",
-			   20,0,100);
+			   20,-0.5,19.5);
 
     _hNumTagged = new TH1D("hNumTagged","# Tracks tagged; # tagged; Events",
 			   20,-0.5,19.5);
@@ -88,12 +97,18 @@ namespace larlite {
 
     _mucs_dir.Dir(end[0]-start[0], end[1]-start[1], end[2]-start[2]);
 
-    bool res = alg.Intersection(_mucs_upper_box,_mucs_dir).empty();
+    bool res = !alg.Intersection(_mucs_upper_box,_mucs_dir).empty();
 
     if(!res && _hit_both_box) return false;
     
-    if(res && !_hit_both_box) return true;
+    if(res && !_hit_both_box){
+      _upper_pt.push_back(alg.Intersection(_mucs_upper_box,_mucs_dir)[0]);
+      return true;}
+    
+    if(!res && !_hit_both_box) return false;
 
+    if(!(alg.Intersection(_mucs_lower_box,_mucs_dir).empty()))
+      _lower_pt.push_back(alg.Intersection(_mucs_lower_box,_mucs_dir)[0]);
     return !(alg.Intersection(_mucs_lower_box,_mucs_dir).empty());
 
   }
@@ -142,7 +157,9 @@ namespace larlite {
 
     _matched_trj_v.clear();
     _matched_dir_v.clear();
-
+    _upper_pt.clear();
+    _lower_pt.clear();
+    
     auto ev_track = storage->get_data<event_track>(_producer);
     if(!ev_track) {
       print(msg::kERROR,__FUNCTION__,"No matching data product found for specified track producer name!");
@@ -181,14 +198,15 @@ namespace larlite {
       ctag.fCosmicScore = -1;
 	
       double length = 0;
-      size_t ref_index = 0;
+      size_t ref_index = 1;
       for(size_t i=0; i<(trk.NumberTrajectoryPoints()-1) && ctag.fCosmicScore<0; ++i) {
+	auto const& ptS = trk.LocationAtPoint(0);
 	auto const& pt1 = trk.LocationAtPoint(i);
 	auto const& pt2 = trk.LocationAtPoint(i+1);
 	length += (pt2 - pt1).Mag();
 	if(length >= _segment_length && length < _segment_length + _scan_length) {
 	  auto const& ref = trk.LocationAtPoint(ref_index);
-	  if(Intersect(pt2,ref)) ctag.fCosmicScore = 1.;
+	  if(Intersect(ptS,ref)) ctag.fCosmicScore = 1.;
 	  ++ref_index;
 	}
 	if(length > _min_track_length) break;
@@ -204,14 +222,15 @@ namespace larlite {
       
       if(ctag.fCosmicScore<0. && _allow_flip_direction) {
 	length = 0;
-	ref_index = trk.NumberTrajectoryPoints()-1;
+	ref_index = trk.NumberTrajectoryPoints()-2;
 	for(int i=trk.NumberTrajectoryPoints()-1; i>0 && ctag.fCosmicScore<0.; --i) {
+	  auto const& ptE = trk.LocationAtPoint(trk.NumberTrajectoryPoints()-1);
 	  auto const& pt1 = trk.LocationAtPoint(i);
 	  auto const& pt2 = trk.LocationAtPoint(i-1);
 	  length += (pt2 - pt1).Mag();
 	  if(length >= _segment_length && length < _segment_length + _scan_length) {
 	    auto const& ref = trk.LocationAtPoint(ref_index);
-	    if(Intersect(pt2,ref)) ctag.fCosmicScore = 0.5;
+	    if(Intersect(ptE,ref)) ctag.fCosmicScore = 0.5;
 	    --ref_index;
 	  }
 	  if(length > (_scan_length + _segment_length)) break;
@@ -224,10 +243,11 @@ namespace larlite {
 	  _matched_dir_v.push_back(_mucs_dir);
 	  ::geoalgo::Trajectory trj;
 	  trj.resize(trk.NumberTrajectoryPoints());
-	  std::cout<<"trk size is ::"<<trk.NumberTrajectoryPoints()<<std::endl;
 	  for(size_t i=0; i<trk.NumberTrajectoryPoints(); ++i) {
 
 	    //auto const& pt = trk.LocationAtPoint(i);
+	    //auto const& con = _tpc_av.Contain(pt);
+	    //if (con == 0) std::cout<<"this point is outside of TPC"<<std::endl;
 	    //trj.emplace_back(::geoalgo::Vector(pt));
 	    trj[i] = trk.LocationAtPoint(i);
 	    

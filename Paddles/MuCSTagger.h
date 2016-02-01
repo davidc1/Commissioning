@@ -61,6 +61,9 @@ namespace larlite {
 
     const ::geoalgo::AABox lower_box() const { return _mucs_lower_box; }
 
+    const std::vector<::geoalgo::Vector> upper_pt() const { return _upper_pt;       }
+
+    const std::vector<::geoalgo::Vector> lower_pt() const { return _lower_pt;       }
   protected:
 
     bool Intersect(const TVector3& start, const TVector3& end);
@@ -69,6 +72,9 @@ namespace larlite {
     bool _configured;
     ::geoalgo::AABox _mucs_upper_box;
     ::geoalgo::AABox _mucs_lower_box;
+    std::vector<::geoalgo::Vector> _upper_pt;
+    std::vector<::geoalgo::Vector> _lower_pt;
+    ::geoalgo::AABox _tpc_av;
     ::geoalgo::HalfLine _mucs_dir;
 
     std::vector<geoalgo::HalfLine> _matched_dir_v;

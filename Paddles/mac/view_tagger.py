@@ -60,6 +60,8 @@ while my_proc.process_event():
     fidVol      = geoalgo.AABox(0,-116,0,253,116,1060)
     mcsTop      = myunit.upper_box()
     mcsBot      = myunit.lower_box()
+    mcsupppt    = myunit.upper_pt()
+    mcslowpt    = myunit.lower_pt()
     mcsTrj_v    = myunit.matched_trajectory()
     mcsDir_v    = myunit.matched_dir()
 
@@ -71,6 +73,8 @@ while my_proc.process_event():
     for i in xrange(len(mcsTrj_v)):
         print 'traj',i
         viewer.add(mcsTrj_v[i],"Traj","b")
+        viewer.add(mcsupppt[i],'u','r')
+        #viewer.add(mcslowpt[i],'l','m')   //enable when _hit_both_box == true
     for j in xrange(len(mcsDir_v)):
         print 'line',j
         viewer.add(mcsDir_v[j],"Dir","g")
