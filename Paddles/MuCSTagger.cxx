@@ -36,6 +36,21 @@ namespace larlite {
       throw std::exception();
     }
 
+    std::vector<double> shift(6,0.);
+    shift = main_cfg.get<std::vector<double> >("UpperShift",shift);
+    if(shift.size()!=6) {
+      print(msg::kERROR,__FUNCTION__,"Shift needs length 6 floating point...");
+      throw std::exception();
+    }
+    for(size_t i=0;i<upper_box.size();++i) upper_box[i] += shift[i];
+
+    shift = main_cfg.get<std::vector<double> >("LowerShift",shift);
+    if(shift.size()!=6) {
+      print(msg::kERROR,__FUNCTION__,"Shift needs length 6 floating point...");
+      throw std::exception();
+    }
+    for(size_t i=0;i<lower_box.size();++i) lower_box[i] += shift[i];
+
     std::vector<double> tpc_box = main_cfg.get<std::vector<double> >("TPC_Active_Volume");
     if(tpc_box.size()!=6) {
       print(msg::kERROR,__FUNCTION__,"TPC AV needs length 6 floating point...");

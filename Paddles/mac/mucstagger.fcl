@@ -4,13 +4,17 @@ MuCSTagger: {
   UpperBox: [-71.795,397.451,579.45,-23.795,398.451,627.45]  # top  [xmin,ymin,zmin,xmax,ymax,zmax]
   LowerBox: [-19.6948,319.551,581.25,28.3052,320.551,629.25] # bottom  [xmin,ymin,zmin,xmax,ymax,zmax]
 
-  # 20 cm buffer
-  #UpperBox: [-91.795,397.451,559.45,-3.795,398.451,647.45]  # top  [xmin,ymin,zmin,xmax,ymax,zmax]
-  #LowerBox: [-39.6948,319.551,561.25,48.3052,320.551,649.25] # bottom  [xmin,ymin,zmin,xmax,ymax,zmax]
+  # Shift/Expansion (-20 cm shift)
+  UpperShift: [-20,-20,-20,-20,-20,-20]
+  LowerShift: [-20,-20,-20,-20,-20,-20]
+    
+  # Shift/Expansion (20 cm expansion)
+  #UpperShift: [-20,-20,-20,20,20,20]
+  #LowerShift: [-20,-20,-20,20,20,20]
 
-  # 50 cm buffer
-  #UpperBox: [-121.795,397.451,529.45,27.795,398.451,677.45]  # top  [xmin,ymin,zmin,xmax,ymax,zmax]
-  #LowerBox: [-69.6948,319.551,531.25,78.3052,320.551,679.25] # bottom  [xmin,ymin,zmin,xmax,ymax,zmax]
+  # Shift/Expansion (50 cm expansion)
+  #UpperShift: [-50,-50,-50,50,50,50]
+  #LowerShift: [-50,-50,-50,50,50,50]
 
   TPC_Active_Volume: [0.0,-116.5,0.0,256.35,116.5,1036.8]
   
@@ -19,7 +23,7 @@ MuCSTagger: {
   StoreMatch: true
   Producer: trackkalmanhit
   HitBoth: false
-  MinTrackLength: 50
+  MinTrackLength: 30
   ScanLength: 10
   SegmentLength: 10
   AllowFlip: true
