@@ -70,11 +70,10 @@ while my_proc.process_event():
     #for x in range(0,len(mcsTrj)):
     for i in xrange(len(mcsTrj_v)):
         print 'traj',i
-        #viewer.add(mcsTrj_v[i],"Traj","b")
+        viewer.add(mcsTrj_v[i],"Traj","b")
     for j in xrange(len(mcsDir_v)):
         print 'line',j
         viewer.add(mcsDir_v[j],"Dir","g")
-    print mcsTrj_v.size(),mcsDir_v.size()
     viewer.construct()
     viewer._ax.set_xlim(-150,300)
     viewer._ax.set_ylim(-120,350)
