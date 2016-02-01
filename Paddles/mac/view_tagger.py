@@ -51,7 +51,10 @@ print  "Finished configuring ana_processor. Start event loop!"
 print
 index=0
 while my_proc.process_event():
-
+    cos_score  = myunit.get_ctag_score()
+    print 'cos_score is ',cos_score
+    if ( cos_score != 0.5 and cos_score != 1.0): continue
+        
     # add objects to viewer
     viewer.clear()
     print index

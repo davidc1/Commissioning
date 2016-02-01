@@ -13,6 +13,7 @@ namespace larlite {
     , _mucs_lower_box(0,0,0,1,1,1)
     , _tpc_av(0,0,0,1,1,1)
     , _mucs_dir(0,0,0,1,1,1)
+    , _ctag_score(-1)
   { _name="MuCSTagger"; _fout=0; _configured=false;}
 
   void MuCSTagger::configure(const std::string config_file) {
@@ -174,7 +175,7 @@ namespace larlite {
     _matched_dir_v.clear();
     _upper_pt.clear();
     _lower_pt.clear();
-    
+    _ctag_score = -1;
     auto ev_track = storage->get_data<event_track>(_producer);
     if(!ev_track) {
       print(msg::kERROR,__FUNCTION__,"No matching data product found for specified track producer name!");
@@ -221,7 +222,7 @@ namespace larlite {
 	length += (pt2 - pt1).Mag();
 	if(length >= _segment_length && length < _segment_length + _scan_length) {
 	  auto const& ref = trk.LocationAtPoint(ref_index);
-	  if(Intersect(ptS,ref)) ctag.fCosmicScore = 1.;
+	  if(Intersect(ref,ptS)) ctag.fCosmicScore = 1.;
 	  ++ref_index;
 	}
 	if(length > _min_track_length) break;
@@ -245,7 +246,7 @@ namespace larlite {
 	  length += (pt2 - pt1).Mag();
 	  if(length >= _segment_length && length < _segment_length + _scan_length) {
 	    auto const& ref = trk.LocationAtPoint(ref_index);
-	    if(Intersect(ptE,ref)) ctag.fCosmicScore = 0.5;
+	    if(Intersect(ref,ptE)) ctag.fCosmicScore = 0.5;
 	    --ref_index;
 	  }
 	  if(length > (_scan_length + _segment_length)) break;
@@ -268,7 +269,7 @@ namespace larlite {
 	    
 	  }
 	  _matched_trj_v.emplace_back(trj);
-	  
+	  _ctag_score = ctag.fCosmicScore;
 	}	  
 	++num_tagged;
       }

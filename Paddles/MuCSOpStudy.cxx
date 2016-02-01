@@ -42,7 +42,7 @@ namespace larlite {
 
     _hRatioMap = new TH2D("hRatioMap","PE Assym. per PMT;Channel;Assym",
 			  32,-0.5,31.5,
-			  100,0,2);
+			  100,0,3);
     _hHitFlashScore = new TH1D("hHitFlashScore","Cheat Flash Score; Score; Cheat Flash",
 			       100,0,1);
     _hMatchTime = new TH1D("hMatchTime","Matched Time;Time;Match",
@@ -60,7 +60,7 @@ namespace larlite {
   bool MuCSOpStudy::analyze(storage_manager* storage) {
 
     _mgr.Reset();
-  
+    _ctag_score = -1;
     auto ev_ophit   = storage->get_data<event_ophit>(_ophit_producer);
     auto ev_opflash = storage->get_data<event_opflash>(_opflash_producer);
     auto ev_ctag    = storage->get_data<event_cosmictag>(_ctag_producer);
@@ -107,8 +107,9 @@ namespace larlite {
 
       if(oph.PeakTime() < _ophit_tmin || oph.PeakTime() > _ophit_tmax) continue;
       
-      _ophit_flash.pe_v[oph.OpChannel()] += oph.PE();
-
+      //_ophit_flash.pe_v[oph.OpChannel()] += oph.PE();
+      _ophit_flash.pe_v[oph.OpChannel()] += oph.Amplitude()/20;
+      
       _ophit_flash.time += oph.PeakTime() * oph.PE();
     }
     double ophit_qtot=0;
@@ -119,6 +120,7 @@ namespace larlite {
     _ophit_flash.time /= ophit_qtot;
     _ophit_flash.idx = _flash_v.size();
     _flash_v.push_back(_ophit_flash);
+    
     if(_run_match && _use_ophit_flash) _mgr.Add(_ophit_flash);
 
     _qcluster_v.clear();
@@ -139,12 +141,13 @@ namespace larlite {
 	trj.emplace_back(::geoalgo::Vector(pt[0],pt[1],pt[2]));
 
       }
-      
+      _ctag_score = ctag.fCosmicScore;
       auto qc = _lpath.FlashHypothesis(trj);
 
       ::flashana::Flash_t hypo;
       hypo.pe_v.resize(32);
       _fhypo.FillEstimate(qc,hypo);
+      _ophit_hypo = hypo;
       //std::cout<<track_index<<std::endl;
       //double score = _qll.QLL(hypo,_ophit_flash);
       //_hHitFlashScore->Fill(score);
@@ -157,7 +160,8 @@ namespace larlite {
       for(size_t ch=0; ch<hypo.pe_v.size(); ++ch) {
 	//std::cout<<_ophit_flash.pe_v[ch]<< " : "<<hypo.pe_v[ch]<<std::endl;
 	if(_ophit_flash.pe_v[ch]<(5/0.23) || hypo.pe_v[ch]<(5/0.23)) continue;
-	_hRatioMap->Fill(ch, (_ophit_flash.pe_v[ch] - hypo.pe_v[ch]) / (_ophit_flash.pe_v[ch] + hypo.pe_v[ch]) * 2.);
+	//_hRatioMap->Fill(ch, (_ophit_flash.pe_v[ch] - hypo.pe_v[ch]) / (_ophit_flash.pe_v[ch] + hypo.pe_v[ch]) * 2.);
+	_hRatioMap->Fill(ch, (_ophit_flash.pe_v[ch] ) / ( hypo.pe_v[ch]) );
       }
       if(_run_match) _mgr.Add(qc);
       _qcluster_v.emplace_back(qc);

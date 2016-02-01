@@ -64,6 +64,9 @@ namespace larlite {
     const std::vector<::geoalgo::Vector> upper_pt() const { return _upper_pt;       }
 
     const std::vector<::geoalgo::Vector> lower_pt() const { return _lower_pt;       }
+
+    const float get_ctag_score()const{return _ctag_score;}
+    
   protected:
 
     bool Intersect(const TVector3& start, const TVector3& end);
@@ -92,6 +95,8 @@ namespace larlite {
     bool   _allow_flip_direction;
     TH1D*  _hNumTracks;
     TH1D*  _hNumTagged;
+
+    float _ctag_score;
   };
 }
 #endif

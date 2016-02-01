@@ -61,13 +61,21 @@ namespace larlite {
     const std::string& opflash_producer() const { return _opflash_producer; }
     const std::string& cosmictag_producer() const { return _ctag_producer; }
     const std::string& track_producer() const { return _track_producer; }
+
+    // Getter functions
+    
+    const ::flashana::Flash_t get_ophit_flash() const {return _ophit_flash;}
+    const ::flashana::Flash_t get_ophit_hypo() const { return _ophit_hypo;}
+    const float get_ctag_score() const {return _ctag_score;}
+    
   protected:
 
     std::vector<geoalgo::Trajectory>  _cand_trj_v;
-    std::vector<flashana::QCluster_t> _qcluster_v;
-    std::vector<flashana::Flash_t> _flash_v;
-    ::flashana::Flash_t _ophit_flash;
-
+    std::vector<flashana::QCluster_t> _qcluster_v;  //
+    std::vector<flashana::Flash_t> _flash_v;        //Flash object from opflash
+    ::flashana::Flash_t _ophit_flash;               //Flash object from ophit
+    ::flashana::Flash_t _ophit_hypo;
+    
     TH2D* _hRatioMap;
     TH1D* _hHitFlashScore;
     TH1D* _hMatchTime;
@@ -91,6 +99,8 @@ namespace larlite {
 
     bool _run_match;
     bool _use_ophit_flash;
+
+    float _ctag_score;
   };
 }
 #endif
