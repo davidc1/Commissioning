@@ -53,7 +53,7 @@ index=0
 while my_proc.process_event():
     cos_score  = myunit.get_ctag_score()
     print 'cos_score is ',cos_score
-    if ( cos_score != 0.5 and cos_score != 1.0): continue
+    if ( cos_score != 0.5 and cos_score != 1.): continue
         
     # add objects to viewer
     viewer.clear()
@@ -68,11 +68,18 @@ while my_proc.process_event():
     mcsTrj_v    = myunit.matched_trajectory()
     mcsDir_v    = myunit.matched_dir()
 
+    prj_s       = myunit.get_prj_start()
+    prj_e       = myunit.get_prj_end()
+    
     viewer.add(fidVol,'FV.','k')
     viewer.add(mcsTop,'Top','r')
     viewer.add(mcsBot,'Bot','m')
     
     #for x in range(0,len(mcsTrj)):
+    for k in xrange(len(prj_s)):
+        viewer.add(prj_s[k],'start','r')
+    for l in xrange(len(prj_e)):
+        viewer.add(prj_e[l],'end','k')
     for i in xrange(len(mcsTrj_v)):
         print 'traj',i
         viewer.add(mcsTrj_v[i],"Traj","b")

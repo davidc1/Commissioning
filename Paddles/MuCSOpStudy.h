@@ -74,7 +74,7 @@ namespace larlite {
     std::vector<flashana::QCluster_t> _qcluster_v;  //
     std::vector<flashana::Flash_t> _flash_v;        //Flash object from opflash
     ::flashana::Flash_t _ophit_flash;               //Flash object from ophit
-    ::flashana::Flash_t _ophit_hypo;
+    ::flashana::Flash_t _ophit_hypo;                //Flash object from LigthPath
     
     TH2D* _hRatioMap;
     TH1D* _hHitFlashScore;
@@ -82,6 +82,7 @@ namespace larlite {
     TH1D* _hMatchScore;
     TH2D* _hMatchScorePE;
     TH2D* _hMatchScoreTime;
+    TH1D* _hRatioPLOP;
     
     ::flashana::FlashMatchManager _mgr;
     ::flashana::LightPath _lpath;

@@ -16,13 +16,15 @@ MuCSTagger: {
   HitBoth: false
   MinTrackLength: 100
   ScanLength: 5
-  SegmentLength: 10
+  SegmentLength: 5
   AllowFlip: true
 }
 
 MuCSOpStudy: {
-  OpHitTMin: -1.01
-  OpHitTMax: -0.88
+  #OpHitTMin: -1.01
+  #OpHitTMax: -0.88
+  OpHitTMin: -1.00
+  OpHitTMax: -0.85
   OpHitProducer: ophitSatCFD
   OpFlashProducer: opflashSat
   TrackProducer: trackkalmanhit

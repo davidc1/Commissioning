@@ -45,6 +45,8 @@ namespace larlite {
 			  100,0,3);
     _hHitFlashScore = new TH1D("hHitFlashScore","Cheat Flash Score; Score; Cheat Flash",
 			       100,0,1);
+    _hRatioPLOP = new TH1D("hRatioPLOP","Predicted light / Optical reconstrutin",50,0,2);
+    
     _hMatchTime = new TH1D("hMatchTime","Matched Time;Time;Match",
 			   100, -100,100);
     _hMatchScore = new TH1D("hMatchScore","Matched Score;Score;Match",
@@ -107,11 +109,12 @@ namespace larlite {
 
       if(oph.PeakTime() < _ophit_tmin || oph.PeakTime() > _ophit_tmax) continue;
       
-      //_ophit_flash.pe_v[oph.OpChannel()] += oph.PE();
-      _ophit_flash.pe_v[oph.OpChannel()] += oph.Amplitude()/20;
+      _ophit_flash.pe_v[oph.OpChannel()] += oph.PE();
+      //_ophit_flash.pe_v[oph.OpChannel()] += oph.Amplitude()/20;
       
       _ophit_flash.time += oph.PeakTime() * oph.PE();
     }
+    
     double ophit_qtot=0;
     for(auto& v : _ophit_flash.pe_v) {
       v *= (1./0.23);
@@ -148,6 +151,12 @@ namespace larlite {
       hypo.pe_v.resize(32);
       _fhypo.FillEstimate(qc,hypo);
       _ophit_hypo = hypo;
+      double pl_qtot=0;
+      for(auto& v : hypo.pe_v) {
+	pl_qtot += v;
+      }
+
+      _hRatioPLOP->Fill(pl_qtot/ophit_qtot);
       //std::cout<<track_index<<std::endl;
       //double score = _qll.QLL(hypo,_ophit_flash);
       //_hHitFlashScore->Fill(score);
@@ -191,6 +200,7 @@ namespace larlite {
 
     if(_fout) {
       _hRatioMap->Write();
+      _hRatioPLOP->Write();
       _hHitFlashScore->Write();
       _hMatchTime->Write();
       _hMatchScore->Write();

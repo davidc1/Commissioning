@@ -100,7 +100,7 @@ namespace larlite {
 			   20,-0.5,19.5);
 
     _hNumTagged = new TH1D("hNumTagged","# Tracks tagged; # tagged; Events",
-			   20,-0.5,19.5);
+			   10,-0.5,9.5);
 
     return true;
   }
@@ -111,9 +111,9 @@ namespace larlite {
 
     _mucs_dir.Start(start[0],start[1],start[2]);
 
-    _mucs_dir.Dir(end[0]-start[0], end[1]-start[1], end[2]-start[2]);
-
-    bool res = !alg.Intersection(_mucs_upper_box,_mucs_dir).empty();
+    //_mucs_dir.Dir(end[0]-start[0], end[1]-start[1], end[2]-start[2]);
+    _mucs_dir.Dir(-end[0]+start[0], -end[1]+start[1], -end[2]+start[2]);
+    bool res = !alg.Intersection(_mucs_upper_box,_mucs_dir).empty();// intersection returns true
 
     if(!res && _hit_both_box) return false;
     
@@ -175,6 +175,8 @@ namespace larlite {
     _matched_dir_v.clear();
     _upper_pt.clear();
     _lower_pt.clear();
+    _temps1.clear();
+    _temps2.clear();
     _ctag_score = -1;
     auto ev_track = storage->get_data<event_track>(_producer);
     if(!ev_track) {
@@ -212,26 +214,23 @@ namespace larlite {
       }
 
       ctag.fCosmicScore = -1;
-	
+      ::geoalgo::HalfLine temp1(trk.LocationAtPoint(0),trk.LocationAtPoint(0)-trk.LocationAtPoint(1));
+      ::geoalgo::HalfLine temp2(trk.LocationAtPoint(trk.NumberTrajectoryPoints()-1),trk.LocationAtPoint(trk.NumberTrajectoryPoints()-1)-trk.LocationAtPoint(trk.NumberTrajectoryPoints()-2));
       double length = 0;
       size_t ref_index = 1;
       for(size_t i=0; i<(trk.NumberTrajectoryPoints()-1) && ctag.fCosmicScore<0; ++i) {
 	auto const& ptS = trk.LocationAtPoint(0);
 	auto const& pt1 = trk.LocationAtPoint(i);
 	auto const& pt2 = trk.LocationAtPoint(i+1);
+
 	length += (pt2 - pt1).Mag();
 	if(length >= _segment_length && length < _segment_length + _scan_length) {
 	  auto const& ref = trk.LocationAtPoint(ref_index);
-	  if(Intersect(ref,ptS)) ctag.fCosmicScore = 1.;
+	  //if(Intersect(ref,ptS)) ctag.fCosmicScore = 1.;
+	  if(Intersect(ptS,ref)) ctag.fCosmicScore = 1.; 
 	  ++ref_index;
 	}
 	if(length > _min_track_length) break;
-      }
-
-      if(length < _min_track_length) {
-	//if(ev_ctag) ev_ctag->push_back(ctag);
-	if(ev_ctag) (*ev_ctag)[track_index].fCosmicScore = -1;
-	continue;
       }
       
       ++num_tracks;
@@ -243,10 +242,12 @@ namespace larlite {
 	  auto const& ptE = trk.LocationAtPoint(trk.NumberTrajectoryPoints()-1);
 	  auto const& pt1 = trk.LocationAtPoint(i);
 	  auto const& pt2 = trk.LocationAtPoint(i-1);
+
 	  length += (pt2 - pt1).Mag();
 	  if(length >= _segment_length && length < _segment_length + _scan_length) {
 	    auto const& ref = trk.LocationAtPoint(ref_index);
-	    if(Intersect(ref,ptE)) ctag.fCosmicScore = 0.5;
+	    //if(Intersect(ref,ptE)) ctag.fCosmicScore = 0.5;
+	    if(Intersect(ptE,ref)) ctag.fCosmicScore = 0.5; 
 	    --ref_index;
 	  }
 	  if(length > (_scan_length + _segment_length)) break;
@@ -273,6 +274,9 @@ namespace larlite {
 	}	  
 	++num_tagged;
       }
+
+      _temps1.push_back(temp1);
+      _temps2.push_back(temp2);
       //if(ctag.fCosmicScore>0) std::cout<<"\033[93m"<<track_index<<"\033[00m"<<std::endl;
       //if(ev_ctag) ev_ctag->push_back(ctag);
       if(ev_ctag) (*ev_ctag)[track_index].fCosmicScore = ctag.fCosmicScore;

@@ -51,6 +51,7 @@ namespace larlite {
 
     void configure(const std::string config_file);
 
+    // Getter functions
     const std::string& producer() const { return _producer; }
 
     const std::vector<geoalgo::Trajectory> matched_trajectory() const { return _matched_trj_v; }
@@ -66,6 +67,10 @@ namespace larlite {
     const std::vector<::geoalgo::Vector> lower_pt() const { return _lower_pt;       }
 
     const float get_ctag_score()const{return _ctag_score;}
+
+    std::vector<geoalgo::HalfLine> get_prj_start(){return _temps1;}
+    std::vector<geoalgo::HalfLine> get_prj_end(){return _temps2;}
+    
     
   protected:
 
@@ -79,9 +84,12 @@ namespace larlite {
     std::vector<::geoalgo::Vector> _lower_pt;
     ::geoalgo::AABox _tpc_av;
     ::geoalgo::HalfLine _mucs_dir;
-
+    
     std::vector<geoalgo::HalfLine> _matched_dir_v;
     std::vector<geoalgo::Trajectory> _matched_trj_v;
+
+    std::vector<geoalgo::HalfLine> _temps1;
+    std::vector<geoalgo::HalfLine> _temps2;
     
     std::string _producer;
     double _xmin;
