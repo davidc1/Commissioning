@@ -4,8 +4,8 @@ MuCSTagger: {
   UpperBox: [-71.795,397.451,579.45,-23.795,398.451,627.45]  # top  [xmin,ymin,zmin,xmax,ymax,zmax]
   LowerBox: [-19.6948,319.551,581.25,28.3052,320.551,629.25] # bottom  [xmin,ymin,zmin,xmax,ymax,zmax]
 
-  UpperShift: [25,0,-5,25,0,40]
-  LowerShift: [25,0,-5,25,0,40]
+  UpperShift: [-16,0,-16,20,0,20]
+  LowerShift: [-16,0,-16,20,0,20]
 
   TPC_Active_Volume: [0.0,-116.5,0.0,256.35,116.5,1036.8]
 
@@ -26,6 +26,7 @@ MuCSOpStudy: {
   OpHitTMin: -1.00
   OpHitTMax: -0.85
   OpHitProducer: ophitSatCFD
+  #OpHitProducer: OpHitFinder
   OpFlashProducer: opflashSat
   TrackProducer: trackkalmanhit
   CosmicTagProducer: MuCSTagger
