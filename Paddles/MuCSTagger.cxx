@@ -105,28 +105,30 @@ namespace larlite {
     return true;
   }
 
-  bool MuCSTagger::Intersect(const TVector3& start, const TVector3& end) {
+  bool MuCSTagger::Intersect(const ::geoalgo::HalfLine& mucs_dir) {
 
     ::geoalgo::GeoAlgo alg;
 
-    _mucs_dir.Start(start[0],start[1],start[2]);
-
-    //_mucs_dir.Dir(end[0]-start[0], end[1]-start[1], end[2]-start[2]);
-    _mucs_dir.Dir(-end[0]+start[0], -end[1]+start[1], -end[2]+start[2]);
-    bool res = !alg.Intersection(_mucs_upper_box,_mucs_dir).empty();// intersection returns true
-
-    if(!res && _hit_both_box) return false;
+    auto const upper_pt_v = alg.Intersection(_mucs_upper_box,mucs_dir);
     
+    bool res = !(upper_pt_v.empty());
+
+    // no intersection w/ upper box, both box hit required => return false;
+    if(!res && _hit_both_box) return res;
+
+    // intersection w/ upper box, only one box need to be hit => return true
     if(res && !_hit_both_box){
-      _upper_pt.push_back(alg.Intersection(_mucs_upper_box,_mucs_dir)[0]);
-      return true;}
-    
-    if(!res && !_hit_both_box) return false;
+      _upper_pt.push_back(upper_pt_v.front());
+      return res;
+    }
 
-    if(!(alg.Intersection(_mucs_lower_box,_mucs_dir).empty()))
-      _lower_pt.push_back(alg.Intersection(_mucs_lower_box,_mucs_dir)[0]);
-    return !(alg.Intersection(_mucs_lower_box,_mucs_dir).empty());
+    auto const lower_pt_v = alg.Intersection(_mucs_lower_box,mucs_dir);
 
+    res = !(lower_pt_v.empty());
+
+    if(res) _lower_pt.push_back(lower_pt_v.front());
+
+    return res;
   }
 
   bool MuCSTagger::IntersectDumb(const TVector3& start, const TVector3& end) {
@@ -184,7 +186,7 @@ namespace larlite {
       throw DataFormatException("No data found");
     }
 
-    ::geoalgo::HalfLine dir(0,0,0,1,1,1);
+    ::geoalgo::HalfLine mucs_dir(0,0,0,1,1,1);
 
     auto ev_ctag = storage->get_data<event_cosmictag>("MuCSTagger");
     if(ev_ctag) ev_ctag->resize(ev_track->size());
@@ -217,40 +219,53 @@ namespace larlite {
       ::geoalgo::HalfLine temp1(trk.LocationAtPoint(0),trk.LocationAtPoint(0)-trk.LocationAtPoint(1));
       ::geoalgo::HalfLine temp2(trk.LocationAtPoint(trk.NumberTrajectoryPoints()-1),trk.LocationAtPoint(trk.NumberTrajectoryPoints()-1)-trk.LocationAtPoint(trk.NumberTrajectoryPoints()-2));
       double length = 0;
-      size_t ref_index = 1;
-      for(size_t i=0; i<(trk.NumberTrajectoryPoints()-1) && ctag.fCosmicScore<0; ++i) {
-	auto const& ptS = trk.LocationAtPoint(0);
+      //size_t ref_index = 1;
+      size_t ref_index = 0;
+      for(size_t i=0; i<(trk.NumberTrajectoryPoints()-1) && length<_min_track_length; ++i) {
+	//auto const& ptS = trk.LocationAtPoint(0);
 	auto const& pt1 = trk.LocationAtPoint(i);
 	auto const& pt2 = trk.LocationAtPoint(i+1);
 
 	length += (pt2 - pt1).Mag();
-	if(length >= _segment_length && length < _segment_length + _scan_length) {
+	if(ctag.fCosmicScore<0 && length >= _segment_length && length < _segment_length + _scan_length) {
 	  auto const& ref = trk.LocationAtPoint(ref_index);
-	  //if(Intersect(ref,ptS)) ctag.fCosmicScore = 1.;
-	  if(Intersect(ptS,ref)) ctag.fCosmicScore = 1.; 
+
+	  //mucs_dir.Start(ref); mucs_dir.Dir(ptS-ref);
+	  mucs_dir.Start(pt2); mucs_dir.Dir(ref-pt2);
+	
+	  if(Intersect(mucs_dir)) ctag.fCosmicScore = 1.;
+
 	  ++ref_index;
 	}
-	if(length > _min_track_length) break;
+      }
+
+      if(length < _min_track_length) {
+	if(ev_ctag) (*ev_ctag)[track_index].fCosmicScore = -1;
+	continue;
       }
       
       ++num_tracks;
       
       if(ctag.fCosmicScore<0. && _allow_flip_direction) {
 	length = 0;
-	ref_index = trk.NumberTrajectoryPoints()-2;
-	for(int i=trk.NumberTrajectoryPoints()-1; i>0 && ctag.fCosmicScore<0.; --i) {
-	  auto const& ptE = trk.LocationAtPoint(trk.NumberTrajectoryPoints()-1);
+	//ref_index = trk.NumberTrajectoryPoints()-2;
+	ref_index = trk.NumberTrajectoryPoints()-1;
+	for(int i=trk.NumberTrajectoryPoints()-1; i>0 && length<_min_track_length; --i) {
+	  //auto const& ptE = trk.LocationAtPoint(trk.NumberTrajectoryPoints()-1);
 	  auto const& pt1 = trk.LocationAtPoint(i);
 	  auto const& pt2 = trk.LocationAtPoint(i-1);
 
 	  length += (pt2 - pt1).Mag();
-	  if(length >= _segment_length && length < _segment_length + _scan_length) {
+	  if(ctag.fCosmicScore<0 && length >= _segment_length && length < _segment_length + _scan_length) {
 	    auto const& ref = trk.LocationAtPoint(ref_index);
-	    //if(Intersect(ref,ptE)) ctag.fCosmicScore = 0.5;
-	    if(Intersect(ptE,ref)) ctag.fCosmicScore = 0.5; 
+
+	    //mucs_dir.Start(ref); mucs_dir.Dir(ptE-ref);
+	    mucs_dir.Start(pt2); mucs_dir.Dir(ref-pt2);
+	    
+	    if(Intersect(mucs_dir)) ctag.fCosmicScore = 0.5;
+
 	    --ref_index;
 	  }
-	  if(length > (_scan_length + _segment_length)) break;
 	}
       }
 

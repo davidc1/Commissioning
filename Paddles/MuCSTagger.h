@@ -74,7 +74,8 @@ namespace larlite {
     
   protected:
 
-    bool Intersect(const TVector3& start, const TVector3& end);
+    //bool Intersect(const TVector3& start, const TVector3& end);
+    bool Intersect(const ::geoalgo::HalfLine_t&);
     bool IntersectDumb(const TVector3& start, const TVector3& end);
 
     bool _configured;

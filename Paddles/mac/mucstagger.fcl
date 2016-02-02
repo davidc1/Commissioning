@@ -27,8 +27,8 @@ MuCSTagger: {
   StoreMatch: true
   Producer: trackkalmanhit
   HitBoth: false
-  MinTrackLength: 30
-  ScanLength: 10
-  SegmentLength: 10
+  MinTrackLength: 50
+  ScanLength: 5
+  SegmentLength: 2
   AllowFlip: true
 }
