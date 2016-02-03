@@ -54,7 +54,7 @@ MCQCluster: {
 LightPath: {
     ExtendStart: true
     ExtendEnd:   true
-    SegmentSize: 1.5
+    SegmentSize: 0.5
     LightYield:  29000
     MIPdEdx:     2.3
 }

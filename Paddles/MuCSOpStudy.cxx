@@ -7,6 +7,7 @@
 #include "DataFormat/ophit.h"
 #include "DataFormat/opflash.h"
 #include "DataFormat/cosmictag.h"
+//#include "mytimer.h"
 namespace larlite {
 
   MuCSOpStudy::MuCSOpStudy() : ana_base()
@@ -25,9 +26,13 @@ namespace larlite {
     cfg_mgr.AddCfgFile(config_file);
     
     auto const& main_cfg = cfg_mgr.Config().get_pset(_name);
-    
+
+    _num_ch     = main_cfg.get<size_t>("NumChannels");
+    _ophit_veto = main_cfg.get<double>("OpHitVetoPeriod");
     _ophit_tmin = main_cfg.get<double>("OpHitTMin");
     _ophit_tmax = main_cfg.get<double>("OpHitTMax");
+
+    _disc_threshold = main_cfg.get<double>("DiscThreshold");
 
     _ophit_producer   = main_cfg.get<std::string>("OpHitProducer"    );
     _opflash_producer = main_cfg.get<std::string>("OpFlashProducer"  );
@@ -41,11 +46,11 @@ namespace larlite {
   bool MuCSOpStudy::initialize() {
 
     _hRatioMap = new TH2D("hRatioMap","PE Assym. per PMT;Channel;Assym",
-			  32,-0.5,31.5,
+			  _num_ch,-0.5,_num_ch-0.5,
 			  100,0,3);
     _hHitFlashScore = new TH1D("hHitFlashScore","Cheat Flash Score; Score; Cheat Flash",
 			       100,0,1);
-    _hRatioPLOP = new TH1D("hRatioPLOP","Predicted light / Optical reconstrutin",50,0,2);
+    _hRatioPLOP = new TH1D("hRatioPLOP","Hypothesis / Optical Reconstructionn",50,0,2);
     
     _hMatchTime = new TH1D("hMatchTime","Matched Time;Time;Match",
 			   100, -100,100);
@@ -55,12 +60,13 @@ namespace larlite {
 			      100,0,2000,100,0,1);
     _hMatchScoreTime = new TH2D("hMatchScoreTime","Match Time vs Score:Time;Score",
 				100,-100,100,100,0,1);
-			      
+    
     return true;
   }
   
   bool MuCSOpStudy::analyze(storage_manager* storage) {
-
+    //Watch my_watch;
+    //my_watch.Start();
     _mgr.Reset();
     _ctag_score = -1;
     auto ev_ophit   = storage->get_data<event_ophit>(_ophit_producer);
@@ -91,7 +97,7 @@ namespace larlite {
       f.z = opf.ZCenter();
       f.y_err = opf.YWidth();
       f.z_err = opf.ZWidth();
-      f.pe_v.resize(32);
+      f.pe_v.resize(_num_ch);
       f.time = opf.Time();
       for(size_t ch=0; ch<f.pe_v.size(); ++ch) 
 	f.pe_v[ch] = opf.PE(ch);
@@ -100,14 +106,32 @@ namespace larlite {
       _flash_v.emplace_back(f);
     }
 
-    _ophit_flash = ::flashana::Flash_t();
-    _ophit_flash.time = 0;
-    _ophit_flash.pe_v.resize(32);
+    //
+    // Figure out veto channels
+    //
+    std::vector<bool> veto_v(_num_ch,false);
+    const double veto_start = _ophit_tmin - _ophit_veto;
+    const double veto_end   = _ophit_tmin;
     for(auto const& oph : *ev_ophit) {
       
+      if(oph.OpChannel() >= veto_v.size()) continue;
+      
+      if(oph.PeakTime() < veto_start || oph.PeakTime() > veto_end) continue;
+
+      veto_v[oph.OpChannel()] = true;
+
+    }
+
+    _ophit_flash = ::flashana::Flash_t();
+    _ophit_flash.time = 0;
+    _ophit_flash.pe_v.resize(_num_ch);
+    for(auto const& oph : *ev_ophit) {
+            
       if(oph.OpChannel() >= _ophit_flash.pe_v.size()) continue;
 
-      if(oph.PeakTime() < _ophit_tmin || oph.PeakTime() > _ophit_tmax) continue;
+      if(veto_v[oph.OpChannel()]) continue;
+      
+      if(oph.PeakTime() < _ophit_tmin || oph.PeakTime() > _ophit_tmax) continue;      
       
       _ophit_flash.pe_v[oph.OpChannel()] += oph.PE();
       //_ophit_flash.pe_v[oph.OpChannel()] += oph.Amplitude()/20;
@@ -145,15 +169,19 @@ namespace larlite {
 
       }
       _ctag_score = ctag.fCosmicScore;
+      //std::cout<<"time used before LP one event is "<<my_watch.WallTime()<<"s"<<std::endl;      
       auto qc = _lpath.FlashHypothesis(trj);
-
+      //std::cout<<"time used by lp is "<<my_watch.WallTime()<<"s"<<std::endl;
+      
       ::flashana::Flash_t hypo;
-      hypo.pe_v.resize(32);
+      hypo.pe_v.resize(_num_ch);
       _fhypo.FillEstimate(qc,hypo);
       _ophit_hypo = hypo;
       double pl_qtot=0;
-      for(auto& v : hypo.pe_v) {
-	pl_qtot += v;
+      for(size_t ch=0; ch<hypo.pe_v.size(); ++ch) {
+	if(veto_v[ch]) continue;
+	auto const& v = hypo.pe_v[ch];
+	if(v>=_disc_threshold) pl_qtot += v;
       }
 
       _hRatioPLOP->Fill(pl_qtot/ophit_qtot);
@@ -170,28 +198,35 @@ namespace larlite {
 	//std::cout<<_ophit_flash.pe_v[ch]<< " : "<<hypo.pe_v[ch]<<std::endl;
 	if(_ophit_flash.pe_v[ch]<(5/0.23) || hypo.pe_v[ch]<(5/0.23)) continue;
 	//_hRatioMap->Fill(ch, (_ophit_flash.pe_v[ch] - hypo.pe_v[ch]) / (_ophit_flash.pe_v[ch] + hypo.pe_v[ch]) * 2.);
-	_hRatioMap->Fill(ch, (_ophit_flash.pe_v[ch] ) / ( hypo.pe_v[ch]) );
+	_hRatioMap->Fill(ch, (( hypo.pe_v[ch]) / _ophit_flash.pe_v[ch] ) );
       }
       if(_run_match) _mgr.Add(qc);
       _qcluster_v.emplace_back(qc);
       _cand_trj_v.emplace_back(trj);
     }
 
-    if(_run_match) {
+    //std::cout<<"time for lp on all tracks and match score "<<my_watch.WallTime()<<"s"<<std::endl;
+    
+    
+      if(_run_match) {
       auto res = _mgr.Match();
       for(auto const& match : res) {
 
 	auto const& f = _flash_v[match.flash_id];
-
+	
 	_hMatchTime->Fill(f.time);
 	_hMatchScore->Fill(match.score);
 	double pe_tot=0;
 	for(auto const& v : f.pe_v) pe_tot += v;
 	_hMatchScorePE->Fill(pe_tot,match.score);
 	_hMatchScoreTime->Fill(f.time,match.score);
-	
       }
-    }
+      }
+      
+      //std::cout<<"time for 4 other histos on match  "<<my_watch.WallTime()<<"s"<<std::endl;
+      
+      //std::cout<<"time for used event is "<<my_watch.WallTime()<<"s"
+      //<<"\n"<<"===================================="<<std::endl;
       
     return true;
   }

@@ -90,6 +90,9 @@ namespace larlite {
     //::flashana::QLLMatch _qll;
     ::flashana::QWeightPoint _qll;
 
+    size_t _num_ch;
+    double _disc_threshold;
+    double _ophit_veto;
     double _ophit_tmin;
     double _ophit_tmax;
 

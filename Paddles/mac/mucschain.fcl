@@ -14,13 +14,17 @@ MuCSTagger: {
   StoreMatch: false
   Producer: trackkalmanhit
   HitBoth: false
-  MinTrackLength: 100
+  MinTrackLength: 200
   ScanLength: 5
   SegmentLength: 5
   AllowFlip: true
 }
 
 MuCSOpStudy: {
+
+  NumChannels: 32
+  OpHitVetoPeriod: 5.
+  DiscThreshold: 7.
   #OpHitTMin: -1.01
   #OpHitTMax: -0.88
   OpHitTMin: -1.00
@@ -30,7 +34,7 @@ MuCSOpStudy: {
   OpFlashProducer: opflashSat
   TrackProducer: trackkalmanhit
   CosmicTagProducer: MuCSTagger
-  RunMatch: true
+  RunMatch: false
   UseOpHitFlash: true
 }
 
