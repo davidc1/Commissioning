@@ -56,7 +56,7 @@ LightPath: {
     ExtendEnd:   true
     SegmentSize: 0.5
     LightYield:  29000
-    MIPdEdx:     2.3
+    MIPdEdx:     2.07 #Quoting from Bruce, LArTPC calculator DocDB3564 
 }
 
 #

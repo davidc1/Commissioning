@@ -1,9 +1,5 @@
 
 MuCSTagger: {
-  # True dimension
-  UpperBox: [-71.795,397.451,579.45,-23.795,398.451,627.45]  # top  [xmin,ymin,zmin,xmax,ymax,zmax]
-  LowerBox: [-19.6948,319.551,581.25,28.3052,320.551,629.25] # bottom  [xmin,ymin,zmin,xmax,ymax,zmax]
-  
   # No shift
   UpperShift: [-16,0,-16,20,0,20]
   LowerShift: [-16,0,-16,20,0,20]
@@ -24,6 +20,10 @@ MuCSTagger: {
   #UpperShift: [-50,-50,-50,50,50,50]
   #LowerShift: [-50,-50,-50,50,50,50]
 
+  # True dimension
+  UpperBox: [-71.795,397.451,579.45,-23.795,398.451,627.45]  # top  [xmin,ymin,zmin,xmax,ymax,zmax]
+  LowerBox: [-19.6948,319.551,581.25,28.3052,320.551,629.25] # bottom  [xmin,ymin,zmin,xmax,ymax,zmax]
+
   TPC_Active_Volume: [0.0,-116.5,0.0,256.35,116.5,1036.8]
   
   XMin: -30.
@@ -31,8 +31,8 @@ MuCSTagger: {
   StoreMatch: true
   Producer: trackkalmanhit
   HitBoth: false
-  MinTrackLength: 50
+  MinTrackLength: 200
   ScanLength: 5
-  SegmentLength: 2
+  SegmentLength: 5
   AllowFlip: true
 }
