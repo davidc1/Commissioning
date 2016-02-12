@@ -34,7 +34,7 @@ MuCSOpStudy: {
   OpFlashProducer: opflashSat
   TrackProducer: trackkalmanhit
   CosmicTagProducer: MuCSTagger
-  RunMatch: false
+  RunMatch: true
   UseOpHitFlash: true
   IfGain : false
 
