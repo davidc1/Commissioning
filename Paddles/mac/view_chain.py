@@ -37,9 +37,9 @@ for x in xrange(len(sys.argv)-2):
 my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
 
 # Specify output root file name
-my_proc.set_ana_output_file("mucs_tagger_ana.root");
+#my_proc.set_ana_output_file("view_chain.root");
 
-my_proc.set_output_file("mucs_tagger.root")
+my_proc.set_output_file("view_chain.root")
 
 # Attach an analysis unit ... here we use a base class which does nothing.
 # Replace with your analysis unit if you wish.
@@ -83,18 +83,27 @@ while my_proc.process_event():
     cos_score  = ana.get_ctag_score()
     print cos_score
     if ( cos_score != 0.5 and cos_score != 1.0): continue
-
+    
     print 'event number:',index
     index +=1
     
     ophit_data = ana.get_ophit_flash().pe_v
     ophit_hypo = ana.get_ophit_hypo().pe_v
-    
+    ophit_veto = ana.get_veto()
+    length = tagger.get_track_length()
+    if (sum(ophit_data) == 0): continue
+    ratio = float(sum(ophit_hypo))/float(sum(ophit_data))
+    print ratio
+    for x in range(0,31):
+        if ophit_hypo[x]<7: ophit_hypo[x]=0
+        if ophit_veto[x]:ophit_hypo[x]=0
+
     bins = np.arange(32)
     fig = plt.figure(figsize=(8,6))
     p1 = plt.plot(bins, ophit_data,  color = 'b',marker = '*')
     p2 = plt.plot(bins, ophit_hypo,  color = 'r',marker = 'o')
     plt.xlim(0,32)
+    plt.text(25,10,'Hypo/OpReco:%0.3f\nTrack_Length:%0.1f'%(ratio,length),fontsize=15)
     plt.xlabel('PMT ID')
     plt.ylabel('PE')
     plt.legend( (p1[0], p2[0]), ('Data', 'Photon Library') )

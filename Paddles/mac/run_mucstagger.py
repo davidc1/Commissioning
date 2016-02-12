@@ -34,7 +34,7 @@ my_proc.set_output_file("mucs_tagger.root")
 
 # Attach an analysis unit ... here we use a base class which does nothing.
 # Replace with your analysis unit if you wish.
-myunit = fmwk.MuCSTagger()
+myunit = fmwk.MuCSTagger.GetME()
 myunit.configure(cfg)
 
 my_proc.set_data_to_read(fmwk.data.kOpDetWaveform,"saturation")

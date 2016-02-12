@@ -7,6 +7,8 @@
 #include "DataFormat/cosmictag.h"
 namespace larlite {
 
+  MuCSTagger* MuCSTagger::_me = nullptr;
+  
   MuCSTagger::MuCSTagger()
     : ana_base()
     , _mucs_upper_box(0,0,0,1,1,1)
@@ -119,6 +121,7 @@ namespace larlite {
     // intersection w/ upper box, only one box need to be hit => return true
     if(res && !_hit_both_box){
       _upper_pt.push_back(upper_pt_v.front());
+
       return res;
     }
 
@@ -173,6 +176,7 @@ namespace larlite {
   
   bool MuCSTagger::analyze(storage_manager* storage) {
 
+    _rui_v.clear();
     _matched_trj_v.clear();
     _matched_dir_v.clear();
     _upper_pt.clear();
@@ -186,6 +190,8 @@ namespace larlite {
       throw DataFormatException("No data found");
     }
 
+    _rui_v.resize(ev_track->size());
+    
     ::geoalgo::HalfLine mucs_dir(0,0,0,1,1,1);
 
     auto ev_ctag = storage->get_data<event_cosmictag>("MuCSTagger");
@@ -218,6 +224,9 @@ namespace larlite {
       ctag.fCosmicScore = -1;
       ::geoalgo::HalfLine temp1(trk.LocationAtPoint(0),trk.LocationAtPoint(0)-trk.LocationAtPoint(1));
       ::geoalgo::HalfLine temp2(trk.LocationAtPoint(trk.NumberTrajectoryPoints()-1),trk.LocationAtPoint(trk.NumberTrajectoryPoints()-1)-trk.LocationAtPoint(trk.NumberTrajectoryPoints()-2));
+      ::geoalgo::Trajectory trj_start;
+      ::geoalgo::Trajectory trj_end;
+      
       double length = 0;
       //size_t ref_index = 1;
       size_t ref_index = 0;
@@ -233,11 +242,21 @@ namespace larlite {
 	  //mucs_dir.Start(ref); mucs_dir.Dir(ptS-ref);
 	  mucs_dir.Start(pt2); mucs_dir.Dir(ref-pt2);
 	
-	  if(Intersect(mucs_dir)) ctag.fCosmicScore = 1.;
+	  if(Intersect(mucs_dir)){
+	    ctag.fCosmicScore = 1.;
+	    auto const _pt_av_up = _alg.Intersection(_tpc_av,mucs_dir);
+	    trj_start.emplace_back(pt2);
+	    if(!_pt_av_up.empty())_pt_up = _pt_av_up[0];
+	    mucs_dir.Dir(-ref+pt2);
+	    auto const _pt_av_up1 = _alg.Intersection(_tpc_av,mucs_dir);
+	    if(!_pt_av_up1.empty())_pt_low = _pt_av_up1[0];
+	    
+	  }
 
 	  ++ref_index;
 	}
       }
+      
 
       if(length < _min_track_length) {
 	if(ev_ctag) (*ev_ctag)[track_index].fCosmicScore = -1;
@@ -247,6 +266,7 @@ namespace larlite {
       ++num_tracks;
       
       if(ctag.fCosmicScore<0. && _allow_flip_direction) {
+	
 	length = 0;
 	//ref_index = trk.NumberTrajectoryPoints()-2;
 	ref_index = trk.NumberTrajectoryPoints()-1;
@@ -261,6 +281,16 @@ namespace larlite {
 
 	    //mucs_dir.Start(ref); mucs_dir.Dir(ptE-ref);
 	    mucs_dir.Start(pt2); mucs_dir.Dir(ref-pt2);
+
+	    if(Intersect(mucs_dir)){
+	      
+	      auto const _pt_av_low = _alg.Intersection(_tpc_av,mucs_dir);
+	      if(!_pt_av_low.empty())_pt_up = _pt_av_low[0];
+	      mucs_dir.Dir(-ref+pt2);
+	      auto const _pt_av_low1 = _alg.Intersection(_tpc_av,mucs_dir);
+	      if(!_pt_av_low1.empty())_pt_low = _pt_av_low1[0];
+	      
+	    }
 	    
 	    if(Intersect(mucs_dir)) ctag.fCosmicScore = 0.5;
 
@@ -270,6 +300,7 @@ namespace larlite {
       }
 
       if(ctag.fCosmicScore>0) {
+
 	tagged = true;
 	if(_store_match) {
 	  _matched_dir_v.push_back(_mucs_dir);
@@ -288,6 +319,29 @@ namespace larlite {
 	  _ctag_score = ctag.fCosmicScore;
 	}	  
 	++num_tagged;
+	//
+	// Store trajectory here
+	//
+
+
+	auto& trj = _rui_v[track_index];
+
+	trj.reserve(trk.NumberTrajectoryPoints()+2);
+
+	if(ctag.fCosmicScore == 1.0 &&_pt_up.IsValid())trj.emplace_back(_pt_up);
+	if(ctag.fCosmicScore == 0.5 &&_pt_low.IsValid())trj.emplace_back(_pt_low);
+	
+	
+	for(size_t i=0; i<trk.NumberTrajectoryPoints(); ++i) {
+	  
+	  auto const& pt = trk.LocationAtPoint(i);
+	  trj.emplace_back(::geoalgo::Vector(pt[0],pt[1],pt[2]));
+	  
+	}
+	
+	if(ctag.fCosmicScore == 1.0 &&_pt_low.IsValid())trj.emplace_back(_pt_low);
+	if(ctag.fCosmicScore == 0.5 &&_pt_up.IsValid())trj.emplace_back(_pt_up);
+	
       }
 
       _temps1.push_back(temp1);
@@ -295,6 +349,9 @@ namespace larlite {
       //if(ctag.fCosmicScore>0) std::cout<<"\033[93m"<<track_index<<"\033[00m"<<std::endl;
       //if(ev_ctag) ev_ctag->push_back(ctag);
       if(ev_ctag) (*ev_ctag)[track_index].fCosmicScore = ctag.fCosmicScore;
+      _length = length;
+
+
     }
 
     _hNumTracks->Fill(num_tracks);

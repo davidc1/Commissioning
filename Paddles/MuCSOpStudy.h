@@ -21,6 +21,7 @@
 #include "OpT0Finder/Algorithms/PhotonLibHypothesis.h"
 #include "OpT0Finder/Algorithms/QLLMatch.h"
 #include "OpT0Finder/Algorithms/QWeightPoint.h"
+#include "MuCSTagger.h"
 #include <TH1D.h>
 #include <TH2D.h>
 namespace larlite {
@@ -66,6 +67,7 @@ namespace larlite {
     
     const ::flashana::Flash_t get_ophit_flash() const {return _ophit_flash;}
     const ::flashana::Flash_t get_ophit_hypo() const { return _ophit_hypo;}
+    const std::vector<bool> get_veto() const {return _veto_v;}
     const float get_ctag_score() const {return _ctag_score;}
     
   protected:
@@ -90,12 +92,16 @@ namespace larlite {
     //::flashana::QLLMatch _qll;
     ::flashana::QWeightPoint _qll;
 
+    bool _if_gain;
     size_t _num_ch;
     double _disc_threshold;
     double _ophit_veto;
     double _ophit_tmin;
     double _ophit_tmax;
-
+    
+    std::vector<bool>  _veto_v;
+    std::vector<double> _gain_correction; //Gain of each tube / average gain
+    
     std::string _ophit_producer;
     std::string _opflash_producer;
     std::string _track_producer;

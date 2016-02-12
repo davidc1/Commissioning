@@ -35,7 +35,7 @@ my_proc.set_output_file("mucs_tagger.root")
 
 # Attach an analysis unit ... here we use a base class which does nothing.
 # Replace with your analysis unit if you wish.
-tagger = fmwk.MuCSTagger()
+tagger = fmwk.MuCSTagger.GetME()
 tagger.configure(cfg)
 
 ana = fmwk.MuCSOpStudy()

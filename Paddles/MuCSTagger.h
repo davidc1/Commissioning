@@ -67,13 +67,24 @@ namespace larlite {
     const std::vector<::geoalgo::Vector> lower_pt() const { return _lower_pt;       }
 
     const float get_ctag_score()const{return _ctag_score;}
-
-    std::vector<geoalgo::HalfLine> get_prj_start(){return _temps1;}
-    std::vector<geoalgo::HalfLine> get_prj_end(){return _temps2;}
     
+    const double get_track_length () const{ return _length;}
+    
+    std::vector<geoalgo::HalfLine> get_prj_start(){return _temps1;}
+
+    std::vector<geoalgo::HalfLine> get_prj_end(){return _temps2;}
+
+    const std::vector<geoalgo::Trajectory>& Trajectories() const { return _rui_v; }
+
+    static MuCSTagger* GetME() {
+      if(!_me) _me = new MuCSTagger;
+      return _me;
+    }
     
   protected:
 
+    static MuCSTagger* _me;
+    
     //bool Intersect(const TVector3& start, const TVector3& end);
     bool Intersect(const ::geoalgo::HalfLine_t&);
     bool IntersectDumb(const TVector3& start, const TVector3& end);
@@ -93,9 +104,11 @@ namespace larlite {
     std::vector<geoalgo::HalfLine> _temps2;
     
     std::string _producer;
+
     double _xmin;
     double _xmax;
-
+    double _length;
+    
     bool   _store_match;
     bool   _hit_both_box;
     double _min_track_length;
@@ -106,6 +119,13 @@ namespace larlite {
     TH1D*  _hNumTagged;
 
     float _ctag_score;
+
+    ::geoalgo::Vector _pt_up;
+    ::geoalgo::Vector _pt_low;
+
+    ::geoalgo::GeoAlgo _alg;
+
+    std::vector<geoalgo::Trajectory> _rui_v; /// REMOVE THIS
   };
 }
 #endif
