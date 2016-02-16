@@ -9,9 +9,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class larlite::PaddleTrackFilter+;
-#pragma link C++ class larlite::PaddleTrackAna+;
-#pragma link C++ class larlite::PaddleTrackOpflash+;
 #pragma link C++ class larlite::ValidateNIM+;
 #pragma link C++ class larlite::MuCSTagger+;
 //#pragma link C++ class larlite::MuCSOpStudy+;
