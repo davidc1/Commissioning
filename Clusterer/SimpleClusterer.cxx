@@ -33,6 +33,8 @@ namespace larlite {
     auto ev_clusters = storage->get_data<event_cluster>("rawcluster");
     auto cluster_ass_v = storage->get_data<event_ass>(ev_clusters->name());
 
+    return true;
+
     //set event ID through storage manager
     storage->set_id(evt_hits->run(),
 		    evt_hits->subrun(),
@@ -54,7 +56,7 @@ namespace larlite {
     // keep track of largest cluster ID created
     size_t maxClusterID = 0;
 
-    for (int pl=2; pl < 3; pl++){
+    for (int pl=0; pl < 3; pl++){
       
       MakeHitMap(evt_hits,pl);
       
@@ -158,7 +160,7 @@ namespace larlite {
     for (auto it = _clusters.begin(); it != _clusters.end(); it++){
       auto indices = it->second;
       // if there are enough indices, make a cluster
-      if (indices.size() > 10){
+      if (indices.size() > 5){
 	std::vector<unsigned int> clus;
 	for (auto idx : indices)
 	  clus.push_back(idx);
