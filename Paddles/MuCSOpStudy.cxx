@@ -7,7 +7,7 @@
 #include "DataFormat/ophit.h"
 #include "DataFormat/opflash.h"
 #include "DataFormat/cosmictag.h"
-//#include "mytimer.h"
+#include "mytimer.h"
 namespace larlite {
 
   MuCSOpStudy::MuCSOpStudy() : ana_base()
