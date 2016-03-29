@@ -1,3 +1,5 @@
+#ifndef MYTIMER_H
+#define MYTIMER_H
 #include <sys/time.h>
 #include <time.h>
 class Watch {
@@ -32,3 +34,4 @@ private:
   double _wall_time_start;
 };
 
+#endif
