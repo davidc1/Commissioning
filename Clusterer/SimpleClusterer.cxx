@@ -2,7 +2,7 @@
 #define LARLITE_SIMPLECLUSTERER_CXX
 
 #include "SimpleClusterer.h"
-#include "LArUtil/GeometryUtilities.h"
+#include "LArUtil/GeometryHelper.h"
 #include "LArUtil/Geometry.h"
 #include "DataFormat/cluster.h"
 
@@ -21,24 +21,25 @@ namespace larlite {
 
   bool SimpleClusterer::initialize() {
 
-    _wire2cm  = larutil::GeometryUtilities::GetME()->WireToCm();
-    _time2cm  = 0.06;//larutil::GeometryUtilities::GetME()->TimeToCm();
+    _wire2cm  = larutil::GeometryHelper::GetME()->WireToCm();
+    _time2cm  = larutil::GeometryHelper::GetME()->TimeToCm();
+
+    std::cout << "********************************" << std::endl;
+    std::cout << "Wire -> cm conversion : " << _wire2cm << std::endl;
+    std::cout << "Time -> cm conversion : " << _time2cm << std::endl;
+    std::cout << "********************************" << std::endl;
 
     return true;
   }
   
   bool SimpleClusterer::analyze(storage_manager* storage) {
 
-    auto evt_hits = storage->get_data<event_hit>(_hitProducer);
-    auto ev_clusters = storage->get_data<event_cluster>("rawcluster");
+    auto evt_hits      = storage->get_data<event_hit>(_hitProducer);
+    auto ev_clusters   = storage->get_data<event_cluster>("rawcluster");
     auto cluster_ass_v = storage->get_data<event_ass>(ev_clusters->name());
-
-    return true;
-
+    
     //set event ID through storage manager
-    storage->set_id(evt_hits->run(),
-		    evt_hits->subrun(),
-		    evt_hits->event_id()); 
+    storage->set_id(storage->run_id(),storage->subrun_id(),storage->event_id());
 
     if (!evt_hits){
       std::cout << "No hits!" << std::endl;
