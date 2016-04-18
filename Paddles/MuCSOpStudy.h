@@ -75,8 +75,8 @@ namespace larlite {
     std::vector<geoalgo::Trajectory>  _cand_trj_v;
     std::vector<flashana::QCluster_t> _qcluster_v;  //
     std::vector<flashana::Flash_t> _flash_v;        //Flash object from opflash
-    ::flashana::Flash_t _ophit_flash;               //Flash object from ophit
-    ::flashana::Flash_t _ophit_hypo;                //Flash object from LigthPath
+    flashana::Flash_t _ophit_flash;               //Flash object from ophit
+    flashana::Flash_t _ophit_hypo;                //Flash object from LigthPath
     
     TH2D* _hRatioMap;
     TH1D* _hHitFlashScore;
@@ -86,11 +86,11 @@ namespace larlite {
     TH2D* _hMatchScoreTime;
     TH1D* _hRatioPLOP;
     
-    ::flashana::FlashMatchManager _mgr;
-    ::flashana::LightPath _lpath;
-    ::flashana::PhotonLibHypothesis _fhypo;
+    flashana::FlashMatchManager _mgr;
+    flashana::LightPath _lpath;
+    flashana::PhotonLibHypothesis _fhypo;
     //::flashana::QLLMatch _qll;
-    ::flashana::QWeightPoint _qll;
+    flashana::QWeightPoint _qll;
 
     bool _if_gain;
     size_t _num_ch;
