@@ -1,5 +1,7 @@
 #ifndef MYTIMER_H
 #define MYTIMER_H
+
+#ifndef __CINT__
 #include <sys/time.h>
 #include <time.h>
 class Watch {
@@ -33,5 +35,5 @@ private:
   double _cpu_time_start;
   double _wall_time_start;
 };
-
+#endif
 #endif

@@ -66,9 +66,9 @@ namespace larlite {
 
     const std::vector<::geoalgo::Vector> lower_pt() const { return _lower_pt;       }
 
-    const float get_ctag_score()const{return _ctag_score;}
+    float get_ctag_score() const {return _ctag_score;}
     
-    const double get_track_length () const{ return _length;}
+    double get_track_length () const { return _length;}
     
     std::vector<geoalgo::HalfLine> get_prj_start(){return _temps1;}
 

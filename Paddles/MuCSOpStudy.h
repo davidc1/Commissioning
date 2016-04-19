@@ -68,7 +68,7 @@ namespace larlite {
     const ::flashana::Flash_t get_ophit_flash() const {return _ophit_flash;}
     const ::flashana::Flash_t get_ophit_hypo() const { return _ophit_hypo;}
     const std::vector<bool> get_veto() const {return _veto_v;}
-    const float get_ctag_score() const {return _ctag_score;}
+    float get_ctag_score() const {return _ctag_score;}
     
   protected:
 

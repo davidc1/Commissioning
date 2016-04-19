@@ -11,8 +11,9 @@
 
 #pragma link C++ class larlite::ValidateNIM+;
 #pragma link C++ class larlite::MuCSTagger+;
-//#pragma link C++ class larlite::MuCSOpStudy+;
+#pragma link C++ class larlite::MuCSOpStudy+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
 
 

@@ -127,7 +127,7 @@ namespace larlite {
     const double veto_end   = _ophit_tmin;
     for(auto const& oph : *ev_ophit) {
       
-      if(oph.OpChannel() >= _veto_v.size()) continue;
+      if(oph.OpChannel() >= (int)(_veto_v.size())) continue;
       
       if(oph.PeakTime() < veto_start || oph.PeakTime() > veto_end) continue;
 
@@ -140,7 +140,7 @@ namespace larlite {
     _ophit_flash.pe_v.resize(_num_ch);
     for(auto const& oph : *ev_ophit) {
             
-      if(oph.OpChannel() >= _ophit_flash.pe_v.size()) continue;
+      if(oph.OpChannel() >= (int)(_ophit_flash.pe_v.size())) continue;
 
       if(_veto_v[oph.OpChannel()]) continue;
       
@@ -168,7 +168,7 @@ namespace larlite {
     _cand_trj_v.clear();
     for(size_t track_index=0; track_index<ev_track->size(); ++track_index) {
 
-      auto const& trk  = (*ev_track)[track_index];
+      //auto const& trk  = (*ev_track)[track_index];
       auto const& ctag = (*ev_ctag)[track_index];
 
       if(ctag.fCosmicScore<=0) continue;
