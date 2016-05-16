@@ -66,9 +66,9 @@ namespace larlite {
 
     const std::vector<::geoalgo::Vector> lower_pt() const { return _lower_pt;       }
 
-    const float get_ctag_score()const{return _ctag_score;}
+    float get_ctag_score() const {return _ctag_score;}
     
-    const double get_track_length () const{ return _length;}
+    double get_track_length () const { return _length;}
     
     std::vector<geoalgo::HalfLine> get_prj_start(){return _temps1;}
 
@@ -90,12 +90,12 @@ namespace larlite {
     bool IntersectDumb(const TVector3& start, const TVector3& end);
 
     bool _configured;
-    ::geoalgo::AABox _mucs_upper_box;
-    ::geoalgo::AABox _mucs_lower_box;
+    geoalgo::AABox _mucs_upper_box;
+    geoalgo::AABox _mucs_lower_box;
     std::vector<::geoalgo::Vector> _upper_pt;
     std::vector<::geoalgo::Vector> _lower_pt;
-    ::geoalgo::AABox _tpc_av;
-    ::geoalgo::HalfLine _mucs_dir;
+    geoalgo::AABox _tpc_av;
+    geoalgo::HalfLine _mucs_dir;
     
     std::vector<geoalgo::HalfLine> _matched_dir_v;
     std::vector<geoalgo::Trajectory> _matched_trj_v;
@@ -120,10 +120,10 @@ namespace larlite {
 
     float _ctag_score;
 
-    ::geoalgo::Vector _pt_up;
-    ::geoalgo::Vector _pt_low;
+    geoalgo::Vector _pt_up;
+    geoalgo::Vector _pt_low;
 
-    ::geoalgo::GeoAlgo _alg;
+    geoalgo::GeoAlgo _alg;
 
     std::vector<geoalgo::Trajectory> _rui_v; /// REMOVE THIS
   };

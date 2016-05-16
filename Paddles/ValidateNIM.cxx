@@ -54,8 +54,8 @@ namespace larlite {
     _tree->Branch("_dt",&_dt,"dt/D");
     _tree->Branch("_dt_same",&_dt_same,"dt_same/D");
 
-    _dt = 0;
-    _t_rwm = _t_strb1 = _t_strb2 = _t_numi = _t_bnb = _t_numi = _t_led = _t_flash = _t_pdls = 0;
+    _dt = 0.;
+    _t_rwm = _t_strb1 = _t_strb2 = _t_numi = _t_bnb = _t_led = _t_flash = _t_pdls = 0.;
 
     return true;
   }
