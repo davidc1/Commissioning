@@ -10,6 +10,9 @@
 #pragma link off all functions;
 
 #pragma link C++ class larlite::SignalProcAreaNormalization+;
+#pragma link C++ class larlite::ElecGainExtraction+;
+#pragma link C++ class larlite::TrkMIPCalibration+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
 

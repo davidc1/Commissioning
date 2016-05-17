@@ -6,17 +6,21 @@
 #include "DataFormat/cluster.h"
 #include "DataFormat/track.h"
 #include "DataFormat/wire.h"
+#include "DataFormat/simch.h"
 #include "DataFormat/rawdigit.h"
+#include "LArUtil/Geometry.h"
 
 namespace larlite {
 
   bool SignalProcAreaNormalization::initialize() {
 
     _tree = new TTree("tree","Signal Processing Hit Normalization");
+    _tree->Branch("_pl",&_pl,"pl/I");
     _tree->Branch("_wire",&_wire,"wire/I");
     _tree->Branch("_chan",&_chan,"chan/I");
     _tree->Branch("_raw_area",&_raw_area,"raw_area/D");
     _tree->Branch("_reco_ara",&_reco_area,"reco_area/D");
+    _tree->Branch("_q",&_q,"q/D");
     _tree->Branch("_tick",&_tick,"tick/I");
     _tree->Branch("_trk_size",&_trk_size,"trk_size/I");
     _tree->Branch("_hit_multiplicity",&_hit_multiplicity,"hit_multiplicity/I");
@@ -25,6 +29,8 @@ namespace larlite {
   }
   
   bool SignalProcAreaNormalization::analyze(storage_manager* storage) {
+
+    auto geom    = ::larutil::Geometry::GetME();
 
     // load clusters
     auto ev_track = storage->get_data<event_track>("pandoraCosmic");
@@ -40,6 +46,13 @@ namespace larlite {
     // load raw hits (produced starting fromraw digits)
     auto ev_rawhit  = storage->get_data<event_hit>("rawhit");
 
+    // load simchannels
+    auto ev_simch   = storage->get_data<event_simch>("largeant");
+    // make a map from channel to position in ev_simch
+    std::map<unsigned int, size_t> Ch2SimchIdx_map;
+    for (size_t i=0; i < ev_simch->size(); i++)
+      Ch2SimchIdx_map[ ev_simch->at(i).Channel() ] = i;
+    
     // make a map from reco hit index to wire number
     std::map<size_t, int> _HitIdx_to_WireNum;
     // make a map from wire number to vector of raw hit indices
@@ -47,34 +60,7 @@ namespace larlite {
 
     std::cout << "we found " << ass_hit_v.size() << " tracks in this event" << std::endl;
 
-    /*
-    // add reco hits to map
-    for (size_t i=0; i < ass_hit_v.size(); i++){
 
-      //auto const& trk = ev_track->at(i);
-      //if (trk.NumberTrajectoryPoints() < 20)
-      //continue;
-      //_trk_size = trk.NumberTrajectoryPoints();
-
-      auto ass_hits = ass_hit_v.at(i);
-      //if (ass_hits.size() < 20)
-      //continue;
-
-      for (size_t j=0; j < ass_hits.size(); j++){
-
-	auto const& hit = ev_recohit->at( ass_hits[j] );
-
-	// ignore non-collection plane
-	if (hit.WireID().Plane != 2)
-	  continue;
-
-	// get wire number
-	auto const& wire = hit.WireID().Wire;
-	
-	_HitIdx_to_WireNum[i] = wire;
-      }// for all hits associated to a large track
-    }// for all tracks in the event
-    */
 
     // add reco hits to map
     for (size_t i = 0; i < ev_recohit->size(); i++){
@@ -125,6 +111,8 @@ namespace larlite {
 
       // get the wire
       _wire = reco_hit.WireID().Wire;
+      // and the plane
+      _pl   = reco_hit.WireID().Plane;
 
       // get list of raw hits @ this wire
       auto raw_hits = _WireNum_to_RawHitIdx_v[_wire];
@@ -149,6 +137,21 @@ namespace larlite {
 	_reco_area = reco_hit.Integral();
 
 	std::cout << "reco hit time = " << _tick << ", raw hit time = " << tick << "\t reco area = " << _reco_area << "\t raw area = " << _raw_area << std::endl;
+
+	// find the simchannel info for this channel
+	auto chan = geom->PlaneWireToChannel(_pl,_wire);
+
+	// find the simch associated with this 
+	// vector of LArLite IDEs
+	auto const& simch = ev_simch->at( Ch2SimchIdx_map[chan] );
+
+	// get the charge deposited in the appropriate time-range
+	auto const& ide_v = simch.TrackIDsAndEnergies( reco_hit.PeakTime() - 3*reco_hit.RMS()+3050,
+						       reco_hit.PeakTime() + 3*reco_hit.RMS()+3050);
+
+	_q = 0;
+	for (auto const&  ide : ide_v)
+	  _q += ide.numElectrons;
 	
 	_tree->Fill();
 	

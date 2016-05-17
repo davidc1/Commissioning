@@ -1,9 +1,9 @@
 /**
- * \file SignalProcAreaNormalization.h
- *
+ * \file ElecGainExtraction.h
+ %*
  * \ingroup HitCalibration
  * 
- * \brief Class def header for a class SignalProcAreaNormalization
+ * \brief Class def header for a class ElecGainExtraction
  *
  * @author david caratelli
  */
@@ -12,26 +12,26 @@
 
     @{*/
 
-#ifndef LARLITE_SIGNALPROCAREANORMALIZATION_H
-#define LARLITE_SIGNALPROCAREANORMALIZATION_H
+#ifndef LARLITE_ELECGAINEXTRACTION_H
+#define LARLITE_ELECGAINEXTRACTION_H
 
 #include "Analysis/ana_base.h"
 #include "TTree.h"
 
 namespace larlite {
   /**
-     \class SignalProcAreaNormalization
+     \class ElecGainExtraction
      User custom analysis class made by SHELL_USER_NAME
    */
-  class SignalProcAreaNormalization : public ana_base{
+  class ElecGainExtraction : public ana_base{
   
   public:
 
     /// Default constructor
-    SignalProcAreaNormalization(){ _name="SignalProcAreaNormalization"; _fout=0;}
+    ElecGainExtraction(){ _name="ElecGainExtraction"; _fout=0;}
 
     /// Default destructor
-    virtual ~SignalProcAreaNormalization(){}
+    virtual ~ElecGainExtraction(){}
 
     virtual bool initialize();
 
@@ -49,7 +49,7 @@ namespace larlite {
 
     /// TTree
     TTree* _tree;
-    double _reco_area, _raw_area;
+    double _reco_area, _reco_ampl;
     double _q; // charge form simch
     int _tick;
     int _pl;
