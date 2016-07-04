@@ -28,7 +28,7 @@ namespace larlite {
   public:
 
     /// Default constructor
-    ChannelByChannelGain(){ _name="ChannelByChannelGain"; _fout=0;}
+  ChannelByChannelGain() : _tree(nullptr) { _name="ChannelByChannelGain"; _fout=0;}
 
     /// Default destructor
     virtual ~ChannelByChannelGain(){}
@@ -38,15 +38,15 @@ namespace larlite {
     virtual bool analyze(storage_manager* storage);
 
     virtual bool finalize();
-
+    
     void SetHitProducer(std::string s) { _hit_producer = s; }
-
+    
   protected:
-
+    
     std::string _hit_producer;
-
+    
     TTree *_tree;
-    double _pl;
+    int    _pl;
     double _area;
     double _chi;
     int    _ch;
