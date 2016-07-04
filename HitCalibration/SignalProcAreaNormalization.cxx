@@ -46,12 +46,14 @@ namespace larlite {
     // load raw hits (produced starting fromraw digits)
     auto ev_rawhit  = storage->get_data<event_hit>("rawhit");
 
+    /*
     // load simchannels
     auto ev_simch   = storage->get_data<event_simch>("largeant");
     // make a map from channel to position in ev_simch
     std::map<unsigned int, size_t> Ch2SimchIdx_map;
     for (size_t i=0; i < ev_simch->size(); i++)
       Ch2SimchIdx_map[ ev_simch->at(i).Channel() ] = i;
+    */
     
     // make a map from reco hit index to wire number
     std::map<size_t, int> _HitIdx_to_WireNum;
@@ -109,6 +111,8 @@ namespace larlite {
       // get hit time-tick
       _tick = reco_hit.PeakTime();
 
+      std::cout << "tick " << _tick << std::endl;
+
       // get the wire
       _wire = reco_hit.WireID().Wire;
       // and the plane
@@ -119,7 +123,7 @@ namespace larlite {
 
       _hit_multiplicity = raw_hits.size();
 
-      std::cout << "@ wire " << _wire << " found " << raw_hits.size() << " that match reco hit" << std::endl;
+      //std::cout << "@ wire " << _wire << " found " << raw_hits.size() << " that match reco hit" << std::endl;
 
       // go through the raw hits, find the one that has ~ the same
       // time tick. This is the correct match -> compare areas
@@ -127,7 +131,9 @@ namespace larlite {
 
 	auto const& raw_hit = ev_rawhit->at(hit_index);
 
-	auto tick = raw_hit.PeakTime();
+	auto tick = raw_hit.PeakTime() - 2405;
+
+	std::cout << "\traw tick : " << tick << std::endl;
 
 	if ( ( (tick - _tick) < 6) && ( (tick - _tick) > -6) ){
 
@@ -138,6 +144,7 @@ namespace larlite {
 
 	std::cout << "reco hit time = " << _tick << ", raw hit time = " << tick << "\t reco area = " << _reco_area << "\t raw area = " << _raw_area << std::endl;
 
+	/*
 	// find the simchannel info for this channel
 	auto chan = geom->PlaneWireToChannel(_pl,_wire);
 
@@ -152,6 +159,7 @@ namespace larlite {
 	_q = 0;
 	for (auto const&  ide : ide_v)
 	  _q += ide.numElectrons;
+	*/
 	
 	_tree->Fill();
 	
