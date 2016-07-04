@@ -12,6 +12,7 @@
 #pragma link C++ class larlite::SignalProcAreaNormalization+;
 #pragma link C++ class larlite::ElecGainExtraction+;
 #pragma link C++ class larlite::TrkMIPCalibration+;
+#pragma link C++ class larlite::ChannelByChannelGain+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
 
