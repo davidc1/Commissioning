@@ -38,6 +38,12 @@ namespace larlite {
 
       auto const& hit = ev_hit->at(i);
 
+      if ( (hit.WireID().Wire < 3000) or (hit.WireID().Wire > 3100) )
+	continue;
+
+      if ( (hit.Multiplicity() != 1) or (hit.GoodnessOfFit() > 1) )
+	continue;
+
       _area = hit.Integral();
       _chi  = hit.GoodnessOfFit();
       _ch   = hit.WireID().Wire;

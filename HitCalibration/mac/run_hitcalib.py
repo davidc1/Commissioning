@@ -28,6 +28,8 @@ my_proc.set_ana_output_file("calib_ana.root");
 
 calib = fmwk.SignalProcAreaNormalization()
 calib.setHitProducer("gaushit")
+calib.setTrackProducer("pandoraCosmic")
+calib.useOnlyTrackHits(True)
 my_proc.add_process(calib)
 
 #my_proc.set_data_to_write(fmwk.data.kHit,'rawhit')
