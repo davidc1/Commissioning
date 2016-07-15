@@ -1,7 +1,7 @@
 import sys
 
 import ROOT
-from ROOT import larlite as fmwk
+from larlite import larlite as fmwk
 #gSystem.Load("libMy_Repo_scratch_area.so")
 
 if len(sys.argv) < 2:
@@ -27,7 +27,6 @@ my_proc.set_ana_output_file("NIM_validation.root");
 # Attach an analysis unit ... here we use a base class which does nothing.
 # Replace with your analysis unit if you wish.
 print fmwk.ValidateNIM()
-print fmwk.PaddleTrackFilter()
 NIM_validation = fmwk.ValidateNIM()
 print NIM_validation
 NIM_validation.setVerbose(False)
