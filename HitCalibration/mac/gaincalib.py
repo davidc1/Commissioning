@@ -27,7 +27,8 @@ my_proc.set_ana_output_file("calib_ana.root");
 #my_proc.set_output_file("rawdigit_hits.root")
 
 calib = fmwk.ElecGainExtraction()
-calib.setHitProducer("gaushit")
+#calib.setHitProducer("gaushit")
+calib.setClusProducer("pandoraCosmic")
 my_proc.add_process(calib)
 
 #my_proc.set_data_to_write(fmwk.data.kHit,'rawhit')

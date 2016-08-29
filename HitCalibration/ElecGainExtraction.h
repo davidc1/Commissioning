@@ -41,11 +41,13 @@ namespace larlite {
 
     /// set hit producer
     void setHitProducer(std::string s) { _hit_producer = s; }
+    void setClusProducer(std::string s) { _clus_producer = s; }
 
   protected:
 
     /// hit producer
     std::string _hit_producer;
+    std::string _clus_producer;
 
     /// TTree
     TTree* _tree;

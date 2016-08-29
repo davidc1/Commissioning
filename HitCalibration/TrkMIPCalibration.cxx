@@ -29,10 +29,11 @@ namespace larlite {
     _tree->Branch("_dqdx_v","std::vector<double>",&_dqdx_v);
     _tree->Branch("_dedx_v","std::vector<double>",&_dedx_v);
 
-    double _e_to_eV = 23.6;   // ionization energy of Ar in eV
+    double _e_to_eV   = 23.6;   // ionization energy of Ar in eV
     double _eV_to_MeV = 1e-6; // eV -> MeV conversion
-    double MeV_to_fC = 1. / ( _e_to_eV * _eV_to_MeV );
-    _recomb_factor = larutil::LArProperties::GetME()->ModBoxInverse( 2.3 ) / ( 2.3 * MeV_to_fC );
+    double MeV_to_fC  = 1. / ( _e_to_eV * _eV_to_MeV );
+    _recomb_factor = larutil::LArProperties::GetME()->ModBoxInverse( 2.0 ) / ( 2.0 * MeV_to_fC );
+    std::cout << "Recombination factor : " << _recomb_factor << std::endl;
 
     return true;
   }
@@ -62,9 +63,9 @@ namespace larlite {
       return false;
     }
 
-    for (size_t i=0; i < ev_hit->size(); i++)
-      std::cout << "plane " << ev_hit->at(i).WireID().Plane << std::endl;
-
+    //for (size_t i=0; i < ev_hit->size(); i++)
+    //std::cout << "plane " << ev_hit->at(i).WireID().Plane << std::endl;
+    
     // grab tracks and their associated hits.
     for (size_t t=0; t < ev_trk->size(); t++){
 
@@ -92,7 +93,7 @@ namespace larlite {
       for (size_t h=0; h < ass_hit_v.size(); h++){
 	auto const& hit = ev_hit->at( ass_hit_v[h] );
 	int pl  = hit.WireID().Plane;
-	std::cout << "Plane : " << pl << "\tArea : " << hit.Integral() << std::endl;
+	//std::cout << "Plane : " << pl << "\tArea : " << hit.Integral() << std::endl;
 	hit_v_v[pl].push_back(hit);
       }// for all associated hits
 	
@@ -119,15 +120,16 @@ namespace larlite {
 
 	  double dEdx = (dQdx * 23.6) / 1e6;
 	  dEdx /= _recomb_factor;
+	  dEdx *= 1.15; // lifetime
 	  _dedx_v.push_back(dEdx);
-
+	  
 	}// for all hits on this plane
-
+	
 	// fill tree
 	_tree->Fill();
 	
       }
-      
+
     }// for all reconstructed tracks
   
     return true;
