@@ -5,6 +5,7 @@
 #include "LArUtil/GeometryHelper.h"
 #include "LArUtil/Geometry.h"
 #include "DataFormat/cluster.h"
+#include "DataFormat/vertex.h"
 
 namespace larlite {
 
@@ -14,8 +15,14 @@ namespace larlite {
     _fout        = 0;
     _verbose     = false;
     _hitProducer = "gaushit";
+    _vtxProducer = "";
+    _useVtx      = false;
     _radius      = 2.0;
     _cellSize    = 2;
+    _vtx_radius  = 0;
+
+    _vtx_w_cm = {0,0,0};
+    _vtx_t_cm = {0,0,0};
 
   }
 
@@ -37,6 +44,7 @@ namespace larlite {
     auto evt_hits      = storage->get_data<event_hit>(_hitProducer);
     auto ev_clusters   = storage->get_data<event_cluster>("rawcluster");
     auto cluster_ass_v = storage->get_data<event_ass>(ev_clusters->name());
+    auto evt_vtx       = storage->get_data<event_vertex>(_vtxProducer);
     
     //set event ID through storage manager
     storage->set_id(storage->run_id(),storage->subrun_id(),storage->event_id());
@@ -45,6 +53,18 @@ namespace larlite {
       std::cout << "No hits!" << std::endl;
       return false;
     }
+
+    if ( (_vtxProducer != "") and (evt_vtx->size() == 1) ){
+      auto const& vtx = evt_vtx->at(0);
+      auto geoH = larutil::GeometryHelper::GetME();
+      std::vector<double> xyz = {vtx.X(), vtx.Y(), vtx.Z()};
+      for (size_t pl = 0; pl < 3; pl++){
+	auto const& pt = geoH->Point_3Dto2D(xyz,pl);
+	_vtx_w_cm[pl] = pt.w;
+	_vtx_t_cm[pl] = pt.t + 800 * _time2cm;
+      }
+    }
+      
 
     // a map to connect hit index wih a cluster index
     // each hit gets a cluster index
@@ -311,6 +331,15 @@ namespace larlite {
 	continue;
       double t = hit.PeakTime()*_time2cm;
       double w = hit.WireID().Wire*_wire2cm;
+
+      // if hit too close to vertex -> ignore
+      if ( (_vtxProducer != "") && (_useVtx == true) ){
+	double d = sqrt( ( (t - _vtx_t_cm[plane]) * (t - _vtx_t_cm[plane]) ) +
+			 ( (w - _vtx_w_cm[plane]) * (w - _vtx_w_cm[plane]) ) );
+	if (d < _vtx_radius)
+	  continue;
+      }
+      
       // map is (i,j) -> hit list
       // i : ith bin in wire of some width
       // j : jth bin in time of some width

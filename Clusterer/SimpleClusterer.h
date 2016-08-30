@@ -61,6 +61,12 @@ namespace larlite {
     void setVerbose(bool on) { _verbose = on; }
     /// Set Hit Producer
     void setHitProducer(std::string s) { _hitProducer = s; }
+    /// Set Vertex Producer
+    void setVtxProducer(std::string s) { _vtxProducer = s; }
+    /// set vertex radius to avoid
+    void setVtxRadius(double r) { _vtx_radius = r; }
+    /// use vertex?
+    void setUseVertex(bool on) { _useVtx = on; }
 
   protected:
 
@@ -82,6 +88,9 @@ namespace larlite {
     /// Hit producer name
     std::string _hitProducer;
 
+    /// vertex producer
+    std::string _vtxProducer;
+
     /// Map making function
     void MakeHitMap(const event_hit* hitlist, int plane);
 
@@ -97,6 +106,16 @@ namespace larlite {
     /// maximum i'th and j'th
     int _maxI;
     int _maxJ;
+
+    /// vertex radius to avoid
+    double _vtx_radius;
+
+    /// use vertex?
+    bool _useVtx;
+
+    /// vertex coordinates
+    std::vector<double> _vtx_w_cm;
+    std::vector<double> _vtx_t_cm;
 
     
   };

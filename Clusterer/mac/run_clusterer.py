@@ -1,58 +1,16 @@
-import sys
+import sys,os
 
-if len(sys.argv) < 2:
-    msg  = '\n'
-    msg += "Usage 1: %s $INPUT_ROOT_FILE\n" % sys.argv[0]
-    msg += '\n'
-    sys.stderr.write(msg)
-    sys.exit(1)
+for i in xrange(200):
 
+    #fin = '/home/david/uboone/data/mcc7/bnb1pi0/larlite_mcc7_bnb_1pi0_%04i.root'%i
+    fin = '/home/david/uboone/data/mcc7/v05_08/gamma/larlite_reco2d_%04i.root'%i
 
-from larlite import larlite as fmwk
+    if not (os.path.isfile(fin)):
+        print '%s not a valid file'%fin 
+        continue
 
-# Set input root file
-for x in xrange(len(sys.argv)-1):
+    #fout = '/home/david/uboone/data/mcc7/bnb1pi0/larlite_rawclusters_%04i.root'%i
+    fout = '/home/david/uboone/data/mcc7/v05_08/gamma/larlite_rawclusters_%04i.root'%i
 
-    # Create ana_processor instance
-    my_proc = fmwk.ana_processor()
-
-    fname = sys.argv[x+1]
-
-    run = int(fname[fname.find('run_')+4:fname.find('run_')+11])
-    subrun = int(fname[fname.find('subrun_')+7:fname.find('subrun_')+12])
-
-    print 'run: %i, subrun: %i'%(run,subrun)
-
-    my_proc.add_input_file(fname)
-
-    # Specify IO mode
-    my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
-
-    # Specify analysis output root file name
-    my_proc.set_ana_output_file("");
-
-    # Specify data output root file name
-    my_proc.set_output_file("larlite_rawclusters_run_%05i_subrun_%05i.root"%(run,subrun))
-
-    clusterer = fmwk.SimpleClusterer()
-    #clusterer.setHitProducer('rawhit')
-    #clusterer.setHitProducer('cchit')
-    clusterer.setHitProducer('gaushit')
-    clusterer.setVerbose(True)
-    
-    my_proc.add_process(clusterer)
-    
-    my_proc.set_data_to_write(fmwk.data.kHit,'gaushit')
-    my_proc.set_data_to_write(fmwk.data.kCluster,'rawcluster')
-    my_proc.set_data_to_write(fmwk.data.kAssociation,'rawcluster')
-
-
-
-    print
-    print  "Finished configuring ana_processor. Start event loop!"
-    print
-    
-    my_proc.run()
-
-sys.exit()
-
+    cmd = 'python clusterer.py %s %s'%(fin,fout)
+    os.system(cmd)
