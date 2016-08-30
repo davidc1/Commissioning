@@ -50,21 +50,21 @@ namespace larlite {
     virtual bool finalize();
 
     /// set maximum linearity allowed for this
-    void setMaxLinearity(double l) { _max_lin = l; }
+    void setMaxLinearity(double l) { _max_lin_v.push_back(l); }
     /// Verbosity setter
     void setVerbose(bool on) { _verbose = on; }
     /// Set Hit Producer
     void setClusterProducer(std::string s) { _clusterProducer = s; }
     /// set minimum number of hits
-    void setMinNHits(int n) { _min_n_hits = n; }
+    void setMinNHits(int n) { _min_n_hits_v.push_back(n); }
 
   protected:
 
     /// maximum linearity for hits
-    double _max_lin;
+    std::vector<double> _max_lin_v;
 
     // min number of hits for cluster to be considered for removal
-    int _min_n_hits;
+    std::vector<int> _min_n_hits_v;
     
     /// verbosity flag
     bool _verbose;

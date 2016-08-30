@@ -14,8 +14,8 @@ namespace larlite {
     _fout        = 0;
     _verbose     = false;
     _clusterProducer = "gaushit";
-    _max_lin     = 0.7;
-    _min_n_hits  = 10;
+    _max_lin_v = {1.0};
+    _min_n_hits_v = {0};
 
   }
 
@@ -28,6 +28,27 @@ namespace larlite {
     std::cout << "Wire -> cm conversion : " << _wire2cm << std::endl;
     std::cout << "Time -> cm conversion : " << _time2cm << std::endl;
     std::cout << "********************************" << std::endl;
+
+    // make sure _max_lin_v and _min_n_his_v have the same size
+    if (_max_lin_v.size() != _min_n_hits_v.size()){
+      std::cout << "_max_lin_v and _min_n_hits_v do not have the same size! exit..." << std::endl;
+      return false;
+    }
+
+    // make sure values are increasing for nhits requirement and decreasing for linearity requirement
+    for (size_t i=0; i < _max_lin_v.size() - 1; i++){
+      if (_max_lin_v[i+1] > _max_lin_v[i]){
+	std::cout << "_max_lin_v values increasing! quit..." << std::endl;
+	return false;
+      }
+    }
+    
+    for (size_t i=0; i < _min_n_hits_v.size() - 1; i++){
+      if (_min_n_hits_v[i+1] < _min_n_hits_v[i]){
+	std::cout << "_min_n_hits_v values decreasing! quit..." << std::endl;
+	return false;
+      }
+    }
 
     return true;
   }
@@ -57,37 +78,40 @@ namespace larlite {
       auto hit_idx_v = ass_cluster_hit_v[i];
 
       bool remove = false;
+
+      // determine the linearity threshold for this cluster
+      double max_lin = _max_lin_v[0];
+      for (size_t n=0; n < _min_n_hits_v.size(); n++){
+	auto const& min_n_hits = _min_n_hits_v[n];
+	if ( hit_idx_v.size() > min_n_hits )
+	  max_lin = _max_lin_v[n];
+      }
       
-      // if too few hits, keep the cluster
-      if (hit_idx_v.size() > _min_n_hits){
-
-	// get coordinates of hits to calculate linearity
-	std::vector<double> hit_w_v;
-	std::vector<double> hit_t_v;
-
-	for (auto const& hit_idx : hit_idx_v){
-	  hit_w_v.push_back( ev_hit->at(hit_idx).Channel()  * _wire2cm );
-	  hit_t_v.push_back( ev_hit->at(hit_idx).PeakTime() * _time2cm );
-	}
-	// calculate covariance
-	auto C  = cov(hit_w_v,hit_t_v);
-	auto sW = stdev(hit_w_v);
-	auto sT = stdev(hit_t_v);
-	auto r  = C / (sW * sT);
-	
-	if (fabs(r) > _max_lin)
-	  remove = true;
-	    
-      }// if enough hits
-	  
+      // get coordinates of hits to calculate linearity
+      std::vector<double> hit_w_v;
+      std::vector<double> hit_t_v;
+      
+      for (auto const& hit_idx : hit_idx_v){
+	hit_w_v.push_back( ev_hit->at(hit_idx).Channel()  * _wire2cm );
+	hit_t_v.push_back( ev_hit->at(hit_idx).PeakTime() * _time2cm );
+      }
+      // calculate covariance
+      auto C  = cov(hit_w_v,hit_t_v);
+      auto sW = stdev(hit_w_v);
+      auto sT = stdev(hit_t_v);
+      auto r  = C / (sW * sT);
+      
+      if (fabs(r) > max_lin)
+	remove = true;
+      
       if (remove == false){
 	// for all hits, add them to output
 	for (auto const& hit_idx : hit_idx_v)
 	  out_hit->emplace_back( ev_hit->at( hit_idx ) );
       }// if hits are not to be removed
-
+      
     }// loop through all planes
-
+    
     return true;
   }
 
