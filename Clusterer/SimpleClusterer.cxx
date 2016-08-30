@@ -161,7 +161,7 @@ namespace larlite {
     for (auto it = _clusters.begin(); it != _clusters.end(); it++){
       auto indices = it->second;
       // if there are enough indices, make a cluster
-      if (indices.size() > 5){
+      if (indices.size() > 2){
 	std::vector<unsigned int> clus;
 	for (auto idx : indices)
 	  clus.push_back(idx);

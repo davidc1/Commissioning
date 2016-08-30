@@ -27,15 +27,12 @@ my_proc.set_ana_output_file("");
 # Specify data output root file name
 my_proc.set_output_file(sys.argv[-1])
 
-#hitproducer = 'testhit'
-hitproducer = 'shrhits'
+clusterproducer = 'rawcluster'
 
-clusterer = fmwk.LinearHitRemoval()
-clusterer.setHitProducer(hitproducer)
-clusterer.setRadius(5)
-clusterer.setCellSize(6)
-clusterer.setMaxLinearity(0.97)
-#clusterer.setVerbose(True)
+clusterer = fmwk.LinearClusterRemoval()
+clusterer.setClusterProducer(clusterproducer)
+clusterer.setMaxLinearity(0.99)
+clusterer.setMinNHits(10)
 
 my_proc.add_process(clusterer)
 

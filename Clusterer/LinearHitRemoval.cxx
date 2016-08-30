@@ -36,8 +36,11 @@ namespace larlite {
   bool LinearHitRemoval::analyze(storage_manager* storage) {
 
     auto evt_hits = storage->get_data<event_hit>(_hitProducer);
+    auto out_hits = storage->get_data<event_hit>("shrhits2");
     // produced hits
-    auto new_hits = storage->get_data<event_hit>("showerhits");
+    //auto ev_clusters   = storage->get_data<event_cluster>("shrcluster");
+    //auto cluster_ass_v = storage->get_data<event_ass>("shrcluster");
+    //std::vector<std::vector<unsigned int> > cluster_hit_ass;
     
     //set event ID through storage manager
     storage->set_id(storage->run_id(),storage->subrun_id(),storage->event_id());
@@ -59,6 +62,8 @@ namespace larlite {
     size_t maxClusterID = 0;
 
     for (int pl=0; pl < 3; pl++){
+
+      std::vector<unsigned int> ass_hit_idx_v;
       
       MakeHitMap(evt_hits,pl);
       
@@ -122,12 +127,20 @@ namespace larlite {
 	  }// if enough hits
 	  
 	  if (shrlike == true)
-	    new_hits->emplace_back( evt_hits->at(hit1) );
+	    //ass_hit_idx_v.push_back( hit1 );
+	    out_hits->emplace_back( evt_hits->at(hit1) );
 	  
 	}// 1st loop through hits in the cell
       }// loop through all cells
+
+      //larlite::cluster clus;
+      //clus.set_n_hits( ass_hit_idx_v.size() );
+      //cluster_hit_ass.push_back( ass_hit_idx_v );
+      //ev_clusters->emplace_back( clus );
       
     }// loop through all planes
+
+    //cluster_ass_v->set_association(ev_clusters->id(), product_id(data::kHit,evt_hits->name()),cluster_hit_ass);
 
     return true;
   }
