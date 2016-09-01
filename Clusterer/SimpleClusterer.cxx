@@ -181,7 +181,7 @@ namespace larlite {
     for (auto it = _clusters.begin(); it != _clusters.end(); it++){
       auto indices = it->second;
       // if there are enough indices, make a cluster
-      if (indices.size() > 2){
+      if (indices.size() >= 1){
 	std::vector<unsigned int> clus;
 	for (auto idx : indices)
 	  clus.push_back(idx);
@@ -308,7 +308,10 @@ namespace larlite {
     if (h1.WireID().Plane != h2.WireID().Plane)
       return false;
 
-    double dt = (h1.PeakTime()-h2.PeakTime())*_time2cm;
+    double dt = ( h1.PeakTime() - h2.PeakTime() ) * _time2cm;
+    //  if the hit time-ranges overlap, this distnce should be 0
+    if (TimeOverlap(h1,h2,dt) == true)
+      dt = 0;
     double dw = ((double)h1.Channel()-(double)h2.Channel())*_wire2cm;
     double d = dt*dt + dw*dw;
     if (d > (_radius*_radius))
@@ -316,6 +319,54 @@ namespace larlite {
 
     return true;
   }
+
+  bool SimpleClusterer::TimeOverlap(const larlite::hit& h1,
+				    const larlite::hit& h2,
+				    double& dmin) const
+    {
+      bool overlap = false;
+
+      auto T1 = h1.PeakTime() * _time2cm; // time of first hit
+      auto T2 = h2.PeakTime() * _time2cm;
+      auto W1 = h1.RMS() * _time2cm;
+      auto W2 = h2.RMS() * _time2cm;
+
+      if ( ( (T1 + W1) > (T2 - W2) ) and
+	   ( (T1 - W1) < (T2 - W2) ) )
+	return true;
+
+      if ( ( (T1 + W1) > (T2 + W2) ) and
+	   ( (T1 - W1) < (T2 + W2) ) )
+	return true;
+
+      if ( ( (T2 + W2) > (T1 - W1) ) and
+	   ( (T2 - W2) < (T1 - W1) ) )
+	return true;
+      
+      if ( ( (T2 + W2) > (T1 + W1) ) and
+	   ( (T2 - W2) < (T1 + W1) ) )
+	return true;
+
+      double d = dmin;
+      
+      d = fabs( (T1+W1) - (T2-W2) );
+      if (d < dmin)
+	dmin = d;
+      
+      d = fabs( (T1+W1) - (T2+W2) );
+      if (d < dmin)
+	dmin = d;
+      
+      d = fabs( (T1-W1) - (T2+W2) );
+      if (d < dmin)
+	dmin = d;
+
+      d = fabs( (T1-W1) - (T2-W2) );
+      if (d < dmin)
+	dmin = d;
+
+      return false;
+    }
 
   void SimpleClusterer::MakeHitMap(const event_hit* hitlist, int plane){
 

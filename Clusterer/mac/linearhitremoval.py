@@ -22,33 +22,35 @@ for x in xrange(len(sys.argv)-2):
 my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
 
 # Specify analysis output root file name
-my_proc.set_ana_output_file("");
+my_proc.set_ana_output_file("linearhitremoval.root");
 
 # Specify data output root file name
 my_proc.set_output_file(sys.argv[-1])
 
-#hitproducer = 'testhit'
-hitproducer = 'shrhits'
+clusproducer = 'clusterfilter'
 
 clusterer = fmwk.LinearHitRemoval()
-clusterer.setHitProducer(hitproducer)
+clusterer.setClusProducer(clusproducer)
 clusterer.setRadius(5)
 clusterer.setCellSize(6)
-clusterer.setMaxLinearity(0.97)
+clusterer.setMaxLinearity(0.98)
 #clusterer.setVerbose(True)
 
 my_proc.add_process(clusterer)
 
 #my_proc.set_data_to_write(fmwk.data.kHit,hitproducer)
+#my_proc.set_data_to_write(fmwk.data.kCluster,'rawcluster')
+#my_proc.set_data_to_write(fmwk.data.kAssociation,'rawcluster')
 #my_proc.set_data_to_write(fmwk.data.kCluster,'shrcluster')
 #my_proc.set_data_to_write(fmwk.data.kAssociation,'shrcluster')
-#my_proc.set_data_to_write(fmwk.data.kHit,"shrhits")
+#my_proc.set_data_to_write(fmwk.data.kHit,"shrhits2")
+#my_proc.set_data_to_write(fmwk.data.kHit,"gaushit")
 
 print
 print  "Finished configuring ana_processor. Start event loop!"
 print
 
-my_proc.run()
+my_proc.run(0,20)
 
 sys.exit()
 

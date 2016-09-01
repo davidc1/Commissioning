@@ -100,6 +100,9 @@ namespace larlite {
     /// Function to get neighboring hits (from self + neighoring cells)
     void getNeighboringHits(const std::pair<int,int>& pair, std::vector<size_t>& hitIndices);
 
+    /// check if time overlaps
+    bool TimeOverlap(const larlite::hit& h1, const larlite::hit& h2, double& dmin) const;
+
     /// map connecting coordinate index (i,j) to [h1,h2,h3] (hit index list)
     std::map<std::pair<int,int>, std::vector<size_t> > _hitMap;
 

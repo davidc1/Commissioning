@@ -61,6 +61,9 @@ namespace larlite {
     auto const& ass_cluster_hit_v = storage->find_one_ass(ev_clus->id(), ev_hit, ev_clus->name());
     
     auto out_hit = storage->get_data<event_hit>("shrhits");
+    auto out_clusters   = storage->get_data<event_cluster>("shrcluster");
+    auto out_cluster_ass_v = storage->get_data<event_ass>(out_clusters->name());
+    std::vector<std::vector<unsigned int> > out_cluster_hit_ass_v;
     
     //set event ID through storage manager
     storage->set_id(storage->run_id(),storage->subrun_id(),storage->event_id());
@@ -74,6 +77,10 @@ namespace larlite {
     // if above some thresdhold, remove cluster
 
     for (size_t i=0; i < ass_cluster_hit_v.size(); i++){
+
+      // store output cluster hit indices
+      std::vector<unsigned int> out_cluster_hit_idx_v;
+      larlite::cluster out_clus;
 
       auto hit_idx_v = ass_cluster_hit_v[i];
 
@@ -92,25 +99,35 @@ namespace larlite {
       std::vector<double> hit_t_v;
       
       for (auto const& hit_idx : hit_idx_v){
-	hit_w_v.push_back( ev_hit->at(hit_idx).Channel()  * _wire2cm );
+	hit_w_v.push_back( ev_hit->at(hit_idx).WireID().Wire  * _wire2cm );
 	hit_t_v.push_back( ev_hit->at(hit_idx).PeakTime() * _time2cm );
       }
       // calculate covariance
-      auto C  = cov(hit_w_v,hit_t_v);
-      auto sW = stdev(hit_w_v);
-      auto sT = stdev(hit_t_v);
-      auto r  = C / (sW * sT);
-      
-      if (fabs(r) > max_lin)
+      double L = linearity(hit_w_v,hit_t_v);
+
+      if ( log(fabs(L)) < max_lin)
 	remove = true;
       
       if (remove == false){
 	// for all hits, add them to output
-	for (auto const& hit_idx : hit_idx_v)
+	for (auto const& hit_idx : hit_idx_v){
 	  out_hit->emplace_back( ev_hit->at( hit_idx ) );
+	  out_cluster_hit_idx_v.push_back( out_hit->size() - 1);
+	}
       }// if hits are not to be removed
+
+      if ( out_cluster_hit_idx_v.size() >0 ){
+	out_cluster_hit_ass_v.push_back( out_cluster_hit_idx_v );
+      	out_clus.set_n_hits( out_cluster_hit_idx_v.size() );
+	out_clus.set_view(larlite::geo::View_t::kW);
+	out_clusters->emplace_back( out_clus );
+      }
       
     }// loop through all planes
+
+    std::cout << "out clusters : " << out_clusters->size() << std::endl;
+    
+    out_cluster_ass_v->set_association(out_clusters->id(),product_id(data::kHit,out_hit->name()),out_cluster_hit_ass_v);    
     
     return true;
   }
@@ -162,5 +179,35 @@ namespace larlite {
     return (result / ((double)data.size()));
   }
 
+  double LinearClusterRemoval::linearity(const std::vector<double>& data1,
+					 const std::vector<double>& data2) const
+  {
+
+    if (data1.size() < 2)
+      return 1.;
+
+    auto C  = cov(data1,data2);
+    auto sW = cov(data1,data1);
+    auto sT = cov(data2,data2);
+
+    double r_num = C;
+    double r_den = sqrt( sW * sT );
+    double r = 0.;
+
+    if (r_den == 0)
+      r = 0.;
+    else
+      r = r_num / r_den;
+    if (r > 1.) r = 1.;
+    if (r < -1) r = -1;
+
+    double n = data1.size() - 2 ;
+
+    double lin = sqrt( (1-r*r) * sT / sW / n );
+
+    return lin;
+
+  }
+  
 }
 #endif

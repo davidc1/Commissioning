@@ -80,6 +80,8 @@ namespace larlite {
 		const std::vector<double>& data2) const;
     double stdev(const std::vector<double>& data) const;
     double mean (const std::vector<double>& data) const;
+    double linearity(const std::vector<double>& data1,
+		     const std::vector<double>& data2) const;
     
   };
 }

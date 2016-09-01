@@ -32,8 +32,8 @@ clusterproducer = 'rawcluster'
 clusterer = fmwk.LinearClusterRemoval()
 clusterer.setClusterProducer(clusterproducer)
 
-n_hits = [10,30,100]
-lin_v  = [1.0,0.99,0.9]
+n_hits = [1]#0,30,100]
+lin_v  = [-4.9]#1.0,0.99,0.9]
 
 for i,n in enumerate(n_hits):
     clusterer.setMaxLinearity( lin_v[i] )

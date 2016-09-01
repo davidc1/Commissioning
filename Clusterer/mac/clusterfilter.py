@@ -22,28 +22,22 @@ for x in xrange(len(sys.argv)-2):
 my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
 
 # Specify analysis output root file name
-my_proc.set_ana_output_file("");
+my_proc.set_ana_output_file("linearhitremoval.root");
 
 # Specify data output root file name
 my_proc.set_output_file(sys.argv[-1])
 
-#hitproducer = 'shrhits2'
-hitproducer = 'gaushit'
+#hitproducer = 'testhit'
+hitproducer = 'shrhits'
 
-clusterer = fmwk.SimpleClusterer()
-clusterer.setHitProducer(hitproducer)
-clusterer.setRadius(1)
-clusterer.setCellSize(2)
-clusterer.setUseVertex(True)
+clusterer = fmwk.ClusterFilter()
+clusterer.setClusProducer("shrcluster")
 clusterer.setVtxProducer("numuCC_vertex")
-clusterer.setVtxRadius(2.0)
-clusterer.setVerbose(False)
+clusterer.setMaxNHits(400)
+clusterer.setMaxArea(100*100)
+clusterer.setMaxDist(200)
 
 my_proc.add_process(clusterer)
-
-#my_proc.set_data_to_write(fmwk.data.kHit,hitproducer)
-#my_proc.set_data_to_write(fmwk.data.kCluster,'rawcluster')
-#my_proc.set_data_to_write(fmwk.data.kAssociation,'rawcluster')
 
 print
 print  "Finished configuring ana_processor. Start event loop!"

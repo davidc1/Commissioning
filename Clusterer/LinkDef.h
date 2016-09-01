@@ -12,10 +12,17 @@
 #pragma link C++ class larlite::SimpleClusterer+;
 #pragma link C++ class larlite::LinearHitRemoval+;
 #pragma link C++ class larlite::LinearClusterRemoval+;
+#pragma link C++ class larlite::LinearClusterLocalRemoval+;
 #pragma link C++ class larlite::MakeClusterPolygon+;
 #pragma link C++ class larlite::MakeHits+;
+#pragma link C++ class Stats+;
+#pragma link C++ class larlite::ClusterFilter+;
+#pragma link C++ class Linearity+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
+
+
 
 
 

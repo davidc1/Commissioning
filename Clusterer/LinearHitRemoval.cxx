@@ -8,12 +8,14 @@
 
 namespace larlite {
 
-  LinearHitRemoval::LinearHitRemoval(){
+  LinearHitRemoval::LinearHitRemoval()
+    : _tree(nullptr)
+  {
 
     _name        = "LinearHitRemoval";
     _fout        = 0;
     _verbose     = false;
-    _hitProducer = "gaushit";
+    _clusProducer = "";
     _radius      = 2.0;
     _cellSize    = 2;
     _max_lin     = 0.7;
@@ -21,7 +23,13 @@ namespace larlite {
   }
 
   bool LinearHitRemoval::initialize() {
-
+    
+    if (_tree) delete _tree;
+    _tree = new TTree("_tree","tree");
+    _tree->Branch("_l",&_l,"l/D");
+    _tree->Branch("_n_hits",&_n_hits,"n_hits/I");
+    _tree->Branch("_pl",&_pl,"pl/I");
+    
     _wire2cm  = larutil::GeometryHelper::GetME()->WireToCm();
     _time2cm  = larutil::GeometryHelper::GetME()->TimeToCm();
 
@@ -35,17 +43,20 @@ namespace larlite {
   
   bool LinearHitRemoval::analyze(storage_manager* storage) {
 
-    auto evt_hits = storage->get_data<event_hit>(_hitProducer);
+    auto ev_clus = storage->get_data<event_cluster>(_clusProducer);
+    larlite::event_hit* ev_hit = nullptr;
+    auto const& ass_cluster_hit_v = storage->find_one_ass(ev_clus->id(), ev_hit, ev_clus->name());
+
     auto out_hits = storage->get_data<event_hit>("shrhits2");
     // produced clusters
-    auto ev_clusters   = storage->get_data<event_cluster>("shrcluster");
-    auto cluster_ass_v = storage->get_data<event_ass>("shrcluster");
+    auto ev_clusters   = storage->get_data<event_cluster>("shrcluster2");
+    auto cluster_ass_v = storage->get_data<event_ass>("shrcluster2");
     std::vector<std::vector<unsigned int> > cluster_hit_ass;
     
     //set event ID through storage manager
     storage->set_id(storage->run_id(),storage->subrun_id(),storage->event_id());
 
-    if (!evt_hits){
+    if (!ev_hit){
       std::cout << "No hits!" << std::endl;
       return false;
     }
@@ -65,7 +76,7 @@ namespace larlite {
 
       std::vector<unsigned int> ass_hit_idx_v;
       
-      MakeHitMap(evt_hits,pl);
+      MakeHitMap(ass_cluster_hit_v,ev_hit,pl);
       
       // iterator for hit cell map
       std::map<std::pair<int,int>, std::vector<size_t> >::iterator it;
@@ -98,15 +109,15 @@ namespace larlite {
 	  std::vector<double> hit_w_v;
 	  std::vector<double> hit_t_v;
 
-	  hit_w_v.push_back( evt_hits->at(hit1).Channel()  * _wire2cm );
-	  hit_t_v.push_back( evt_hits->at(hit1).PeakTime() * _time2cm );
+	  hit_w_v.push_back( ev_hit->at(hit1).Channel()  * _wire2cm );
+	  hit_t_v.push_back( ev_hit->at(hit1).PeakTime() * _time2cm );
 	  
 	  for (size_t h2=0; h2 < neighborhits.size(); h2++){
 	    auto const& hit2 = neighborhits[h2];
 	    if (hit1 == hit2) continue;
-	    if (HitsCompatible( evt_hits->at(hit1), evt_hits->at(hit2) ) == true){
-	      hit_w_v.push_back( evt_hits->at(hit2).Channel()  * _wire2cm );
-	      hit_t_v.push_back( evt_hits->at(hit2).PeakTime() * _time2cm );
+	    if (HitsCompatible( ev_hit->at(hit1), ev_hit->at(hit2) ) == true){
+	      hit_w_v.push_back( ev_hit->at(hit2).Channel()  * _wire2cm );
+	      hit_t_v.push_back( ev_hit->at(hit2).PeakTime() * _time2cm );
 	    }
 	    
 	  }// for all hits in neighboring cells
@@ -115,20 +126,19 @@ namespace larlite {
 
 	  if (hit_w_v.size() > 2){
 	    
-	    // calculate covariance
-	    auto C  = cov(hit_w_v,hit_t_v);
-	    auto sW = stdev(hit_w_v);
-	    auto sT = stdev(hit_t_v);
-	    auto r  = C / (sW * sT);
-	    
-	    if (fabs(r) > _max_lin)
+	    double L = linearity(hit_w_v,hit_t_v);
+
+	    _l = L;
+	    _tree->Fill();
+
+	    if (L > _max_lin)
 	      shrlike = false;
 	    
 	  }// if enough hits
 	  
 	  if (shrlike == true){
 	    ass_hit_idx_v.push_back( hit1 );
-	    out_hits->emplace_back( evt_hits->at(hit1) );
+	    out_hits->emplace_back( ev_hit->at(hit1) );
 	  }
 	  
 	}// 1st loop through hits in the cell
@@ -141,12 +151,16 @@ namespace larlite {
       
     }// loop through all planes
 
-    cluster_ass_v->set_association(ev_clusters->id(), product_id(data::kHit,evt_hits->name()),cluster_hit_ass);
+    cluster_ass_v->set_association(ev_clusters->id(), product_id(data::kHit,ev_hit->name()),cluster_hit_ass);
 
     return true;
   }
 
   bool LinearHitRemoval::finalize() {
+
+    _fout->cd();
+
+    _tree->Write();
 
     return true;
   }
@@ -292,39 +306,75 @@ namespace larlite {
     return true;
   }
 
-  void LinearHitRemoval::MakeHitMap(const event_hit* hitlist, int plane){
+  void LinearHitRemoval::MakeHitMap(const std::vector<std::vector<unsigned int> >& ass_v,
+				    const event_hit* hitlist, int plane){
 
     _hitMap.clear();
     // temporary pair
     std::pair<int,int> tmpPair;
 
-    
-    for (size_t h=0; h < hitlist->size(); h++){
-      auto const& hit = hitlist->at(h);
-      // skip if not of plane we want
-      if (hit.View() != plane)
-	continue;
-      double t = hit.PeakTime()*_time2cm;
-      double w = hit.WireID().Wire*_wire2cm;
-      // map is (i,j) -> hit list
-      // i : ith bin in wire of some width
-      // j : jth bin in time of some width
-      int i = int(w/_cellSize);
-      int j = int(t/_cellSize);
-      tmpPair = std::make_pair(i,j);
-      // does this entry exist in the map?
-      // if yes -> append to vector
-      // if no create new vector and add to map
-      if (_hitMap.find(tmpPair) == _hitMap.end()){
-	std::vector<size_t> aaa = {h};
-	_hitMap[tmpPair] = aaa;
-      }
-      else
-	_hitMap[tmpPair].push_back(h);
-    }// for all hits
-
+    for (auto const& hit_idx_v : ass_v){
+      for (auto const& h : hit_idx_v){
+	auto const& hit = hitlist->at(h);
+	// skip if not of plane we want
+	if (hit.View() != plane)
+	  continue;
+	double t = hit.PeakTime()*_time2cm;
+	double w = hit.WireID().Wire*_wire2cm;
+	// map is (i,j) -> hit list
+	// i : ith bin in wire of some width
+	// j : jth bin in time of some width
+	int i = int(w/_cellSize);
+	int j = int(t/_cellSize);
+	tmpPair = std::make_pair(i,j);
+	// does this entry exist in the map?
+	// if yes -> append to vector
+	// if no create new vector and add to map
+	if (_hitMap.find(tmpPair) == _hitMap.end()){
+	  std::vector<size_t> aaa = {h};
+	  _hitMap[tmpPair] = aaa;
+	}
+	else
+	  _hitMap[tmpPair].push_back(h);
+      }// for all hits
+    }// for all clusters
+      
     return;
   }
+
+  double LinearHitRemoval::linearity(const std::vector<double>& data1,
+				     const std::vector<double>& data2) const
+  {
+    
+    if (data1.size() < 2)
+      return 1.;
+
+    auto C  = cov(data1,data2);
+    auto sW = cov(data1,data1);
+    auto sT = cov(data2,data2);
+
+    //return C / (sW*sT);
+
+    double r_num = C;
+    double r_den = sqrt( sW * sT );
+    double r = 0.;
+
+    if (r_den == 0)
+      r = 0.;
+    else
+      r = r_num / r_den;
+    if (r > 1.) r = 1.;
+    if (r < -1) r = -1;
+
+    return fabs(r);
+
+    //double n = data1.size() - 2 ;
+
+    //double lin = sqrt( (1-r*r) * sT / sW / n );
+
+    //return lin;
+  }
+
 
 }
 #endif
