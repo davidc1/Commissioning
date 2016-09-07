@@ -86,14 +86,19 @@ namespace larlite {
       std::vector<double> w_v, t_v;
       getClusterPoints(hit_idx_v, evt_hit, w_v, t_v);
 
-
-      
-
       // grab cluster bounds (w_min, w_max, t_min, t_max)
       std::pair<double,double> w_bounds;
       std::pair<double,double> t_bounds;
       double d_max, d_min;
       getClusterBounds(w_v, t_v, pl, w_bounds, t_bounds, d_max, d_min);
+
+      // remove clusters that span only 1 or 2 wires
+      // and are ~ a few cm in time (units in cuts are in cm)
+      if ( ( (w_bounds.second - w_bounds.first) < 0.5 ) and
+	   ( (t_bounds.second - t_bounds.first) > 1.5 ) ){
+	std::cout << "reove vertical cluster" << std::endl;
+	continue;
+      }
 
       // calculate area
       double A = ( w_bounds.second - w_bounds.first ) * ( t_bounds.second - t_bounds.first );
@@ -111,11 +116,13 @@ namespace larlite {
       if ( (hit_idx_v.size() > 30) and (d_min > 50) ){
 	// calcualte linearity
 	::Linearity lin(w_v,t_v);
-	
+
+	/*
 	std::cout << "slope is " << lin._slope << std::endl
 		  << "mean W : " << lin._meanx << std::endl
 		  << "mean T : " << lin._meany << std::endl
 		  << "n hits : " << lin._dof << std::endl;
+	*/
 	
 	// get dot product between slope line and mean to vtx line
 	double _vtx_mean_w = _vtx_w_cm[pl] - lin._meanx;
@@ -131,7 +138,7 @@ namespace larlite {
 	_slope_w /= mag;
 	
 	double dot = fabs( _slope_t * _vtx_mean_t + _slope_w * _vtx_mean_w );
-	std::cout << "dot product : " << dot << std::endl << std::endl;
+	//std::cout << "dot product : " << dot << std::endl << std::endl;
 
 	if (dot < 0.7)
 	  drop = true;

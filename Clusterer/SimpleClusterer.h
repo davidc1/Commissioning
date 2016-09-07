@@ -67,6 +67,8 @@ namespace larlite {
     void setVtxRadius(double r) { _vtx_radius = r; }
     /// use vertex?
     void setUseVertex(bool on) { _useVtx = on; }
+    /// cut hits based on their fit RMS [ unit is time-ticks ]
+    void setMaxHitRMS(double r) { _max_rms = r; }
 
   protected:
 
@@ -115,6 +117,9 @@ namespace larlite {
 
     /// use vertex?
     bool _useVtx;
+
+    /// maximum hit RMS allowed
+    double _max_rms;
 
     /// vertex coordinates
     std::vector<double> _vtx_w_cm;

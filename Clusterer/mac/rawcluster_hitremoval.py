@@ -34,6 +34,7 @@ clusterer = fmwk.SimpleClusterer()
 clusterer.setHitProducer(hitproducer)
 clusterer.setRadius(1)
 clusterer.setCellSize(2)
+clusterer.setMaxHitRMS(19)
 clusterer.setUseVertex(True)
 clusterer.setVtxProducer("numuCC_vertex")
 clusterer.setVtxRadius(2.0)
@@ -49,7 +50,7 @@ print
 print  "Finished configuring ana_processor. Start event loop!"
 print
 
-my_proc.run(0,20)
+my_proc.run()
 
 sys.exit()
 

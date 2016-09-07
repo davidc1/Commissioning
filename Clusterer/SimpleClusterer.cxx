@@ -20,7 +20,7 @@ namespace larlite {
     _radius      = 2.0;
     _cellSize    = 2;
     _vtx_radius  = 0;
-
+    _max_rms     = 100;
     _vtx_w_cm = {0,0,0};
     _vtx_t_cm = {0,0,0};
 
@@ -54,6 +54,12 @@ namespace larlite {
       return false;
     }
 
+    if ( (_vtxProducer != "") and (!evt_vtx) ){
+      std::cout << "No vertex even though one requested...quit" << std::endl;
+      return false;
+    }
+    
+    
     if ( (_vtxProducer != "") and (evt_vtx->size() == 1) ){
       auto const& vtx = evt_vtx->at(0);
       auto geoH = larutil::GeometryHelper::GetME();
@@ -380,6 +386,11 @@ namespace larlite {
       // skip if not of plane we want
       if (hit.View() != plane)
 	continue;
+
+      // if RMS above threshold -> ignore
+      if (hit.RMS() > _max_rms)
+	continue;
+      
       double t = hit.PeakTime()*_time2cm;
       double w = hit.WireID().Wire*_wire2cm;
 
