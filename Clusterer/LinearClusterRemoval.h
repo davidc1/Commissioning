@@ -17,6 +17,9 @@
 
 #include "Analysis/ana_base.h"
 #include "DataFormat/hit.h"
+
+#include "Linearity.h"
+
 #include <map>
 
 namespace larlite {
@@ -82,6 +85,12 @@ namespace larlite {
     double mean (const std::vector<double>& data) const;
     double linearity(const std::vector<double>& data1,
 		     const std::vector<double>& data2) const;
+
+    TTree* _tree;
+    int _nhits;
+    double _lin;
+    double _local_lin_truncated;
+    double _local_lin_avg;
     
   };
 }

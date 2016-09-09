@@ -28,7 +28,7 @@ class Linearity{
 public:
 
   /// Default constructor
-  Linearity(){}
+  Linearity();
 
   Linearity(const std::vector<double>& x_v, const std::vector<double>& y_v);
 
@@ -37,16 +37,25 @@ public:
 
   /// covariance, standard deviation, mean
   double cov (const std::vector<double>& data1,
-	      const std::vector<double>& data2);
+	      const std::vector<double>& data2,
+	      bool save=false);
   
   double stdev(const std::vector<double>& data);
   
   double mean (const std::vector<double>& data);
   
   double linearity(const std::vector<double>& data1,
-		   const std::vector<double>& data2);
+		   const std::vector<double>& data2,
+		   bool save=false);
+
+  void local_linearity(const std::vector<double>& data1,
+		       const std::vector<double>& data2);
+
+  // local linearity radius
+  double _r;
 
   double _slope;
+  double _intercept;
   double _covxx;
   double _covyy;
   double _covxy;
@@ -56,6 +65,10 @@ public:
   double _stdx;
   double _stdy;
   int    _dof;
+  std::vector<double> _lin_v; // from local linearity
+  double _local_lin_avg;
+  double _local_lin_truncated_avg;
+  
 
 };
 

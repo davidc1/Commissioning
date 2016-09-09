@@ -32,7 +32,7 @@ hitproducer = 'gaushit'
 
 clusterer = fmwk.SimpleClusterer()
 clusterer.setHitProducer(hitproducer)
-clusterer.setRadius(1)
+clusterer.setRadius(0.4)
 clusterer.setCellSize(2)
 clusterer.setMaxHitRMS(19)
 clusterer.setUseVertex(True)

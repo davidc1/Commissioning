@@ -8,7 +8,9 @@
 
 namespace larlite {
 
-  LinearClusterRemoval::LinearClusterRemoval(){
+  LinearClusterRemoval::LinearClusterRemoval()
+    : _tree(nullptr)
+  {
 
     _name        = "LinearClusterRemoval";
     _fout        = 0;
@@ -20,6 +22,13 @@ namespace larlite {
   }
 
   bool LinearClusterRemoval::initialize() {
+
+    if (_tree) delete _tree;
+    _tree = new TTree("linearclusterremoval","Linear Cluster Removal TTree");
+    _tree->Branch("_nhits",&_nhits,"nhits/I");
+    _tree->Branch("_lin",  &_lin  ,"lin/D"  );
+    _tree->Branch("_local_lin_truncated",  &_local_lin_truncated  ,"local_lin_truncated/D"  );
+    _tree->Branch("_local_lin_avg",  &_local_lin_avg  ,"local_lin_avg/D"  );
 
     _wire2cm  = larutil::GeometryHelper::GetME()->WireToCm();
     _time2cm  = larutil::GeometryHelper::GetME()->TimeToCm();
@@ -102,11 +111,26 @@ namespace larlite {
 	hit_w_v.push_back( ev_hit->at(hit_idx).WireID().Wire  * _wire2cm );
 	hit_t_v.push_back( ev_hit->at(hit_idx).PeakTime() * _time2cm );
       }
+
+      ::Linearity lin(hit_w_v,hit_t_v);
+
+      _nhits = hit_w_v.size();
+      _lin                 = lin._lin;
+      _local_lin_avg       = lin._local_lin_avg;
+      _local_lin_truncated = lin._local_lin_truncated_avg;
+
+      _tree->Fill();
+
+      if (_local_lin_truncated < 0.1)
+	remove = true;
+
+      /* OLD WAY
       // calculate covariance
       double L = linearity(hit_w_v,hit_t_v);
 
       if ( log(fabs(L)) < max_lin)
 	remove = true;
+      */ 
       
       if (remove == false){
 	// for all hits, add them to output
@@ -133,6 +157,12 @@ namespace larlite {
   }
 
   bool LinearClusterRemoval::finalize() {
+
+    if (_fout){
+      _fout->cd();
+      _tree->Write();
+    }
+      
 
     return true;
   }
