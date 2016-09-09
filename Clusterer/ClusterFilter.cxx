@@ -48,6 +48,7 @@ namespace larlite {
 
     auto evt_clus = storage->get_data<event_cluster>(_clusProducer);
     auto evt_vtx  = storage->get_data<event_vertex> (_vtxProducer );
+    auto out_hit = storage->get_data<event_hit>("clusterfilter");
     auto out_clus = storage->get_data<event_cluster>("clusterfilter");
     auto out_ass_cluster_hit_v = storage->get_data<event_ass>(out_clus->name());
     std::vector<std::vector<unsigned int> > out_cluster_hit_ass_v;
@@ -150,6 +151,8 @@ namespace larlite {
       // made it this far. save the cluster!
       out_clus->emplace_back( evt_clus->at( clus_idx ) );
       out_cluster_hit_ass_v.push_back( hit_idx_v );
+      for (auto const& hit_idx : hit_idx_v)
+	out_hit->emplace_back( evt_hit->at(hit_idx) );
 
     }// for all clusters in the event
 
