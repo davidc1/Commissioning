@@ -159,6 +159,9 @@ void Linearity::local_linearity(const std::vector<double>& data1,
 
     }// second loop through hits
 
+    if (local_x_v.size() < 4)
+      continue;
+
     auto lin = linearity(local_x_v,local_y_v,false);
 
     _lin_v.push_back( lin );

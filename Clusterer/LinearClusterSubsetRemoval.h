@@ -1,9 +1,9 @@
 /**
- * \file LinearClusterRemoval.h
+ * \file LinearClusterSubsetRemoval.h
  *
  * \ingroup Clusterer
  * 
- * \brief Class def header for a class LinearClusterRemoval
+ * \brief Class def header for a class LinearClusterSubsetRemoval
  *
  * @author david caratelli
  */
@@ -12,8 +12,8 @@
 
     @{*/
 
-#ifndef LARLITE_LINEARCLUSTERREMOVAL_H
-#define LARLITE_LINEARCLUSTERREMOVAL_H
+#ifndef LARLITE_LINEARCLUSTERSUBSETREMOVAL_H
+#define LARLITE_LINEARCLUSTERSUBSETREMOVAL_H
 
 #include "Analysis/ana_base.h"
 #include "DataFormat/hit.h"
@@ -24,30 +24,30 @@
 
 namespace larlite {
   /**
-     \class LinearClusterRemoval
+     \class LinearClusterSubsetRemoval
      User custom analysis class made by SHELL_USER_NAME
    */
-  class LinearClusterRemoval : public ana_base{
+  class LinearClusterSubsetRemoval : public ana_base{
   
   public:
 
     /// Default constructor
-    LinearClusterRemoval();
+    LinearClusterSubsetRemoval();
 
     /// Default destructor
-    virtual ~LinearClusterRemoval(){}
+    virtual ~LinearClusterSubsetRemoval(){}
 
-    /** IMPLEMENT in LinearClusterRemoval.cc!
+    /** IMPLEMENT in LinearClusterSubsetRemoval.cc!
         Initialization method to be called before the analysis event loop.
     */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in LinearClusterRemoval.cc! 
+    /** IMPLEMENT in LinearClusterSubsetRemoval.cc! 
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in LinearClusterRemoval.cc! 
+    /** IMPLEMENT in LinearClusterSubsetRemoval.cc! 
         Finalize method to be called after all events processed.
     */
     virtual bool finalize();
@@ -63,6 +63,10 @@ namespace larlite {
 
   protected:
 
+    /// vertex coordinates
+    std::vector<double> _vtx_w_cm;
+    std::vector<double> _vtx_t_cm;
+
     /// maximum linearity for hits
     std::vector<double> _max_lin_v;
 
@@ -77,14 +81,6 @@ namespace larlite {
 
     /// Hit producer name
     std::string _clusterProducer;
-
-    /// covariance, standard deviation, mean
-    double cov (const std::vector<double>& data1,
-		const std::vector<double>& data2) const;
-    double stdev(const std::vector<double>& data) const;
-    double mean (const std::vector<double>& data) const;
-    double linearity(const std::vector<double>& data1,
-		     const std::vector<double>& data2) const;
 
     TTree* _tree;
     int _nhits;

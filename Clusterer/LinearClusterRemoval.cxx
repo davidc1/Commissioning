@@ -16,7 +16,7 @@ namespace larlite {
     _fout        = 0;
     _verbose     = false;
     _clusterProducer = "gaushit";
-    _max_lin_v = {1.0};
+    _max_lin_v = {0.0};
     _min_n_hits_v = {0};
 
   }
@@ -46,8 +46,8 @@ namespace larlite {
 
     // make sure values are increasing for nhits requirement and decreasing for linearity requirement
     for (size_t i=0; i < _max_lin_v.size() - 1; i++){
-      if (_max_lin_v[i+1] > _max_lin_v[i]){
-	std::cout << "_max_lin_v values increasing! quit..." << std::endl;
+      if (_max_lin_v[i+1] < _max_lin_v[i]){
+	std::cout << "_max_lin_v values decreasing! quit..." << std::endl;
 	return false;
       }
     }
@@ -121,7 +121,7 @@ namespace larlite {
 
       _tree->Fill();
 
-      if (_local_lin_truncated < 0.1)
+      if (_local_lin_truncated < max_lin)
 	remove = true;
 
       /* OLD WAY

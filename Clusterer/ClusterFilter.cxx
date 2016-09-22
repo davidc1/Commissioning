@@ -50,8 +50,12 @@ namespace larlite {
     auto evt_vtx  = storage->get_data<event_vertex> (_vtxProducer );
     auto out_hit = storage->get_data<event_hit>("clusterfilter");
     auto out_clus = storage->get_data<event_cluster>("clusterfilter");
+    auto out_clus_all = storage->get_data<event_cluster>("clusterfilterall");
     auto out_ass_cluster_hit_v = storage->get_data<event_ass>(out_clus->name());
+    auto out_ass_cluster_all_hit_v = storage->get_data<event_ass>(out_clus_all->name());
     std::vector<std::vector<unsigned int> > out_cluster_hit_ass_v;
+    std::vector<std::vector<unsigned int> > out_cluster_all_hit_ass_v;
+    out_cluster_all_hit_ass_v.resize(3);
     
     larlite::event_hit* evt_hit = nullptr;
     auto const& ass_cluster_hit_v = storage->find_one_ass(evt_clus->id(), evt_hit, evt_clus->name());
@@ -96,10 +100,8 @@ namespace larlite {
       // remove clusters that span only 1 or 2 wires
       // and are ~ a few cm in time (units in cuts are in cm)
       if ( ( (w_bounds.second - w_bounds.first) < 0.5 ) and
-	   ( (t_bounds.second - t_bounds.first) > 1.5 ) ){
-	std::cout << "reove vertical cluster" << std::endl;
+	   ( (t_bounds.second - t_bounds.first) > 1.5 ) )
 	continue;
-      }
 
       // calculate area
       double A = ( w_bounds.second - w_bounds.first ) * ( t_bounds.second - t_bounds.first );
@@ -113,36 +115,25 @@ namespace larlite {
 	continue;
 
       bool drop = false;
+
+      ::Linearity lin(w_v,t_v);
+
       
-      if ( (hit_idx_v.size() > 30) and (d_min > 50) ){
+      if ( (hit_idx_v.size() > 20) and (d_min > 30) and (lin._local_lin_truncated_avg < 0.5) ){
 	// calcualte linearity
-	::Linearity lin(w_v,t_v);
 
-	/*
-	std::cout << "slope is " << lin._slope << std::endl
-		  << "mean W : " << lin._meanx << std::endl
-		  << "mean T : " << lin._meany << std::endl
-		  << "n hits : " << lin._dof << std::endl;
-	*/
-	
-	// get dot product between slope line and mean to vtx line
-	double _vtx_mean_w = _vtx_w_cm[pl] - lin._meanx;
-	double _vtx_mean_t = _vtx_t_cm[pl] - lin._meany;
-	double mag = sqrt( _vtx_mean_w * _vtx_mean_w + _vtx_mean_t * _vtx_mean_t );
-	_vtx_mean_w /= mag;
-	_vtx_mean_t /= mag;
-	
-	double _slope_t = lin._slope;
-	double _slope_w = 1.;
-	mag = sqrt( _slope_t*_slope_t + _slope_w*_slope_w );
-	_slope_t /= mag;
-	_slope_w /= mag;
-	
-	double dot = fabs( _slope_t * _vtx_mean_t + _slope_w * _vtx_mean_w );
-	//std::cout << "dot product : " << dot << std::endl << std::endl;
 
-	if (dot < 0.7)
-	  drop = true;
+      double slope     = lin._slope;
+      double intercept = lin._intercept;
+
+      // impact parameter to vertex:
+      double x0 = _vtx_w_cm[pl];
+      double y0 = _vtx_t_cm[pl];
+      double IP = fabs( - slope * x0 + y0 - intercept ) / sqrt( slope * slope + 1 );
+
+      if (IP > 20)
+	drop = true;
+
       }
 
       if (drop == true)
@@ -151,11 +142,24 @@ namespace larlite {
       // made it this far. save the cluster!
       out_clus->emplace_back( evt_clus->at( clus_idx ) );
       out_cluster_hit_ass_v.push_back( hit_idx_v );
-      for (auto const& hit_idx : hit_idx_v)
+      for (auto const& hit_idx : hit_idx_v){
 	out_hit->emplace_back( evt_hit->at(hit_idx) );
+	out_cluster_all_hit_ass_v[pl].push_back( out_hit->size() - 1 );
+      }
 
     }// for all clusters in the event
 
+    for (size_t pl=0; pl < 3; pl++){
+      larlite::cluster clus_all;
+      clus_all.set_n_hits(out_cluster_all_hit_ass_v[pl].size());
+      clus_all.set_view(larlite::geo::View_t::kW);
+      out_clus_all->emplace_back(clus_all);
+    }
+
+    std::cout << "there are " << out_cluster_all_hit_ass_v[0].size() << " hits" << std::endl;
+
+    out_ass_cluster_all_hit_v->set_association(out_clus_all->id(),product_id(data::kHit,out_hit->name()),out_cluster_all_hit_ass_v);
+    
     out_ass_cluster_hit_v->set_association(out_clus->id(),product_id(data::kHit,evt_hit->name()),out_cluster_hit_ass_v);    
       
 

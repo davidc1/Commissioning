@@ -19,6 +19,8 @@
 
 #include "Linearity.h"
 
+#include "Linearity.h"
+
 namespace larlite {
   /**
      \class ClusterFilter

@@ -23,6 +23,8 @@ namespace larlite {
     _max_rms     = 100;
     _vtx_w_cm = {0,0,0};
     _vtx_t_cm = {0,0,0};
+    _tick_min = 0;
+    _tick_max = 9600;
 
   }
 
@@ -389,6 +391,10 @@ namespace larlite {
 
       // if RMS above threshold -> ignore
       if (hit.RMS() > _max_rms)
+	continue;
+
+      // remove hits with time-tick < _tick_min or > _tick_max
+      if ( (hit.PeakTime() < _tick_min) or (hit.PeakTime() > _tick_max) )
 	continue;
       
       double t = hit.PeakTime()*_time2cm;

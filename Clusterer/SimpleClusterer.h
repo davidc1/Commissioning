@@ -69,6 +69,9 @@ namespace larlite {
     void setUseVertex(bool on) { _useVtx = on; }
     /// cut hits based on their fit RMS [ unit is time-ticks ]
     void setMaxHitRMS(double r) { _max_rms = r; }
+    /// set min tick
+    void setMinTick(int t) { _tick_min = t; }
+    void setMaxTick(int t) { _tick_max = t; }
 
   protected:
 
@@ -124,6 +127,9 @@ namespace larlite {
     /// vertex coordinates
     std::vector<double> _vtx_w_cm;
     std::vector<double> _vtx_t_cm;
+
+    // min and max ticks allowed
+    int _tick_min, _tick_max;
 
     
   };

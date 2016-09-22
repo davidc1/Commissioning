@@ -27,13 +27,13 @@ my_proc.set_ana_output_file("linearclusterremoval.root");
 # Specify data output root file name
 my_proc.set_output_file(sys.argv[-1])
 
-clusterproducer = 'rawcluster'
+clusterproducer = 'pandoraCosmic'
 
-clusterer = fmwk.LinearClusterRemoval()
+clusterer = fmwk.LinearClusterSubsetRemoval()
 clusterer.setClusterProducer(clusterproducer)
 
 n_hits = [  3, 10, 20, 30, 50, 70,100,130,180,230]
-lin_v  = [.02,.10,.10,.13,.16,.20,.23,.30,.40,.45]#1.0,0.99,0.9]
+lin_v  = [.02,.06,.10,.10,.10,.10,.10,.12,.20,.30]
 
 for i,n in enumerate(n_hits):
     clusterer.setMaxLinearity( lin_v[i] )

@@ -28,17 +28,20 @@ my_proc.set_ana_output_file("");
 my_proc.set_output_file(sys.argv[-1])
 
 #hitproducer = 'shrhits2'
-hitproducer = 'gaushit'
+#hitproducer = 'gaushit'
+hitproducer = 'shrhits'
 
 clusterer = fmwk.SimpleClusterer()
 clusterer.setHitProducer(hitproducer)
-clusterer.setRadius(0.4)
-clusterer.setCellSize(2)
+clusterer.setRadius(1.0)
+clusterer.setCellSize(2.0)
 clusterer.setMaxHitRMS(19)
 clusterer.setUseVertex(True)
 clusterer.setVtxProducer("numuCC_vertex")
 clusterer.setVtxRadius(2.0)
 clusterer.setVerbose(False)
+clusterer.setMinTick(800)
+clusterer.setMaxTick(5445)
 
 my_proc.add_process(clusterer)
 
