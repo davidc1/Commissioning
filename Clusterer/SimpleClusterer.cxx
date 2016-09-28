@@ -14,8 +14,9 @@ namespace larlite {
     _name        = "SimpleClusterer";
     _fout        = 0;
     _verbose     = false;
-    _hitProducer = "gaushit";
+    _hitProducer = "";
     _vtxProducer = "";
+    _outProducer = "";
     _useVtx      = false;
     _radius      = 2.0;
     _cellSize    = 2;
@@ -29,6 +30,20 @@ namespace larlite {
   }
 
   bool SimpleClusterer::initialize() {
+
+    // if vector and or cluster producer not set -> quit
+    if ( _hitProducer == "" ){
+      std::cout << "Hit producer not set. Quit." << std::endl;
+      return false;
+    }
+    if ( _vtxProducer == "" ){
+      std::cout << "Vertex producer not set. Quit." << std::endl;
+      return false;
+    }
+    if ( _outProducer == "" ){
+      std::cout << "Output hit producer not set. Quit." << std::endl;
+      return false;
+    }
 
     _wire2cm  = larutil::GeometryHelper::GetME()->WireToCm();
     _time2cm  = larutil::GeometryHelper::GetME()->TimeToCm();
@@ -44,7 +59,7 @@ namespace larlite {
   bool SimpleClusterer::analyze(storage_manager* storage) {
 
     auto evt_hits      = storage->get_data<event_hit>(_hitProducer);
-    auto ev_clusters   = storage->get_data<event_cluster>("rawcluster");
+    auto ev_clusters   = storage->get_data<event_cluster>(_outProducer);
     auto cluster_ass_v = storage->get_data<event_ass>(ev_clusters->name());
     auto evt_vtx       = storage->get_data<event_vertex>(_vtxProducer);
     
@@ -215,8 +230,6 @@ namespace larlite {
       }
     }
     
-    std::cout << "number of larlite clusters: " << ev_clusters->size() << std::endl;
-    std::cout << "number of clusters to be saved: " << _cluster_hit_ass.size() << std::endl;
     cluster_ass_v->set_association(ev_clusters->id(),product_id(data::kHit,evt_hits->name()),_cluster_hit_ass);    
 
     return true;

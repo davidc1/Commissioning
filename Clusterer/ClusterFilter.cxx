@@ -28,10 +28,31 @@ namespace larlite {
 
     _clusProducer = "";
     _vtxProducer  = "";
+    _outhitProducer = "";
+    _outclusterProducer = "";
     
   }
 
   bool ClusterFilter::initialize() {
+
+    // if producers not set
+    if ( _clusProducer == "" ){
+      std::cout << "Cluster producer not set. Quit." << std::endl;
+      return false;
+    }
+    // if producers not set
+    if ( _vtxProducer == "" ){
+      std::cout << "Vertex producer not set. Quit." << std::endl;
+      return false;
+    }
+    if ( _outhitProducer == "" ){
+      std::cout << "Output hit producer not set. Quit." << std::endl;
+      return false;
+    }
+    if ( _outclusterProducer == "" ){
+      std::cout << "Output cluster producer not set. Quit." << std::endl;
+      return false;
+    }
 
     _wire2cm  = larutil::GeometryHelper::GetME()->WireToCm();
     _time2cm  = larutil::GeometryHelper::GetME()->TimeToCm();
@@ -48,8 +69,8 @@ namespace larlite {
 
     auto evt_clus = storage->get_data<event_cluster>(_clusProducer);
     auto evt_vtx  = storage->get_data<event_vertex> (_vtxProducer );
-    auto out_hit = storage->get_data<event_hit>("clusterfilter");
-    auto out_clus = storage->get_data<event_cluster>("clusterfilter");
+    auto out_hit = storage->get_data<event_hit>(_outhitProducer);
+    auto out_clus = storage->get_data<event_cluster>(_outclusterProducer);
     auto out_clus_all = storage->get_data<event_cluster>("clusterfilterall");
     auto out_ass_cluster_hit_v = storage->get_data<event_ass>(out_clus->name());
     auto out_ass_cluster_all_hit_v = storage->get_data<event_ass>(out_clus_all->name());
@@ -155,8 +176,6 @@ namespace larlite {
       clus_all.set_view(larlite::geo::View_t::kW);
       out_clus_all->emplace_back(clus_all);
     }
-
-    std::cout << "there are " << out_cluster_all_hit_ass_v[0].size() << " hits" << std::endl;
 
     out_ass_cluster_all_hit_v->set_association(out_clus_all->id(),product_id(data::kHit,out_hit->name()),out_cluster_all_hit_ass_v);
     

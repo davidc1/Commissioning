@@ -56,8 +56,12 @@ namespace larlite {
     void setMaxLinearity(double l) { _max_lin_v.push_back( l ); }
     /// Verbosity setter
     void setVerbose(bool on) { _verbose = on; }
-    /// Set Hit Producer
+    /// Set Cluster Producer
     void setClusterProducer(std::string s) { _clusterProducer = s; }
+    /// set vertex producer
+    void setVertexProducer(std::string s) { _vertexProducer = s; }
+    /// set output hit producer
+    void setOutProducer(std::string s) { _outProducer = s; }
     /// set minimum number of hits
     void setMinNHits(int n) { _min_n_hits_v.push_back( n ); }
 
@@ -79,8 +83,12 @@ namespace larlite {
     /// conversion factors for hits
     double _wire2cm, _time2cm;
 
-    /// Hit producer name
+    /// Cluster producer name
     std::string _clusterProducer;
+    /// Vertex producer name
+    std::string _vertexProducer;
+    /// outpyt hit producer
+    std::string _outProducer;
 
     TTree* _tree;
     int _nhits;

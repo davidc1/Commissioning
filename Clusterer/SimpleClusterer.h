@@ -63,6 +63,8 @@ namespace larlite {
     void setHitProducer(std::string s) { _hitProducer = s; }
     /// Set Vertex Producer
     void setVtxProducer(std::string s) { _vtxProducer = s; }
+    /// set Output producer
+    void setOutProducer(std::string s) { _outProducer = s; }
     /// set vertex radius to avoid
     void setVtxRadius(double r) { _vtx_radius = r; }
     /// use vertex?
@@ -92,9 +94,10 @@ namespace larlite {
 
     /// Hit producer name
     std::string _hitProducer;
-
     /// vertex producer
     std::string _vtxProducer;
+    /// output producer
+    std::string _outProducer;
 
     /// Map making function
     void MakeHitMap(const event_hit* hitlist, int plane);

@@ -58,6 +58,10 @@ namespace larlite {
     void setVerbose(bool on) { _verbose = on; }
     /// Set Hit Producer
     void setClusterProducer(std::string s) { _clusterProducer = s; }
+    /// set output hit producer
+    void setOutHitProducer(std::string s) { _outhitProducer = s; }
+    /// set output cluster producer
+    void setOutClusterProducer(std::string s) { _outclusterProducer = s; }
     /// set minimum number of hits
     void setMinNHits(int n) { _min_n_hits_v.push_back( n ); }
 
@@ -75,8 +79,12 @@ namespace larlite {
     /// conversion factors for hits
     double _wire2cm, _time2cm;
 
-    /// Hit producer name
+    /// cluster producer name
     std::string _clusterProducer;
+    /// output hit producer name
+    std::string _outhitProducer;
+    /// output cluster producer name
+    std::string _outclusterProducer;
 
     /// covariance, standard deviation, mean
     double cov (const std::vector<double>& data1,
