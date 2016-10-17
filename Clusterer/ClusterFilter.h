@@ -48,15 +48,17 @@ namespace larlite {
 
     void setClusProducer(std::string s) { _clusProducer = s; }
     void setVtxProducer (std::string s) { _vtxProducer  = s; }
-    void setOutHitProducer(std::string s) { _outhitProducer = s; }
-    void setOutClusterProducer(std::string s) { _outclusterProducer = s; }
+    void setOutHitProducer(std::string s) { _out_hitProducer = s; }
+    void setOutClusterProducer(std::string s) { _out_clusterProducer = s; }
+    void setOutClusterAllProducer(std::string s) { _out_clusterAllProducer = s; }
 
   protected:
 
     std::string _clusProducer;
     std::string _vtxProducer;
-    std::string _outhitProducer;
-    std::string _outclusterProducer;
+    std::string _out_hitProducer;
+    std::string _out_clusterProducer;
+    std::string _out_clusterAllProducer;
 
     /// vertex coordinates
     std::vector<double> _vtx_w_cm;

@@ -59,12 +59,12 @@ namespace larlite {
     void setPlane(int pl) { _plane = pl; }
     /// Verbosity setter
     void setVerbose(bool on) { _verbose = on; }
-    /// Set Hit Producer
+    
+    /// Set Producers
     void setHitProducer(std::string s) { _hitProducer = s; }
-    /// Set Vertex Producer
     void setVtxProducer(std::string s) { _vtxProducer = s; }
-    /// set Output producer
-    void setOutProducer(std::string s) { _outProducer = s; }
+    void setOutClusProducer(std::string s) { _out_clusterProducer = s; }
+    
     /// set vertex radius to avoid
     void setVtxRadius(double r) { _vtx_radius = r; }
     /// use vertex?
@@ -92,12 +92,10 @@ namespace larlite {
     /// conversion factors for hits
     double _wire2cm, _time2cm;
 
-    /// Hit producer name
+    /// Producers
     std::string _hitProducer;
-    /// vertex producer
     std::string _vtxProducer;
-    /// output producer
-    std::string _outProducer;
+    std::string _out_clusterProducer;
 
     /// Map making function
     void MakeHitMap(const event_hit* hitlist, int plane);

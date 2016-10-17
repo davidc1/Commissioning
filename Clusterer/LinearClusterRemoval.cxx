@@ -15,29 +15,15 @@ namespace larlite {
     _name        = "LinearClusterRemoval";
     _fout        = 0;
     _verbose     = false;
-    _clusterProducer = "";
-    _outhitProducer  = "";
-    _outclusterProducer = "";
+    _clusterProducer = "gaushit";
+    _out_clusterProducer = "shrcluster";
+    _out_hitProducer     = "shrhits";
     _max_lin_v = {0.0};
     _min_n_hits_v = {0};
 
   }
 
   bool LinearClusterRemoval::initialize() {
-
-        // if vector and or cluster producer not set -> quit
-    if ( _clusterProducer == "" ){
-      std::cout << "Cluster producer not set. Quit." << std::endl;
-      return false;
-    }
-    if ( _outhitProducer == "" ){
-      std::cout << "Output hit producer not set. Quit." << std::endl;
-      return false;
-    }
-    if ( _outclusterProducer == "" ){
-      std::cout << "Output cluster producer not set. Quit." << std::endl;
-      return false;
-    }
 
     if (_tree) delete _tree;
     _tree = new TTree("linearclusterremoval","Linear Cluster Removal TTree");
@@ -85,8 +71,8 @@ namespace larlite {
     larlite::event_hit* ev_hit = nullptr;
     auto const& ass_cluster_hit_v = storage->find_one_ass(ev_clus->id(), ev_hit, ev_clus->name());
     
-    auto out_hit = storage->get_data<event_hit>(_outhitProducer);
-    auto out_clusters   = storage->get_data<event_cluster>(_outclusterProducer);
+    auto out_hit = storage->get_data<event_hit>( _out_hitProducer );
+    auto out_clusters   = storage->get_data<event_cluster>( _out_clusterProducer );
     auto out_cluster_ass_v = storage->get_data<event_ass>(out_clusters->name());
     std::vector<std::vector<unsigned int> > out_cluster_hit_ass_v;
     
@@ -165,6 +151,8 @@ namespace larlite {
       
     }// loop through all planes
 
+    std::cout << "out clusters : " << out_clusters->size() << std::endl;
+    
     out_cluster_ass_v->set_association(out_clusters->id(),product_id(data::kHit,out_hit->name()),out_cluster_hit_ass_v);    
     
     return true;

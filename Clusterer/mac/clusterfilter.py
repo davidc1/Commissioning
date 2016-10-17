@@ -30,6 +30,9 @@ my_proc.set_output_file(sys.argv[-1])
 clusterer = fmwk.ClusterFilter()
 clusterer.setClusProducer("shrcluster")
 clusterer.setVtxProducer("numuCC_vertex")
+clusterer.setOutHitProducer("clusterfilter");
+clusterer.setOutClusterProducer("clusterfilter");
+clusterer.setOutClusterAllProducer("clusterfilterall");
 clusterer.setMaxNHits(400)
 clusterer.setMaxArea(100*100)
 clusterer.setMaxDist(200)
@@ -45,7 +48,7 @@ print
 print  "Finished configuring ana_processor. Start event loop!"
 print
 
-my_proc.run()
+my_proc.run(0,10)
 
 sys.exit()
 

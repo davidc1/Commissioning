@@ -43,10 +43,11 @@ def hitremoval00():
     algo = fmwk.LinearClusterSubsetRemoval()
     algo.setClusterProducer(_clusproducer)
     algo.setVertexProducer(_vtxproducer)
-    algo.setOutProducer(_hitproducer00)
-    # vectors of hit number and corresponding cut on linearity
+    algo.setOutHitProducer(_hitproducer00)
+
     n_hits = [  3, 10, 20, 30, 50, 70,100,130,180,230]
     lin_v  = [.02,.06,.10,.10,.10,.10,.10,.12,.20,.30]
+
     for i,n in enumerate(n_hits):
         algo.setMaxLinearity( lin_v[i] )
         algo.setMinNHits( n )
@@ -58,7 +59,7 @@ def hitremoval01():
     algo = fmwk.SimpleClusterer()
     algo.setHitProducer(_hitproducer00)
     algo.setVtxProducer(_vtxproducer)
-    algo.setOutProducer(_clusproducer01)
+    algo.setOutClusProducer(_clusproducer01)
     algo.setRadius(1.0)
     algo.setCellSize(2.0)
     algo.setMaxHitRMS(19)
@@ -87,10 +88,12 @@ def hitremoval02():
 def hitremoval03():
 
     algo = fmwk.ClusterFilter()
+    
     algo.setClusProducer(_clusproducer02)
     algo.setVtxProducer(_vtxproducer)
-    algo.setOutHitProducer(_hitproducer03)
-    algo.setOutClusterProducer(_clusproducer03)
+    algo.setOutHitProducer(_hitproducer03);
+    algo.setOutClusterProducer(_clusproducer03);
+    algo.setOutClusterAllProducer("clusterfilterall");
     algo.setMaxNHits(400)
     algo.setMaxArea(100*100)
     algo.setMaxDist(200)
@@ -106,7 +109,7 @@ print
 print  "Finished configuring ana_processor. Start event loop!"
 print
 
-my_proc.run()
+my_proc.run(0,10)
 
 sys.exit()
 

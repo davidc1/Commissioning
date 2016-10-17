@@ -30,7 +30,9 @@ my_proc.set_output_file(sys.argv[-1])
 clusterproducer = 'rawcluster'
 
 clusterer = fmwk.LinearClusterRemoval()
-clusterer.setClusterProducer(clusterproducer)
+clusterer.setClusterProducer('rawcluster')
+clusterer.setOutClusterProducer( 'shrcluster' )
+clusterer.setOutHitProducer( 'shrhits' )
 
 n_hits = [  3, 10, 20, 30, 50, 70,100,130,180,230]
 lin_v  = [.02,.10,.10,.13,.16,.20,.23,.30,.40,.45]#1.0,0.99,0.9]

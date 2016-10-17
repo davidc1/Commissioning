@@ -27,10 +27,10 @@ my_proc.set_ana_output_file("linearclusterremoval.root");
 # Specify data output root file name
 my_proc.set_output_file(sys.argv[-1])
 
-clusterproducer = 'pandoraCosmic'
-
 clusterer = fmwk.LinearClusterSubsetRemoval()
-clusterer.setClusterProducer(clusterproducer)
+clusterer.setClusterProducer('pandoraCosmic')
+clusterer.setVertexProducer('numuCC_vertex')
+clusterer.setOutHitProducer('shrhits')
 
 n_hits = [  3, 10, 20, 30, 50, 70,100,130,180,230]
 lin_v  = [.02,.06,.10,.10,.10,.10,.10,.12,.20,.30]
@@ -50,7 +50,7 @@ print
 print  "Finished configuring ana_processor. Start event loop!"
 print
 
-my_proc.run()
+my_proc.run(0,10)
 
 sys.exit()
 

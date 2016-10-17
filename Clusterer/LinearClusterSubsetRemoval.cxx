@@ -17,8 +17,8 @@ namespace larlite {
     _fout        = 0;
     _verbose     = false;
     _clusterProducer = "";
-    _vertexProducer  = "";
-    _outProducer     = "";
+    _vtxProducer     = "";
+    _out_hitProducer = "";
     _max_lin_v = {0.0};
     _min_n_hits_v = {0};
 
@@ -28,20 +28,6 @@ namespace larlite {
   }
 
   bool LinearClusterSubsetRemoval::initialize() {
-
-    // if vector and or cluster producer not set -> quit
-    if ( _vertexProducer == "" ){
-      std::cout << "Vertex producer not set. Quit." << std::endl;
-      return false;
-    }
-    if ( _clusterProducer == "" ){
-      std::cout << "Cluster producer not set. Quit." << std::endl;
-      return false;
-    }
-    if ( _outProducer == "" ){
-      std::cout << "Output hit producer not set. Quit." << std::endl;
-      return false;
-    }
 
     if (_tree) delete _tree;
     _tree = new TTree("linearclusterremoval","Linear Cluster Removal TTree");
@@ -84,13 +70,13 @@ namespace larlite {
   
   bool LinearClusterSubsetRemoval::analyze(storage_manager* storage) {
 
-    auto ev_clus = storage->get_data<event_cluster>(_clusterProducer);
-    auto evt_vtx = storage->get_data<event_vertex> (_vertexProducer);
+    auto ev_clus = storage->get_data<event_cluster>( _clusterProducer );
+    auto evt_vtx = storage->get_data<event_vertex> ( _vtxProducer     );
 
     larlite::event_hit* ev_hit = nullptr;
     auto const& ass_cluster_hit_v = storage->find_one_ass(ev_clus->id(), ev_hit, ev_clus->name());
     
-    auto out_hit = storage->get_data<event_hit>(_outProducer);
+    auto out_hit = storage->get_data<event_hit>( _out_hitProducer );
     
     //set event ID through storage manager
     storage->set_id(storage->run_id(),storage->subrun_id(),storage->event_id());
