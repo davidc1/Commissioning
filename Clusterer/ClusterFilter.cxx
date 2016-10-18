@@ -159,8 +159,6 @@ namespace larlite {
       out_clus_all->emplace_back(clus_all);
     }
 
-    std::cout << "there are " << out_cluster_all_hit_ass_v[0].size() << " hits" << std::endl;
-
     out_ass_cluster_all_hit_v->set_association(out_clus_all->id(),product_id(data::kHit,out_hit->name()),out_cluster_all_hit_ass_v);
     
     out_ass_cluster_hit_v->set_association(out_clus->id(),product_id(data::kHit,evt_hit->name()),out_cluster_hit_ass_v);    

@@ -151,8 +151,6 @@ namespace larlite {
       
     }// loop through all planes
 
-    std::cout << "out clusters : " << out_clusters->size() << std::endl;
-    
     out_cluster_ass_v->set_association(out_clusters->id(),product_id(data::kHit,out_hit->name()),out_cluster_hit_ass_v);    
     
     return true;

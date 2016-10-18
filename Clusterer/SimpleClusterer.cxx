@@ -216,8 +216,6 @@ namespace larlite {
       }
     }
     
-    std::cout << "number of larlite clusters: " << ev_clusters->size() << std::endl;
-    std::cout << "number of clusters to be saved: " << _cluster_hit_ass.size() << std::endl;
     cluster_ass_v->set_association(ev_clusters->id(),product_id(data::kHit,evt_hits->name()),_cluster_hit_ass);    
 
     return true;
