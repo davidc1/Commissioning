@@ -179,40 +179,48 @@ namespace larlite {
       
     }// loop through all planes
 
-    // sort hits to be removed
-    std::sort( hit_idx_to_be_removed_v.begin(), hit_idx_to_be_removed_v.end() );
-    // current index in sorted vector where we stopped searching
-    size_t current_idx = 0;
-    size_t max_idx = hit_idx_to_be_removed_v.size() -1 ;
-    // loop through all hits
-    for (size_t hit_idx = 0; hit_idx < ev_hit->size(); hit_idx++){
-      // if hit index is less than what is currently @ the vector index -> save
-      if (hit_idx < hit_idx_to_be_removed_v[ current_idx ] ){
+    // if nothing to be removed -> add all hits
+    if (hit_idx_to_be_removed_v.size() == 0){
+      for (size_t hit_idx = 0; hit_idx < ev_hit->size(); hit_idx++)
 	out_hit->emplace_back( ev_hit->at( hit_idx ) );
-	continue;
-      }
-      // if hit index is the same, remove and move to the next
-      else if (hit_idx == hit_idx_to_be_removed_v[ current_idx ] ){
-	if (current_idx < max_idx )
-	  current_idx += 1;
-	continue;
-      }
-      // if hit index is larger than current index, move counter forward and check again
-      else if (hit_idx > hit_idx_to_be_removed_v[ current_idx ] ) {
-	if (current_idx < max_idx )
-	  current_idx += 1;
+    }
+
+    else{
+      // sort hits to be removed
+      std::sort( hit_idx_to_be_removed_v.begin(), hit_idx_to_be_removed_v.end() );
+      // current index in sorted vector where we stopped searching
+      size_t current_idx = 0;
+      size_t max_idx = hit_idx_to_be_removed_v.size() -1 ;
+      // loop through all hits
+      for (size_t hit_idx = 0; hit_idx < ev_hit->size(); hit_idx++){
+	// if hit index is less than what is currently @ the vector index -> save
 	if (hit_idx < hit_idx_to_be_removed_v[ current_idx ] ){
 	  out_hit->emplace_back( ev_hit->at( hit_idx ) );
 	  continue;
 	}
 	// if hit index is the same, remove and move to the next
-	if (hit_idx == hit_idx_to_be_removed_v[ current_idx ] ){
+	else if (hit_idx == hit_idx_to_be_removed_v[ current_idx ] ){
 	  if (current_idx < max_idx )
 	    current_idx += 1;
 	  continue;
 	}
-      }
-    }// for all hits
+	// if hit index is larger than current index, move counter forward and check again
+	else if (hit_idx > hit_idx_to_be_removed_v[ current_idx ] ) {
+	  if (current_idx < max_idx )
+	    current_idx += 1;
+	  if (hit_idx < hit_idx_to_be_removed_v[ current_idx ] ){
+	    out_hit->emplace_back( ev_hit->at( hit_idx ) );
+	    continue;
+	  }
+	  // if hit index is the same, remove and move to the next
+	  if (hit_idx == hit_idx_to_be_removed_v[ current_idx ] ){
+	    if (current_idx < max_idx )
+	      current_idx += 1;
+	    continue;
+	  }
+	}
+      }// for all hits
+    }
     
     return true;
   }
