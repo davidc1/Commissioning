@@ -27,8 +27,11 @@ my_proc.set_ana_output_file("beam_timing.root");
 # Attach an analysis unit ... here we use a base class which does nothing.
 # Replace with your analysis unit if you wish.
 ana = fmwk.FillTree()
-ana.setFlashProducer("opflashSat")
+#ana.setFlashProducer("opflashSat")
+ana.setFlashProducer("simpleFlashBeam")
 ana.setMinPE(50)
+ana.setMinT(-10)
+ana.setMaxT(30)
 my_proc.add_process(ana)
 
 print

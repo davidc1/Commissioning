@@ -14,6 +14,8 @@ namespace larlite {
     _fout = 0;
     _flashProducer = "opflashSat";
     _pe_min = 50;
+    _minT   = -10;
+    _maxT   =  30;
   }
 
   bool FillTree::initialize() {
@@ -57,11 +59,19 @@ namespace larlite {
 
     _trig_time = trig->TriggerTime();
 
+    // choose only max PE flash per event
+    double max_pe = 0;
+    double time = 0;
+
     for (size_t i=0; i < ev_flash->size(); i++){
 
       auto const& flash = ev_flash->at(i);
 
       _pe_total = flash.TotalPE();
+
+      _pe_total = 0;
+      for (size_t pmt=0; pmt < 32; pmt++)
+	_pe_total += flash.PE(pmt);
 
       if (_pe_total < _pe_min)
 	continue;
@@ -73,7 +83,26 @@ namespace larlite {
 
       _tree->Fill();
 
+      if ( (_dt < _minT) or (_dt > _maxT) )
+	continue;
+
+      if (flash.TotalPE() > max_pe){
+	max_pe = flash.TotalPE();
+	time   = _flash_abstime;
+      }
+
     }// for all flashes
+
+    /*
+    if (max_pe != 0){
+      _flash_abstime = time;
+      _dt = _flash_abstime - _trig_time;
+      _pe_total = max_pe;
+      _tree->Fill();
+    }
+    */
+
+    //}// for all flashes
     
     return true;
   }

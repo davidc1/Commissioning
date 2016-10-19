@@ -40,6 +40,8 @@ namespace larlite {
 
     void setFlashProducer(std::string s) { _flashProducer = s; }
     void setMinPE(double pe) { _pe_min = pe; }
+    void setMinT(double t) { _minT = t; }
+    void setMaxT(double t) { _maxT = t; }
 
   protected:
 
@@ -54,6 +56,7 @@ namespace larlite {
 
     std::string _flashProducer;
     double _pe_min;
+    double _minT, _maxT;
     
   };
 }
