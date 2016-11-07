@@ -14,10 +14,14 @@ namespace larlite {
 
     _name        = "LinearClusterRemoval";
     _fout        = 0;
+    
     _verbose     = false;
-    _clusterProducer = "gaushit";
-    _out_clusterProducer = "shrcluster";
-    _out_hitProducer     = "shrhits";
+    _debug       = false;
+    
+    _clusterProducer     = "";
+    _out_clusterProducer = "";
+    _out_hitProducer     = "";
+    
     _max_lin_v = {0.0};
     _min_n_hits_v = {0};
 
@@ -121,19 +125,21 @@ namespace larlite {
       _local_lin_avg       = lin._local_lin_avg;
       _local_lin_truncated = lin._local_lin_truncated_avg;
 
+      if (_debug)
+	std::cout << "Cluster size : " << hit_w_v.size() << std::endl
+		  << "\t lin             : " << lin._lin << std::endl
+		  << "\t local lin avg   : " << lin._local_lin_avg << std::endl
+		  << "\t local lin trunc : " << lin._local_lin_truncated_avg << std::endl
+		  << "\t MAX LIN         : " << max_lin << std::endl;
+	
+	
       _tree->Fill();
 
-      if (_local_lin_truncated < max_lin)
+      if (_local_lin_truncated < max_lin){
+	if (_debug) std::cout << "\t REMOVE CLUSTER" << std::endl;
 	remove = true;
+      }
 
-      /* OLD WAY
-      // calculate covariance
-      double L = linearity(hit_w_v,hit_t_v);
-
-      if ( log(fabs(L)) < max_lin)
-	remove = true;
-      */ 
-      
       if (remove == false){
 	// for all hits, add them to output
 	for (auto const& hit_idx : hit_idx_v){

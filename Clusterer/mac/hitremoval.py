@@ -74,11 +74,12 @@ def hitremoval01():
 def hitremoval02():
 
     algo = fmwk.LinearClusterRemoval()
+    #algo.setDebug(True)
     algo.setClusterProducer(_clusproducer01)
     algo.setOutHitProducer(_hitproducer02)
     algo.setOutClusterProducer(_clusproducer02)
     n_hits = [  3, 10, 20, 30, 50, 70,100,130,180,230]
-    lin_v  = [.02,.10,.10,.13,.16,.20,.23,.30,.40,.45]
+    lin_v  = [.02,.10,.10,.13,.16,.19,.22,.30,.40,.45]
     for i,n in enumerate(n_hits):
         algo.setMaxLinearity( lin_v[i] )
         algo.setMinNHits( n )
@@ -88,13 +89,13 @@ def hitremoval02():
 def hitremoval03():
 
     algo = fmwk.ClusterFilter()
-    
+    #algo.setDebug(True)
     algo.setClusProducer(_clusproducer02)
     algo.setVtxProducer(_vtxproducer)
     algo.setOutHitProducer(_hitproducer03);
     algo.setOutClusterProducer(_clusproducer03);
     algo.setOutClusterAllProducer("clusterfilterall");
-    algo.setMaxNHits(400)
+    algo.setMaxNHits(4000)
     algo.setMaxArea(100*100)
     algo.setMaxDist(200)
 

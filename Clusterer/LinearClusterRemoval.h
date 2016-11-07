@@ -56,7 +56,8 @@ namespace larlite {
     void setMaxLinearity(double l) { _max_lin_v.push_back( l ); }
     /// Verbosity setter
     void setVerbose(bool on) { _verbose = on; }
-
+    void setDebug  (bool on) { _debug   = on; }
+    
     /// set minimum number of hits
     void setMinNHits(int n) { _min_n_hits_v.push_back( n ); }
 
@@ -75,6 +76,8 @@ namespace larlite {
     
     /// verbosity flag
     bool _verbose;
+    /// debug flag
+    bool _debug;
 
     /// conversion factors for hits
     double _wire2cm, _time2cm;
