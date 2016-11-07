@@ -32,15 +32,19 @@ hitproducer = 'gaushit'
 
 clusterer = fmwk.SimpleClusterer()
 clusterer.setHitProducer(hitproducer)
+clusterer.setOutClusProducer('rawcluster')
+clusterer.setUseVertex(False)
 clusterer.setRadius(1)
 clusterer.setCellSize(2)
 clusterer.setVerbose(False)
 
 my_proc.add_process(clusterer)
 
-#my_proc.set_data_to_write(fmwk.data.kHit,hitproducer)
-#my_proc.set_data_to_write(fmwk.data.kCluster,'rawcluster')
-#my_proc.set_data_to_write(fmwk.data.kAssociation,'rawcluster')
+my_proc.set_data_to_write(fmwk.data.kHit,hitproducer)
+my_proc.set_data_to_write(fmwk.data.kCluster,'rawcluster')
+my_proc.set_data_to_write(fmwk.data.kVertex,'mcvertex')
+my_proc.set_data_to_write(fmwk.data.kMCTruth,'generator')
+my_proc.set_data_to_write(fmwk.data.kAssociation,'rawcluster')
 
 print
 print  "Finished configuring ana_processor. Start event loop!"
