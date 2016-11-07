@@ -18,6 +18,8 @@ namespace larlite {
     _name = "ClusterFilter";
 
     _fout = 0;
+
+    _debug = false;
     
     _vtx_w_cm = {0,0,0};
     _vtx_t_cm = {0,0,0};
@@ -75,6 +77,7 @@ namespace larlite {
 	auto const& pt = geoH->Point_3Dto2D(xyz,pl);
 	_vtx_w_cm[pl] = pt.w;
 	_vtx_t_cm[pl] = pt.t + 800 * _time2cm;
+	if (_debug) std::cout << "Vtx @ plane " << pl << " -> [" << _vtx_w_cm[pl] << ", " << _vtx_t_cm[pl] << std::endl;
       }
     }
 
@@ -89,6 +92,7 @@ namespace larlite {
 	continue;
 
       int pl = evt_hit->at( hit_idx_v[0] ).WireID().Plane;
+      if (_debug) std::cout << "Plane : " << pl << "\t clus size : " << hit_idx_v.size() << std::endl;
 
       // grab x & y coordinates for cluster
       std::vector<double> w_v, t_v;
@@ -100,47 +104,65 @@ namespace larlite {
       double d_max, d_min;
       getClusterBounds(w_v, t_v, pl, w_bounds, t_bounds, d_max, d_min);
 
+      if (_debug)
+	std::cout << "\t cluster bounds LL [" << w_bounds.first << ", " << t_bounds.first << "]" << std::endl
+		  << "\t                LR [" << w_bounds.second << ", " << t_bounds.first << "]" << std::endl
+		  << "\t                UR [" << w_bounds.second << ", " << t_bounds.second << "]" << std::endl
+		  << "\t                UL [" << w_bounds.first << ", " << t_bounds.second << "]" << std::endl
+		  << "\t Max dist from vtx : " << d_max << std::endl
+		  << "\t Min dist from vtx : " << d_min << std::endl;
+      
       // remove clusters that span only 1 or 2 wires
       // and are ~ a few cm in time (units in cuts are in cm)
       if ( ( (w_bounds.second - w_bounds.first) < 0.5 ) and
-	   ( (t_bounds.second - t_bounds.first) > 1.5 ) )
+	   ( (t_bounds.second - t_bounds.first) > 1.5 ) ){
+	if (_debug) std::cout << "remove -> spans too few wires/times" << std::endl;
 	continue;
-
+      }
+      
       // calculate area
       double A = ( w_bounds.second - w_bounds.first ) * ( t_bounds.second - t_bounds.first );
-
+      
+      if (_debug) std::cout << "\t cluster area : " << A << std::endl;
+      
       // apply area cut
-      if (A > _Amax)
+      if (A > _Amax){
+	if (_debug) std::cout << "remove -> area too large" << std::endl;
 	continue;
+      }
 
       // check max distance from vtx
-      if ( (d_max > _d_max) && (hit_idx_v.size() > 100) )
+      if ( (d_max > _d_max) && (hit_idx_v.size() > 100) ){
+	if (_debug) std::cout << "remove -> too far from vtx" << std::endl;
 	continue;
+      }
 
       bool drop = false;
-
+      
       ::Linearity lin(w_v,t_v);
-
+      
       
       if ( (hit_idx_v.size() > 20) and (d_min > 30) and (lin._local_lin_truncated_avg < 0.5) ){
 	// calcualte linearity
-
-
-      double slope     = lin._slope;
-      double intercept = lin._intercept;
-
-      // impact parameter to vertex:
-      double x0 = _vtx_w_cm[pl];
-      double y0 = _vtx_t_cm[pl];
-      double IP = fabs( - slope * x0 + y0 - intercept ) / sqrt( slope * slope + 1 );
-
-      if (IP > 20)
-	drop = true;
-
+	
+	
+	double slope     = lin._slope;
+	double intercept = lin._intercept;
+	
+	// impact parameter to vertex:
+	double x0 = _vtx_w_cm[pl];
+	double y0 = _vtx_t_cm[pl];
+	double IP = fabs( - slope * x0 + y0 - intercept ) / sqrt( slope * slope + 1 );
+	
+	if (IP > 20)
+	  drop = true;
+	
       }
-
-      if (drop == true)
+      
+      if (drop == true){
+	if (_debug) std::cout << "remove -> linearity" << std::endl;
 	continue;
+      }
 
       // made it this far. save the cluster!
       out_clus->emplace_back( evt_clus->at( clus_idx ) );

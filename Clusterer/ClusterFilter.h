@@ -52,7 +52,11 @@ namespace larlite {
     void setOutClusterProducer(std::string s) { _out_clusterProducer = s; }
     void setOutClusterAllProducer(std::string s) { _out_clusterAllProducer = s; }
 
+    void setDebug(bool on) { _debug = on; }
+
   protected:
+
+    bool _debug;
 
     std::string _clusProducer;
     std::string _vtxProducer;
