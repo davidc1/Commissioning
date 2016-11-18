@@ -19,8 +19,10 @@
 #pragma link C++ class Stats+;
 #pragma link C++ class larlite::ClusterFilter+;
 #pragma link C++ class Linearity+;
+#pragma link C++ class larlite::PhotonClusterer+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
 
 
 

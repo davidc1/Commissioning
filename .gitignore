@@ -25,4 +25,5 @@
 *.o
 *~
 *.txt
-*.ipnb
+*.ipynb
+*.pdf

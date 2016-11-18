@@ -198,9 +198,6 @@ namespace larlite {
       }// if there are 2 hits in cluster
     }
     
-    //std::cout << "number of clusters: " << _clusters.size() << std::endl;
-    //std::cout << "number of clusters: " << cluster_vector.size() << std::endl;
-    
     // vector for assocaitions
     std::vector<std::vector<unsigned int> > _cluster_hit_ass;
     // for each cluster create a larlite::cluster
@@ -208,7 +205,30 @@ namespace larlite {
       if (cluster_vector[i].size() > 0){
 	larlite::cluster clus;
 	clus.set_n_hits(cluster_vector[i].size());
-	clus.set_view(larlite::geo::View_t::kW);
+	// grab wire/time bounds for this cluster
+	float w_min = 9999;
+	float t_min = 9999;
+	float w_max = -1;
+	float t_max = -1;
+	float integral = 0;
+	for (auto const& idx : cluster_vector[i]){
+	  auto const& hit = evt_hits->at(idx);
+	  float t = hit.PeakTime();
+	  if (t > t_max) t_max = t;
+	  if (t < t_min) t_min = t;
+	  float w = hit.WireID().Wire;
+	  if (w > w_max) w_max = w;
+	  if (w < w_min) w_min = w;
+	  integral += hit.Integral();
+	}
+	clus.set_start_wire(w_min,1.);
+	clus.set_end_wire(w_max,1.);
+	clus.set_start_tick(t_min,1.);
+	clus.set_end_tick(t_max,1.);
+	clus.set_integral(integral,0.,0.);
+	clus.set_summedADC(integral, 0., 0.);
+	clus.set_view( evt_hits->at( cluster_vector[i][0] ).View() );
+	//clus.set_planeID( evt_hits->at( cluster_vector[i][0] ).WireID().Plane );
 	//clus.set_planeID(2);
 	// vector for associations
 	ev_clusters->push_back(clus);
