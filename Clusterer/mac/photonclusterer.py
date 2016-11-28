@@ -42,15 +42,15 @@ for i,n in enumerate(n_hits):
 my_proc.add_process(clusterer)
 
 #my_proc.set_data_to_write(fmwk.data.kHit,hitproducer)
-#my_proc.set_data_to_write(fmwk.data.kCluster,'shrcluster')
-#my_proc.set_data_to_write(fmwk.data.kAssociation,'shrcluster')
+my_proc.set_data_to_write(fmwk.data.kCluster,'photon')
+my_proc.set_data_to_write(fmwk.data.kAssociation,'photon')
 #my_proc.set_data_to_write(fmwk.data.kHit,"shrhits")
 
 print
 print  "Finished configuring ana_processor. Start event loop!"
 print
 
-my_proc.run(0,100)
+my_proc.run()
 
 sys.exit()
 
