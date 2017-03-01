@@ -8,9 +8,7 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
 
-from ROOT import gSystem,TMath
-from ROOT import larlite as fmwk
-from ROOT import larutil
+from larlite import larlite as fmwk
 
 # Create ana_processor instance
 my_proc = fmwk.ana_processor()
@@ -38,7 +36,7 @@ hitmaker.setRMSMax(10.0)
 hitmaker.setRawDigitProducer('daq')
 # set threshold for a hit. hit window opened/closed when
 # the baseline-subtracted ADCs are > than RMS * sigma cut
-hitmaker.setSigmaCut(4.0)
+hitmaker.setSigmaCut(5.0)
 # set minimum hit width
 hitmaker.setMinHitWidth(2)
 my_proc.add_process(hitmaker)
