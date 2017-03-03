@@ -173,6 +173,7 @@ namespace larlite {
 	  if ( (end-start) > _minwidth){
 	    double hiterr = (end-start)/2.;
 	    larlite::hit hit;
+	    hit.set_time_range(start,end);
 	    hit.set_time_peak(peak,hiterr);
 	    hit.set_time_rms(hiterr);
 	    hit.set_amplitude(amp,0.);
